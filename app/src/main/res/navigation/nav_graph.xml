@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment3">
+
+    <fragment
+        android:id="@+id/signUpFragment"
+        android:name="com.example.scanfit.SignUpFragment"
+        android:label="fragment_sign_up"
+        tools:layout="@layout/fragment_sign_up" >
+        <action
+            android:id="@+id/action_signUpFragment_to_loginFragment3"
+            app:destination="@id/loginFragment3" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/forgotPasswordFragment"
+        android:name="com.example.scanfit.ForgotPasswordFragment"
+        android:label="fragment_forgot_password"
+        tools:layout="@layout/fragment_forgot_password" >
+        <action
+            android:id="@+id/action_forgotPasswordFragment_to_verifyPinFragment"
+            app:destination="@id/verifyPinFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/verifyPinFragment"
+        android:name="com.example.scanfit.VerifyPinFragment"
+        android:label="fragment_verify_pin"
+        tools:layout="@layout/fragment_verify_pin" >
+        <action
+            android:id="@+id/action_verifyPinFragment_to_resetPasswordFragment"
+            app:destination="@id/resetPasswordFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/resetPasswordFragment"
+        android:name="com.example.scanfit.ResetPasswordFragment"
+        android:label="fragment_reset_password"
+        tools:layout="@layout/fragment_reset_password" >
+        <action
+            android:id="@+id/action_resetPasswordFragment_to_loginFragment3"
+            app:destination="@id/loginFragment3" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment3"
+        android:name="com.example.scanfit.LoginFragment"
+        android:label="LoginFragment" >
+        <action
+            android:id="@+id/action_loginFragment3_to_forgotPasswordFragment"
+            app:destination="@id/forgotPasswordFragment" />
+        <action
+            android:id="@+id/action_loginFragment3_to_signUpFragment"
+            app:destination="@id/signUpFragment" />
+        <action
+            android:id="@+id/action_loginFragment3_to_profileFragment2"
+            app:destination="@id/profileFragment2" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileFragment2"
+        android:name="com.example.scanfit.ProfileFragment"
+        android:label="ProfileFragment" >
+        <action
+            android:id="@+id/action_profileFragment2_to_dietSelectionFragment"
+            app:destination="@id/dietSelectionFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.scanfit.HomeFragment"
+        android:label="HomeFragment" >
+        <action
+            android:id="@+id/action_homeFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_categoriesFragment"
+            app:destination="@id/categoriesFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/userProfileFragment"
+        android:name="com.example.scanfit.UserProfileFragment"
+        android:label="UserProfileFragment" >
+        <action
+            android:id="@+id/action_userProfileFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/subCategoriesFragment"
+        android:name="com.example.scanfit.SubCategoriesFragment"
+        android:label="fragment_sub_categories"
+        tools:layout="@layout/fragment_sub_categories" >
+        <action
+            android:id="@+id/action_subCategoriesFragment_to_productListFragment"
+            app:destination="@id/productListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/categoriesFragment"
+        android:name="com.example.scanfit.CategoriesFragment"
+        android:label="CategoriesFragment" >
+        <action
+            android:id="@+id/action_categoriesFragment_to_subCategoriesFragment"
+            app:destination="@id/subCategoriesFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/productListFragment"
+        android:name="com.example.scanfit.ProductListFragment"
+        android:label="ProductListFragment" >
+        <action
+            android:id="@+id/action_productListFragment_to_favoritesFragment"
+            app:destination="@id/favoritesFragment" />
+        <action
+            android:id="@+id/action_productListFragment_to_productDetailFragment"
+            app:destination="@id/productDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/productDetailFragment"
+        android:name="com.example.scanfit.ProductDetailFragment"
+        android:label="ProductDetailFragment" />
+
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.example.scanfit.FavoritesFragment"
+        android:label="FavoritesFragment" />
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.scanfit.SearchFragment"
+        android:label="Search"
+        tools:layout="@layout/fragment_search" />
+
+    <fragment
+        android:id="@+id/nav_scan"
+        android:name="com.example.scanfit.ScanFragment"
+        android:label="Scan"
+        tools:layout="@layout/fragment_scan" >
+
+        <action
+            android:id="@+id/action_nav_scan_to_categoriesFragment"
+            app:destination="@id/categoriesFragment" />
+
+        <action
+            android:id="@+id/action_nav_scan_to_searchFragment"
+            app:destination="@id/searchFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.scanfit.HomeFragment"
+        android:label="Tracker" >
+        <action
+            android:id="@+id/action_homeFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_recent"
+        android:name="com.example.scanfit.RecentFragment"
+        android:label="Recent" >
+        <action
+            android:id="@+id/action_recentFragment_to_productDetailFragment"
+            app:destination="@id/productDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/dietSelectionFragment"
+        android:name="com.example.scanfit.DietSelectionFragment"
+        android:label="DietSelectionFragment" >
+        <action
+            android:id="@+id/action_dietSelectionFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+
+</navigation>

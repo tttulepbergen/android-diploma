@@ -1,0 +1,5401 @@
+{
+  "categories": [
+    {
+      "category_id": "diets",
+      "category_name": "Diets",
+      "items": [
+        {
+          "id": "alpha_gal",
+          "name": "Alpha gal",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "ag_meats",
+              "name": "Mammalian meats",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "beef",
+                "pork",
+                "lamb",
+                "venison"
+              ]
+            },
+            {
+              "id": "ag_byproducts",
+              "name": "Mammalian by-products",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "lard",
+                "tallow"
+              ]
+            },
+            {
+              "id": "ag_dairy",
+              "name": "Dairy products",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "milk",
+                "cheese",
+                "butter"
+              ]
+            },
+            {
+              "id": "ag_gelatin",
+              "name": "Gelatin",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "gelatin"
+              ]
+            },
+            {
+              "id": "ag_carrageenan",
+              "name": "Carrageenan & algae",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "carrageenan"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "anti_inflammatory",
+          "name": "Anti-inflammatory diet",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "refined sugar",
+            "trans fats",
+            "processed meat"
+          ]
+        },
+        {
+          "id": "aip",
+          "name": "Autoimmune protocol (AIP)",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "aip_additives",
+              "name": "AIP: additives & processed foods",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "msg",
+                "nitrates",
+                "nitrites",
+                "artificial sweeteners",
+                "food dyes",
+                "thickeners",
+                "gums"
+              ]
+            },
+            {
+              "id": "aip_alcohol",
+              "name": "AIP: alcohol",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "alcohol",
+                "ethanol",
+                "wine",
+                "beer",
+                "spirits"
+              ]
+            },
+            {
+              "id": "aip_coffee",
+              "name": "AIP: coffee",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "coffee",
+                "espresso",
+                "caffeine",
+                "coffee beans"
+              ]
+            },
+            {
+              "id": "aip_dairy",
+              "name": "AIP: dairy",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "milk",
+                "cheese",
+                "butter",
+                "ghee",
+                "cream",
+                "yogurt",
+                "whey",
+                "casein"
+              ]
+            },
+            {
+              "id": "aip_eggs",
+              "name": "AIP: eggs",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "eggs",
+                "egg whites",
+                "egg yolks",
+                "albumin"
+              ]
+            },
+            {
+              "id": "aip_grains",
+              "name": "AIP: grains",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "wheat",
+                "barley",
+                "rye",
+                "corn",
+                "rice",
+                "oats",
+                "quinoa",
+                "millet",
+                "sorghum"
+              ]
+            },
+            {
+              "id": "aip_legumes",
+              "name": "AIP: legumes",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "beans",
+                "lentils",
+                "peas",
+                "peanuts",
+                "soy",
+                "tofu",
+                "chickpeas"
+              ]
+            },
+            {
+              "id": "aip_nightshades",
+              "name": "AIP: nightshades",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "tomato",
+                "potato",
+                "eggplant",
+                "peppers",
+                "paprika",
+                "cayenne",
+                "goji berries"
+              ]
+            },
+            {
+              "id": "aip_nuts",
+              "name": "AIP: nuts",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "almonds",
+                "walnuts",
+                "cashews",
+                "hazelnuts",
+                "pistachios",
+                "pecans",
+                "macadamia"
+              ]
+            },
+            {
+              "id": "aip_oils",
+              "name": "AIP: processed oils",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "canola oil",
+                "soybean oil",
+                "corn oil",
+                "sunflower oil",
+                "safflower oil",
+                "cottonseed oil"
+              ]
+            },
+            {
+              "id": "aip_seeds_chocolate",
+              "name": "AIP: seeds & chocolate",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "chia seeds",
+                "flax seeds",
+                "pumpkin seeds",
+                "sunflower seeds",
+                "chocolate",
+                "cocoa",
+                "cacao"
+              ]
+            },
+            {
+              "id": "aip_sugar",
+              "name": "AIP: sugar",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "cane sugar",
+                "refined sugar",
+                "high fructose corn syrup",
+                "brown sugar"
+              ]
+            },
+            {
+              "id": "aip_sweeteners",
+              "name": "AIP: sweeteners & sugar alcohols",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "stevia",
+                "erythritol",
+                "xylitol",
+                "sorbitol",
+                "mannitol",
+                "monk fruit"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "breastfeeding",
+          "name": "Breastfeeding",
+          "ui_type": "simple_toggle",
+          "triggers": [
+            "excessive caffeine",
+            "alcohol",
+            "high-mercury fish",
+            "unpasteurized dairy",
+            "sage",
+            "peppermint"
+          ]
+        },
+        {
+          "id": "caffeine_free",
+          "name": "Caffeine free",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "caffeine",
+            "coffee",
+            "tea"
+          ]
+        },
+        {
+          "id": "candida_overgrowth",
+          "name": "Candida overgrowth",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "sugar",
+            "yeast",
+            "alcohol",
+            "vinegar",
+            "mushrooms",
+            "refined grains",
+            "honey",
+            "syrup"
+          ]
+        },
+        {
+          "id": "citric_acid_intolerance",
+          "name": "Citric acid intolerance",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "citric acid",
+            "e330",
+            "lemon",
+            "lime",
+            "orange",
+            "grapefruit",
+            "citrus"
+          ]
+        },
+        {
+          "id": "emulsifier_free",
+          "name": "Emulsifier free",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "emuls_gut",
+              "name": "Emulsifiers with likely gut interactions",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "polysorbate 80",
+                "carboxymethylcellulose",
+                "carrageenan",
+                "maltodextrin"
+              ]
+            },
+            {
+              "id": "emuls_all",
+              "name": "All emulsifiers",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "lecithin",
+                "soy lecithin",
+                "sunflower lecithin",
+                "mono- and diglycerides",
+                "guar gum",
+                "xanthan gum",
+                "locust bean gum",
+                "pectin"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "eoe",
+          "name": "Eosinophilic esophagitis",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "eoe_dairy",
+              "name": "Eosinophilic esophagitis dairy",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "milk",
+                "cheese",
+                "butter",
+                "whey",
+                "casein",
+                "yogurt",
+                "cream"
+              ]
+            },
+            {
+              "id": "eoe_egg",
+              "name": "Eosinophilic esophagitis egg",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "egg",
+                "egg white",
+                "egg yolk",
+                "albumin",
+                "lysozyme"
+              ]
+            },
+            {
+              "id": "eoe_fish",
+              "name": "Eosinophilic esophagitis fish",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "fish",
+                "salmon",
+                "tuna",
+                "cod",
+                "anchovy",
+                "shellfish"
+              ]
+            },
+            {
+              "id": "eoe_nuts",
+              "name": "Eosinophilic esophagitis nuts",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "almond",
+                "walnut",
+                "cashew",
+                "pistachio",
+                "hazelnut",
+                "peanut"
+              ]
+            },
+            {
+              "id": "eoe_soy",
+              "name": "Eosinophilic esophagitis soy",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "soy",
+                "soybean",
+                "tofu",
+                "lecithin",
+                "miso",
+                "edamame"
+              ]
+            },
+            {
+              "id": "eoe_wheat",
+              "name": "Eosinophilic esophagitis wheat",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "wheat",
+                "gluten",
+                "flour",
+                "semolina",
+                "spelt",
+                "bulgur"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fructose_free",
+          "name": "Fructose free",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "fructose",
+            "high fructose corn syrup",
+            "agave nectar",
+            "honey",
+            "fruit juice concentrate",
+            "sorbitol"
+          ]
+        },
+        {
+          "id": "gerd",
+          "name": "GERD",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "gerd_alcohol",
+              "name": "Alcoholic drinks",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "alcohol",
+                "wine",
+                "beer",
+                "spirits",
+                "liquor"
+              ]
+            },
+            {
+              "id": "gerd_caffeine",
+              "name": "Caffeinated drinks",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "caffeine",
+                "coffee",
+                "black tea",
+                "energy drinks"
+              ]
+            },
+            {
+              "id": "gerd_carbonated",
+              "name": "Carbonated drinks",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "carbonated water",
+                "soda",
+                "sparkling water",
+                "soft drinks"
+              ]
+            },
+            {
+              "id": "gerd_chocolate",
+              "name": "Chocolates",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "chocolate",
+                "cocoa",
+                "cacao",
+                "milk chocolate",
+                "dark chocolate"
+              ]
+            },
+            {
+              "id": "gerd_citrus",
+              "name": "Citrus fruits",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "lemon",
+                "lime",
+                "orange",
+                "grapefruit",
+                "citrus"
+              ]
+            },
+            {
+              "id": "gerd_garlic_onion",
+              "name": "Garlic & onion",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "garlic",
+                "onion",
+                "shallots",
+                "garlic powder",
+                "onion powder"
+              ]
+            },
+            {
+              "id": "gerd_high_fat_dairy",
+              "name": "High fat dairy",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "whole milk",
+                "heavy cream",
+                "full fat cheese",
+                "butter",
+                "ice cream"
+              ]
+            },
+            {
+              "id": "gerd_fatty",
+              "name": "Fatty foods",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "fried foods",
+                "lard",
+                "tallow",
+                "grease",
+                "fatty meat"
+              ]
+            },
+            {
+              "id": "gerd_spicy",
+              "name": "Spicy foods",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "chili",
+                "hot sauce",
+                "cayenne",
+                "jalapeno",
+                "pepper",
+                "capsaicin"
+              ]
+            },
+            {
+              "id": "gerd_tomato",
+              "name": "Tomato",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "tomato",
+                "tomato sauce",
+                "ketchup",
+                "tomato paste"
+              ]
+            },
+            {
+              "id": "gerd_other",
+              "name": "Other GERD triggers",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "peppermint",
+                "spearmint",
+                "processed snacks"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gluten_free",
+          "name": "Gluten free",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "wheat",
+            "barley",
+            "rye",
+            "gluten",
+            "malt",
+            "spelt",
+            "triticale",
+            "brewer's yeast"
+          ]
+        },
+        {
+          "id": "gut_friendly",
+          "name": "Gut friendly",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "processed sugar",
+            "artificial sweeteners",
+            "refined grains",
+            "emulsifiers",
+            "fried foods"
+          ]
+        },
+        {
+          "id": "interstitial_cystitis",
+          "name": "Interstitial cystitis",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "ic_alcohol",
+              "name": "IC: alcohol",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "alcohol",
+                "beer",
+                "wine",
+                "spirits"
+              ]
+            },
+            {
+              "id": "ic_art_coloring",
+              "name": "IC: artificial coloring",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "red 40",
+                "yellow 5",
+                "blue 1",
+                "artificial color"
+              ]
+            },
+            {
+              "id": "ic_art_flavoring",
+              "name": "IC: artificial flavoring",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "artificial flavor"
+              ]
+            },
+            {
+              "id": "ic_art_sweeteners",
+              "name": "IC: artificial sweetener",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "aspartame",
+                "saccharin",
+                "sucralose",
+                "acesulfame k"
+              ]
+            },
+            {
+              "id": "ic_carbonated",
+              "name": "IC: carbonated beverages",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "soda",
+                "sparkling water",
+                "carbonated water"
+              ]
+            },
+            {
+              "id": "ic_chocolate",
+              "name": "IC: chocolate",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "chocolate",
+                "cocoa",
+                "cacao"
+              ]
+            },
+            {
+              "id": "ic_citrus",
+              "name": "IC: citrus & fruit",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "lemon",
+                "lime",
+                "orange",
+                "grapefruit",
+                "cranberry",
+                "pineapple"
+              ]
+            },
+            {
+              "id": "ic_caffeine",
+              "name": "IC: coffee, tea & caffeinated beverages",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "coffee",
+                "black tea",
+                "green tea",
+                "caffeine",
+                "guarana"
+              ]
+            },
+            {
+              "id": "ic_soy",
+              "name": "IC: soy",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "soy",
+                "soybean",
+                "tofu",
+                "soy sauce",
+                "soy protein"
+              ]
+            },
+            {
+              "id": "ic_spicy",
+              "name": "IC: spices & spicy foods",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "chili",
+                "hot sauce",
+                "cayenne",
+                "jalapeno",
+                "horseradish"
+              ]
+            },
+            {
+              "id": "ic_tomatoes",
+              "name": "IC: tomatoes",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "tomato",
+                "tomato sauce",
+                "ketchup",
+                "tomato paste"
+              ]
+            },
+            {
+              "id": "ic_other",
+              "name": "IC: other common triggers",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "msg",
+                "vinegar",
+                "nitrites",
+                "processed meats",
+                "onions"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lactose_free",
+          "name": "Lactose free",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "lactose",
+            "milk",
+            "cheese",
+            "cream",
+            "butter",
+            "whey",
+            "curds",
+            "milk powder"
+          ]
+        },
+        {
+          "id": "latex_free",
+          "name": "Latex free",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "avocado",
+            "banana",
+            "kiwi",
+            "chestnut",
+            "papaya",
+            "fig",
+            "potato",
+            "tomato"
+          ]
+        },
+        {
+          "id": "low_fodmap",
+          "name": "Low FODMAP",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "fodmap_fructose",
+              "name": "Fructose",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "fructose",
+                "high fructose corn syrup",
+                "honey",
+                "agave",
+                "apple",
+                "pear",
+                "watermelon"
+              ]
+            },
+            {
+              "id": "fodmap_lactose",
+              "name": "Lactose",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "milk",
+                "yogurt",
+                "soft cheese",
+                "cream",
+                "custard"
+              ]
+            },
+            {
+              "id": "fodmap_mannitol",
+              "name": "Mannitol",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "mannitol",
+                "e421",
+                "mushrooms",
+                "cauliflower",
+                "sweet potato"
+              ]
+            },
+            {
+              "id": "fodmap_sorbitol",
+              "name": "Sorbitol",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "sorbitol",
+                "e420",
+                "blackberries",
+                "peaches",
+                "plums",
+                "apricots"
+              ]
+            },
+            {
+              "id": "fodmap_gos",
+              "name": "GOS",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "galacto-oligosaccharides",
+                "beans",
+                "lentils",
+                "chickpeas",
+                "soybeans"
+              ]
+            },
+            {
+              "id": "fodmap_fructans",
+              "name": "Fructans",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "fructans",
+                "inulin",
+                "garlic",
+                "onion",
+                "wheat",
+                "rye",
+                "barley",
+                "cashews"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "low_histamine",
+          "name": "Low histamine",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "fermented foods",
+            "aged cheese",
+            "alcohol",
+            "wine",
+            "processed meat",
+            "spinach",
+            "tomatoes",
+            "shellfish",
+            "chocolate",
+            "citrus"
+          ]
+        },
+        {
+          "id": "low_iodine",
+          "name": "Low iodine",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "iodized salt",
+            "sea salt",
+            "seafood",
+            "fish",
+            "seaweed",
+            "kelp",
+            "dairy products",
+            "egg yolks",
+            "red dye #3"
+          ]
+        },
+        {
+          "id": "low_residue",
+          "name": "Low residue",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "whole grains",
+            "brown rice",
+            "oats",
+            "nuts",
+            "seeds",
+            "raw vegetables",
+            "legumes",
+            "popcorn",
+            "dried fruit"
+          ]
+        },
+        {
+          "id": "mediterranean_diet",
+          "name": "Mediterranean diet",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "processed meats",
+            "refined grains",
+            "sugar-sweetened beverages",
+            "red meat",
+            "trans fats",
+            "highly processed foods"
+          ]
+        },
+        {
+          "id": "mold_detox",
+          "name": "Mold detox",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "mushrooms",
+            "yeast",
+            "peanuts",
+            "corn",
+            "alcohol",
+            "aged cheese",
+            "dried fruits",
+            "pistachios",
+            "processed sugar"
+          ]
+        },
+        {
+          "id": "oral_allergy_syndrome",
+          "name": "Oral allergy syndrome",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "oas_alder",
+              "name": "Alder pollen",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "apple",
+                "cherry",
+                "peach",
+                "pear",
+                "parsley",
+                "celery",
+                "almond",
+                "hazelnut"
+              ]
+            },
+            {
+              "id": "oas_birch",
+              "name": "Birch pollen",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "apple",
+                "carrot",
+                "celery",
+                "pear",
+                "peach",
+                "plum",
+                "cherry",
+                "apricot",
+                "hazelnut",
+                "walnut",
+                "potato",
+                "spinach"
+              ]
+            },
+            {
+              "id": "oas_grass",
+              "name": "Grass pollen",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "melon",
+                "watermelon",
+                "orange",
+                "tomato",
+                "white potato",
+                "peanut",
+                "wheat"
+              ]
+            },
+            {
+              "id": "oas_mugwort",
+              "name": "Mugwort weed pollen",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "carrot",
+                "celery",
+                "coriander",
+                "fennel",
+                "parsley",
+                "anise",
+                "sunflower seeds",
+                "chamomile"
+              ]
+            },
+            {
+              "id": "oas_ragweed",
+              "name": "Ragweed pollen",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "banana",
+                "cantaloupe",
+                "honeydew",
+                "watermelon",
+                "cucumber",
+                "zucchini",
+                "sunflower seeds",
+                "echinacea"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "paleo",
+          "name": "Paleo",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "grains",
+            "wheat",
+            "rye",
+            "barley",
+            "corn",
+            "oats",
+            "rice",
+            "legumes",
+            "beans",
+            "lentils",
+            "peanuts",
+            "dairy",
+            "refined sugar",
+            "processed vegetable oils"
+          ]
+        },
+        {
+          "id": "pescatarian",
+          "name": "Pescatarian",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "beef",
+            "pork",
+            "lamb",
+            "chicken",
+            "turkey",
+            "duck",
+            "venison",
+            "lard",
+            "tallow",
+            "gelatin"
+          ]
+        },
+        {
+          "id": "plantricious",
+          "name": "Plantricious",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "meat",
+            "poultry",
+            "fish",
+            "dairy",
+            "eggs",
+            "processed oils",
+            "refined sugar",
+            "processed grains"
+          ]
+        },
+        {
+          "id": "pcos_friendly",
+          "name": "Polycystic ovary syndrome (PCOS)",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "refined sugar",
+            "white bread",
+            "white pasta",
+            "white rice",
+            "sugary drinks",
+            "processed snacks",
+            "soy",
+            "processed meats"
+          ]
+        },
+        {
+          "id": "pregnancy",
+          "name": "Pregnancy",
+          "ui_type": "simple_toggle",
+          "triggers": [
+            "alcohol",
+            "unpasteurized milk",
+            "soft cheese",
+            "raw fish",
+            "sushi",
+            "high-mercury fish",
+            "raw eggs",
+            "excessive caffeine",
+            "unwashed sprouts"
+          ]
+        },
+        {
+          "id": "seed_oil_free",
+          "name": "Seed oil free",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "canola oil",
+            "corn oil",
+            "cottonseed oil",
+            "soybean oil",
+            "sunflower oil",
+            "safflower oil",
+            "grapeseed oil",
+            "rice bran oil"
+          ]
+        },
+        {
+          "id": "vegan",
+          "name": "Vegan",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "beef",
+            "pork",
+            "poultry",
+            "fish",
+            "seafood",
+            "eggs",
+            "milk",
+            "cheese",
+            "honey",
+            "gelatin",
+            "lard",
+            "whey",
+            "casein",
+            "carmine"
+          ]
+        },
+        {
+          "id": "vegetarian",
+          "name": "Vegetarian",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "beef",
+            "pork",
+            "poultry",
+            "fish",
+            "seafood",
+            "gelatin",
+            "lard",
+            "tallow",
+            "rennet",
+            "carmine"
+          ]
+        },
+        {
+          "id": "whole30",
+          "name": "30 whole days",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "sugar",
+            "maple syrup",
+            "honey",
+            "agave",
+            "stevia",
+            "alcohol",
+            "grains",
+            "wheat",
+            "corn",
+            "rice",
+            "legumes",
+            "beans",
+            "soy",
+            "dairy",
+            "carrageenan",
+            "msg"
+          ]
+        }
+      ]
+    },
+    {
+      "category_id": "allergens",
+      "category_name": "Allergens & Avoidances",
+      "items": [
+        {
+          "id": "added_salt",
+          "name": "Added salt",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "salt",
+            "sodium chloride",
+            "sea salt",
+            "kosher salt",
+            "rock salt"
+          ]
+        },
+        {
+          "id": "added_sugar",
+          "name": "Added sugar",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "sugar",
+            "cane sugar",
+            "high fructose corn syrup",
+            "sucrose",
+            "glucose",
+            "fructose",
+            "maltose",
+            "dextrose",
+            "syrup"
+          ]
+        },
+        {
+          "id": "alcohol_limit",
+          "name": "Alcohol",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "alcohol",
+            "ethanol",
+            "wine",
+            "beer",
+            "whiskey",
+            "vodka",
+            "rum",
+            "spirit"
+          ]
+        },
+        {
+          "id": "artificial_flavors",
+          "name": "Artificial flavors",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "artificial flavor",
+            "natural and artificial flavors"
+          ]
+        },
+        {
+          "id": "artificial_coloring",
+          "name": "Artificial food coloring",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "blue_1",
+              "name": "Blue #1",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "blue 1",
+                "e133",
+                "brilliant blue fcf"
+              ]
+            },
+            {
+              "id": "blue_2",
+              "name": "Blue #2",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "blue 2",
+                "e132",
+                "indigotine"
+              ]
+            },
+            {
+              "id": "green_3",
+              "name": "Green #3",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "green 3",
+                "e143",
+                "fast green fcf"
+              ]
+            },
+            {
+              "id": "red_3",
+              "name": "Red #3",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "red 3",
+                "e127",
+                "erythrosine"
+              ]
+            },
+            {
+              "id": "red_40",
+              "name": "Red #40",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "red 40",
+                "e129",
+                "allura red ac"
+              ]
+            },
+            {
+              "id": "yellow_5",
+              "name": "Yellow #5",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "yellow 5",
+                "e102",
+                "tartrazine"
+              ]
+            },
+            {
+              "id": "yellow_6",
+              "name": "Yellow #6",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "yellow 6",
+                "e110",
+                "sunset yellow fcf"
+              ]
+            },
+            {
+              "id": "other_colors",
+              "name": "Other artificial colors",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "artificial color",
+                "e104",
+                "e122",
+                "e124",
+                "e151"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "barley",
+          "name": "Barley",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "barley",
+            "barley malt",
+            "barley flour",
+            "hordeum vulgare",
+            "malt extract",
+            "malt vinegar"
+          ]
+        },
+        {
+          "id": "capsaicin",
+          "name": "Capsaicin (peppers)",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "capsaicin",
+            "chili pepper",
+            "cayenne",
+            "jalapeno",
+            "habanero",
+            "paprika",
+            "chili powder",
+            "red pepper flakes"
+          ]
+        },
+        {
+          "id": "celery_group",
+          "name": "Celery",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "celery_stem",
+              "name": "Celery",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "celery",
+                "celery stalk",
+                "celery seed",
+                "celery salt",
+                "celery ribs"
+              ]
+            },
+            {
+              "id": "celeriac",
+              "name": "Celeriac",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "celeriac",
+                "celery root",
+                "apium graveolens var. rapaceum"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "chocolate",
+          "name": "Chocolate",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "chocolate",
+            "cocoa",
+            "cacao",
+            "cocoa butter",
+            "cocoa mass",
+            "cocoa solids"
+          ]
+        },
+        {
+          "id": "citrus_fruit",
+          "name": "Citrus fruit",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "citrus",
+            "lemon",
+            "lime",
+            "orange",
+            "grapefruit",
+            "tangerine",
+            "mandarin",
+            "citric acid",
+            "citrus peel"
+          ]
+        },
+        {
+          "id": "common_additives",
+          "name": "Common additives",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "add_azodicarbonamide",
+              "name": "Azodicarbonamide",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "azodicarbonamide",
+                "e927"
+              ]
+            },
+            {
+              "id": "add_bha_bht",
+              "name": "BHA & BHT",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "bha",
+                "bht",
+                "butylated hydroxyanisole",
+                "butylated hydroxytoluene",
+                "e320",
+                "e321"
+              ]
+            },
+            {
+              "id": "add_bvo",
+              "name": "Brominated vegetable oil",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "brominated vegetable oil",
+                "bvo"
+              ]
+            },
+            {
+              "id": "add_hfcs",
+              "name": "High fructose corn syrup",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "high fructose corn syrup",
+                "hfcs",
+                "isoglucose"
+              ]
+            },
+            {
+              "id": "add_hvo",
+              "name": "Hydrogenated vegetable oils",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "hydrogenated vegetable oil",
+                "partially hydrogenated oil"
+              ]
+            },
+            {
+              "id": "add_msg",
+              "name": "MSG",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "msg",
+                "monosodium glutamate",
+                "e621"
+              ]
+            },
+            {
+              "id": "add_nitrates",
+              "name": "Nitrates & nitrites",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "sodium nitrate",
+                "sodium nitrite",
+                "potassium nitrate",
+                "potassium nitrite",
+                "e250",
+                "e251",
+                "e252"
+              ]
+            },
+            {
+              "id": "add_parabens",
+              "name": "Parabens",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "methylparaben",
+                "propylparaben",
+                "ethylparaben",
+                "butylparaben",
+                "e218"
+              ]
+            },
+            {
+              "id": "add_potassium_bromate",
+              "name": "Potassium bromate",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "potassium bromate",
+                "e924"
+              ]
+            },
+            {
+              "id": "add_sodium_benzoate",
+              "name": "Sodium benzoate",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "sodium benzoate",
+                "e211"
+              ]
+            },
+            {
+              "id": "add_sulfites",
+              "name": "Sulfites",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "sulfites",
+                "sulphites",
+                "sulfur dioxide",
+                "sodium bisulfite",
+                "e220",
+                "e221",
+                "e222",
+                "e223",
+                "e224",
+                "e226",
+                "e227",
+                "e228"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "corn_group",
+          "name": "Corn",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "corn_ingredients",
+              "name": "Corn ingredients",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "corn",
+                "maize",
+                "corn starch",
+                "corn flour",
+                "corn meal",
+                "corn oil",
+                "corn syrup"
+              ]
+            },
+            {
+              "id": "corn_derivatives",
+              "name": "Corn derivatives",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "dextrin",
+                "maltodextrin",
+                "fructose",
+                "sorbitol",
+                "xylitol",
+                "glucona delta lactone",
+                "citric acid"
+              ]
+            },
+            {
+              "id": "corn_fed_animals",
+              "name": "Products from corn-fed animals",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "beef",
+                "chicken",
+                "pork",
+                "dairy",
+                "eggs"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "eggs_group",
+          "name": "Eggs",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "egg_white",
+              "name": "Egg white",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "egg white",
+                "albumin",
+                "ovalbumin"
+              ]
+            },
+            {
+              "id": "egg_yolk",
+              "name": "Egg yolk",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "egg yolk",
+                "lecithin",
+                "vitellin"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fish_allergy",
+          "name": "Fish",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "fish",
+            "salmon",
+            "tuna",
+            "cod",
+            "anchovy",
+            "sardine",
+            "tilapia",
+            "haddock",
+            "pollock",
+            "halibut",
+            "trout"
+          ]
+        },
+        {
+          "id": "fruits_group",
+          "name": "Fruits",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "fruit_coconut",
+              "name": "Coconut",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "coconut",
+                "coconut oil",
+                "coconut milk",
+                "coconut flour"
+              ]
+            },
+            {
+              "id": "fruit_apple",
+              "name": "Apple",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "apple",
+                "apple juice",
+                "pectin"
+              ]
+            },
+            {
+              "id": "fruit_avocado",
+              "name": "Avocado",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "avocado",
+                "guacamole"
+              ]
+            },
+            {
+              "id": "fruit_banana",
+              "name": "Banana",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "banana"
+              ]
+            },
+            {
+              "id": "fruit_kiwi",
+              "name": "Kiwi",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "kiwi"
+              ]
+            },
+            {
+              "id": "fruit_strawberry",
+              "name": "Strawberry",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "strawberry"
+              ]
+            },
+            {
+              "id": "fruit_citrus",
+              "name": "Citrus (Lemon, Lime, Orange)",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "lemon",
+                "lime",
+                "orange",
+                "grapefruit",
+                "citrus"
+              ]
+            },
+            {
+              "id": "fruit_mango",
+              "name": "Mango",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "mango"
+              ]
+            },
+            {
+              "id": "fruit_pineapple",
+              "name": "Pineapple",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "pineapple",
+                "bromelain"
+              ]
+            },
+            {
+              "id": "fruit_melon",
+              "name": "Melon (Cantaloupe, Honeydew, Watermelon)",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "melon",
+                "watermelon",
+                "cantaloupe",
+                "honeydew"
+              ]
+            },
+            {
+              "id": "fruit_stone",
+              "name": "Stone Fruits (Peach, Plum, Cherry, Apricot)",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "peach",
+                "plum",
+                "cherry",
+                "apricot",
+                "nectarine"
+              ]
+            },
+            {
+              "id": "fruit_berries",
+              "name": "Berries (Blueberry, Raspberry, Blackberry)",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "blueberry",
+                "raspberry",
+                "blackberry",
+                "cranberry"
+              ]
+            },
+            {
+              "id": "fruit_nightshades",
+              "name": "Nightshade Fruits (Tomato, Eggplant, Pumpkin)",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "tomato",
+                "eggplant",
+                "pumpkin"
+              ]
+            },
+            {
+              "id": "fruit_exotic",
+              "name": "Exotic (Acai, Acerola, Ackee, Guava, Pomegranate)",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "acai",
+                "acerola",
+                "ackee",
+                "guava",
+                "pomegranate"
+              ]
+            },
+            {
+              "id": "fruit_dried",
+              "name": "Dried Fruits (Dates, Figs)",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "dates",
+                "figs"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "alliums_group",
+          "name": "Garlic & onion",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "garlic",
+              "name": "Garlic",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "garlic",
+                "garlic powder",
+                "garlic extract",
+                "allium sativum"
+              ]
+            },
+            {
+              "id": "onion",
+              "name": "Onion",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "onion",
+                "onion powder",
+                "shallots",
+                "red onion",
+                "white onion"
+              ]
+            },
+            {
+              "id": "all_other_alliums",
+              "name": "All other alliums",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "leeks",
+                "chives",
+                "scallions",
+                "spring onion",
+                "wild garlic"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gums_thickeners",
+          "name": "Gums & thickeners",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "gum_arabic",
+              "name": "Acacia / arabic",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "acacia gum",
+                "gum arabic",
+                "e414"
+              ]
+            },
+            {
+              "id": "gum_carrageenan",
+              "name": "Carrageenan",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "carrageenan",
+                "e407",
+                "irish moss"
+              ]
+            },
+            {
+              "id": "gum_cellulose",
+              "name": "Cellulose",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "cellulose gum",
+                "microcrystalline cellulose",
+                "e460",
+                "e466"
+              ]
+            },
+            {
+              "id": "gum_gellan",
+              "name": "Gellan",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "gellan gum",
+                "e418"
+              ]
+            },
+            {
+              "id": "gum_guar",
+              "name": "Guar",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "guar gum",
+                "e412"
+              ]
+            },
+            {
+              "id": "gum_locust",
+              "name": "Locust bean / carob",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "locust bean gum",
+                "carob gum",
+                "e410"
+              ]
+            },
+            {
+              "id": "gum_tara",
+              "name": "Tara",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "tara gum",
+                "e417"
+              ]
+            },
+            {
+              "id": "gum_xanthan",
+              "name": "Xanthan",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "xanthan gum",
+                "e415"
+              ]
+            },
+            {
+              "id": "gum_other",
+              "name": "All other gums",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "tragacanth",
+                "karaya gum",
+                "konjac gum",
+                "agar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "herbs_group",
+          "name": "Herbs",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "herb_basil",
+              "name": "Basil",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "basil"
+              ]
+            },
+            {
+              "id": "herb_licorice",
+              "name": "Licorice",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "licorice",
+                "liquorice",
+                "glycyrrhiza glabra"
+              ]
+            },
+            {
+              "id": "herb_oregano",
+              "name": "Oregano",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "oregano"
+              ]
+            },
+            {
+              "id": "herb_peppermint",
+              "name": "Peppermint",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "peppermint",
+                "mentha piperita"
+              ]
+            },
+            {
+              "id": "herb_rosemary",
+              "name": "Rosemary",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "rosemary"
+              ]
+            },
+            {
+              "id": "herb_sage",
+              "name": "Sage",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "sage"
+              ]
+            },
+            {
+              "id": "herb_thai_basil",
+              "name": "Thai basil",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "thai basil"
+              ]
+            },
+            {
+              "id": "herb_thyme",
+              "name": "Thyme",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "thyme"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "honey",
+          "name": "Honey",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "honey",
+            "manuka honey",
+            "royal jelly",
+            "beeswax"
+          ]
+        },
+        {
+          "id": "legumes_group",
+          "name": "Legumes",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "leg_beans",
+              "name": "Beans",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "beans",
+                "kidney beans",
+                "black beans",
+                "pinto beans",
+                "fava beans"
+              ]
+            },
+            {
+              "id": "leg_chickpeas",
+              "name": "Chickpeas",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "chickpeas",
+                "garbanzo beans",
+                "hummus",
+                "gram flour"
+              ]
+            },
+            {
+              "id": "leg_lentils",
+              "name": "Lentils",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "lentils",
+                "red lentils",
+                "green lentils"
+              ]
+            },
+            {
+              "id": "leg_peanuts",
+              "name": "Peanuts",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "peanuts",
+                "peanut butter",
+                "peanut oil"
+              ]
+            },
+            {
+              "id": "leg_peas",
+              "name": "Peas",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "peas",
+                "green peas",
+                "split peas",
+                "pea protein"
+              ]
+            },
+            {
+              "id": "leg_soybeans",
+              "name": "Soybeans",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "soy",
+                "soybeans",
+                "tofu",
+                "soy sauce",
+                "soy lecithin",
+                "edamame"
+              ]
+            },
+            {
+              "id": "leg_other",
+              "name": "All other legumes",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "lupin",
+                "alfalfa",
+                "clover",
+                "tamarind"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lupin",
+          "name": "Lupin",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "lupin",
+            "lupine",
+            "lupin flour",
+            "lupin seed"
+          ]
+        },
+        {
+          "id": "milk",
+          "name": "Milk",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "milk",
+            "dairy",
+            "whey",
+            "casein",
+            "lactose",
+            "butter",
+            "cheese",
+            "cream",
+            "yogurt"
+          ]
+        },
+        {
+          "id": "mushrooms",
+          "name": "Mushrooms",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "mushrooms",
+            "fungi",
+            "truffle",
+            "yeast extract"
+          ]
+        },
+        {
+          "id": "mustard",
+          "name": "Mustard",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "mustard",
+            "mustard seeds",
+            "mustard powder",
+            "mustard oil"
+          ]
+        },
+        {
+          "id": "nickel_allergy",
+          "name": "Nickel allergy",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "oats",
+            "nuts",
+            "beans",
+            "soy",
+            "dark chocolate",
+            "canned foods",
+            "shellfish"
+          ]
+        },
+        {
+          "id": "nightshades",
+          "name": "Nightshades",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "tomato",
+            "potato",
+            "eggplant",
+            "peppers",
+            "paprika",
+            "cayenne",
+            "goji berries",
+            "ashwagandha"
+          ]
+        },
+        {
+          "id": "oats",
+          "name": "Oats",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "oats",
+            "oatmeal",
+            "oat flour",
+            "oat bran",
+            "avena sativa"
+          ]
+        },
+        {
+          "id": "peanut_group",
+          "name": "Peanut",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "peanut_whole",
+              "name": "Peanut",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "peanut",
+                "groundnuts",
+                "arachis hypogaea"
+              ]
+            },
+            {
+              "id": "peanut_oil",
+              "name": "Peanut oil",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "peanut oil",
+                "arachis oil"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "poultry_group",
+          "name": "Poultry",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "poultry_general",
+              "name": "Poultry",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "poultry",
+                "duck",
+                "goose",
+                "quail",
+                "pheasant"
+              ]
+            },
+            {
+              "id": "poultry_chicken",
+              "name": "Chicken",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "chicken",
+                "chicken fat",
+                "chicken broth"
+              ]
+            },
+            {
+              "id": "poultry_turkey",
+              "name": "Turkey",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "turkey",
+                "turkey fat"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "red_meat_group",
+          "name": "Red meat",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "meat_beef",
+              "name": "Beef",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "beef",
+                "steak",
+                "gelatin",
+                "tallow"
+              ]
+            },
+            {
+              "id": "meat_pork",
+              "name": "Pork",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "pork",
+                "bacon",
+                "ham",
+                "lard"
+              ]
+            },
+            {
+              "id": "meat_goat",
+              "name": "Goat",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "goat",
+                "chevon",
+                "cabrito"
+              ]
+            },
+            {
+              "id": "meat_sheep",
+              "name": "Sheep (lamb)",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "lamb",
+                "mutton",
+                "sheep"
+              ]
+            },
+            {
+              "id": "meat_exotic",
+              "name": "Game & exotic meat",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "venison",
+                "bison",
+                "rabbit",
+                "elk",
+                "deer",
+                "kangaroo",
+                "ostrich"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rice",
+          "name": "Rice",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "rice",
+            "rice flour",
+            "rice bran",
+            "rice syrup",
+            "brown rice",
+            "white rice",
+            "oryza sativa"
+          ]
+        },
+        {
+          "id": "rye",
+          "name": "Rye",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "rye",
+            "rye flour",
+            "rye bread",
+            "secale cereale",
+            "pumpernickel"
+          ]
+        },
+        {
+          "id": "seeds_group",
+          "name": "Seeds",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "seed_poppy",
+              "name": "Poppy",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "poppy seed",
+                "papaver somniferum"
+              ]
+            },
+            {
+              "id": "seed_sunflower",
+              "name": "Sunflower",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "sunflower seed",
+                "sunflower oil",
+                "sunflower lecithin"
+              ]
+            },
+            {
+              "id": "seed_amaranth",
+              "name": "Amaranth",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "amaranth"
+              ]
+            },
+            {
+              "id": "seed_buckwheat",
+              "name": "Buckwheat",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "buckwheat",
+                "kasha",
+                "soba"
+              ]
+            },
+            {
+              "id": "seed_quinoa",
+              "name": "Quinoa",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "quinoa"
+              ]
+            },
+            {
+              "id": "seed_flax",
+              "name": "Flax",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "flaxseed",
+                "linseed",
+                "flax oil"
+              ]
+            },
+            {
+              "id": "seed_chia",
+              "name": "Chia",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "chia seed",
+                "salvia hispanica"
+              ]
+            },
+            {
+              "id": "seed_hemp",
+              "name": "Hemp",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "hemp seed",
+                "hemp protein",
+                "cannabis sativa seed"
+              ]
+            },
+            {
+              "id": "seed_millet",
+              "name": "Millet",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "millet"
+              ]
+            },
+            {
+              "id": "seed_other",
+              "name": "All other seeds",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "pumpkin seed",
+                "pepita",
+                "squash seed",
+                "watermelon seed"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sesame",
+          "name": "Sesame",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "sesame",
+            "tahini",
+            "til",
+            "benne seed",
+            "sesamum indicum",
+            "sesame oil"
+          ]
+        },
+        {
+          "id": "shellfish_group",
+          "name": "Shellfish",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "sh_crustacean",
+              "name": "Crustacean",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "shrimp",
+                "prawn",
+                "crab",
+                "lobster",
+                "crayfish",
+                "krill"
+              ]
+            },
+            {
+              "id": "sh_mollusk",
+              "name": "Mollusk",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "clam",
+                "mussel",
+                "oyster",
+                "scallop",
+                "octopus",
+                "squid",
+                "calamari",
+                "snail"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "soy_group",
+          "name": "Soy",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "soy_basic",
+              "name": "Soy",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "soy",
+                "soybean",
+                "tofu",
+                "tempeh",
+                "edamame",
+                "miso",
+                "natto"
+              ]
+            },
+            {
+              "id": "soy_lecithin",
+              "name": "Soy lecithin",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "soy lecithin",
+                "e322"
+              ]
+            },
+            {
+              "id": "soy_oil",
+              "name": "Soybean oil",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "soybean oil",
+                "glycine max oil"
+              ]
+            },
+            {
+              "id": "soy_derivatives",
+              "name": "Soy derivatives",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "soy protein",
+                "hydrolyzed soy protein",
+                "textured vegetable protein",
+                "tvp"
+              ]
+            },
+            {
+              "id": "soy_fed_animals",
+              "name": "Products from soy-fed animals",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "beef",
+                "chicken",
+                "pork",
+                "eggs",
+                "dairy"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "spices_group",
+          "name": "Spices",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "spice_allspice",
+              "name": "Allspice",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "allspice",
+                "pimenta dioica"
+              ]
+            },
+            {
+              "id": "spice_anise",
+              "name": "Anise",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "anise",
+                "aniseed",
+                "pimpinella anisum"
+              ]
+            },
+            {
+              "id": "spice_pepper",
+              "name": "Black pepper",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "black pepper",
+                "peppercorn",
+                "piper nigrum"
+              ]
+            },
+            {
+              "id": "spice_cinnamon",
+              "name": "Cinnamon",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "cinnamon",
+                "cassia",
+                "cinnamomum"
+              ]
+            },
+            {
+              "id": "spice_cloves",
+              "name": "Cloves",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "cloves",
+                "syzygium aromaticum"
+              ]
+            },
+            {
+              "id": "spice_coriander",
+              "name": "Coriander (cilantro)",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "coriander",
+                "cilantro",
+                "coriandrum sativum"
+              ]
+            },
+            {
+              "id": "spice_fennel",
+              "name": "Fennel",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "fennel",
+                "foeniculum vulgare"
+              ]
+            },
+            {
+              "id": "spice_ginger",
+              "name": "Ginger",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "ginger",
+                "zingiber officinale"
+              ]
+            },
+            {
+              "id": "spice_nutmeg",
+              "name": "Nutmeg",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "nutmeg",
+                "myristica fragrans"
+              ]
+            },
+            {
+              "id": "spice_turmeric",
+              "name": "Turmeric",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "turmeric",
+                "curcuma",
+                "curcumin"
+              ]
+            },
+            {
+              "id": "spice_vanilla",
+              "name": "Vanilla",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "vanilla",
+                "vanilla extract",
+                "vanillin"
+              ]
+            },
+            {
+              "id": "spice_other",
+              "name": "Other common spices",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "cardamom",
+                "cumin",
+                "mace",
+                "saffron",
+                "star anise"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sweeteners_group",
+          "name": "Sweeteners",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "sw_acesulfame",
+              "name": "Acesulfame / sunett",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "acesulfame k",
+                "acesulfame potassium",
+                "sunett",
+                "e950"
+              ]
+            },
+            {
+              "id": "sw_allulose",
+              "name": "Allulose",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "allulose",
+                "psicose"
+              ]
+            },
+            {
+              "id": "sw_aspartame",
+              "name": "Aspartame / equal",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "aspartame",
+                "equal",
+                "nutrasweet",
+                "e951"
+              ]
+            },
+            {
+              "id": "sw_monk_fruit",
+              "name": "Monk fruit",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "monk fruit",
+                "luo han guo"
+              ]
+            },
+            {
+              "id": "sw_saccharin",
+              "name": "Saccharin / sweet n' low",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "saccharin",
+                "sweet n low",
+                "e954"
+              ]
+            },
+            {
+              "id": "sw_stevia",
+              "name": "Stevia / truvia",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "stevia",
+                "truvia",
+                "steviol glycosides",
+                "e960"
+              ]
+            },
+            {
+              "id": "sw_sucralose",
+              "name": "Sucralose / splenda",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "sucralose",
+                "splenda",
+                "e955"
+              ]
+            },
+            {
+              "id": "sw_sugar_alcohols",
+              "name": "Sugar alcohols",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "sorbitol",
+                "xylitol",
+                "erythritol",
+                "mannitol",
+                "maltitol",
+                "lactitol",
+                "isomalt",
+                "e420",
+                "e421",
+                "e953",
+                "e965",
+                "e966",
+                "e967",
+                "e968"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "tree_nuts_group",
+          "name": "Tree nut",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "tn_almond",
+              "name": "Almond",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "almond",
+                "prunus dulcis"
+              ]
+            },
+            {
+              "id": "tn_brazil",
+              "name": "Brazil",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "brazil nut",
+                "bertholletia excelsa"
+              ]
+            },
+            {
+              "id": "tn_cashew",
+              "name": "Cashew",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "cashew",
+                "anacardium occidentale"
+              ]
+            },
+            {
+              "id": "tn_chestnut",
+              "name": "Chestnut",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "chestnut",
+                "castanea"
+              ]
+            },
+            {
+              "id": "tn_hazelnut",
+              "name": "Hazelnut",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "hazelnut",
+                "filbert",
+                "corylus"
+              ]
+            },
+            {
+              "id": "tn_macadamia",
+              "name": "Macadamia",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "macadamia"
+              ]
+            },
+            {
+              "id": "tn_pecan",
+              "name": "Pecan",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "pecan",
+                "carya illinoinensis"
+              ]
+            },
+            {
+              "id": "tn_pistachio",
+              "name": "Pistachio",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "pistachio",
+                "pistacia vera"
+              ]
+            },
+            {
+              "id": "tn_walnut",
+              "name": "Walnut",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "walnut",
+                "juglans regia"
+              ]
+            },
+            {
+              "id": "tn_other",
+              "name": "Other tree nuts",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "pine nut",
+                "hickory nut",
+                "butternut",
+                "beech nut"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "vegetables_group",
+          "name": "Vegetables",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "veg_artichoke",
+              "name": "Artichoke",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "artichoke"
+              ]
+            },
+            {
+              "id": "veg_asparagus",
+              "name": "Asparagus",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "asparagus"
+              ]
+            },
+            {
+              "id": "veg_beets",
+              "name": "Beets",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "beets",
+                "beetroot"
+              ]
+            },
+            {
+              "id": "veg_bell_peppers",
+              "name": "Bell peppers",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "bell pepper",
+                "capsicum"
+              ]
+            },
+            {
+              "id": "veg_broccoli",
+              "name": "Broccoli",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "broccoli"
+              ]
+            },
+            {
+              "id": "veg_brussels_sprouts",
+              "name": "Brussels sprouts",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "brussels sprouts"
+              ]
+            },
+            {
+              "id": "veg_cauliflower",
+              "name": "Cauliflower",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "cauliflower"
+              ]
+            },
+            {
+              "id": "veg_cabbage",
+              "name": "Cabbage",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "cabbage"
+              ]
+            },
+            {
+              "id": "veg_carrot",
+              "name": "Carrot",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "carrot"
+              ]
+            },
+            {
+              "id": "veg_cucumber",
+              "name": "Cucumber",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "cucumber"
+              ]
+            },
+            {
+              "id": "veg_kale",
+              "name": "Kale",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "kale"
+              ]
+            },
+            {
+              "id": "veg_lettuce",
+              "name": "Lettuce",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "lettuce",
+                "romaine",
+                "iceberg"
+              ]
+            },
+            {
+              "id": "veg_pickles",
+              "name": "Pickles",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "pickles",
+                "pickled cucumber"
+              ]
+            },
+            {
+              "id": "veg_potato",
+              "name": "Potato",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "potato",
+                "solanum tuberosum"
+              ]
+            },
+            {
+              "id": "veg_spinach",
+              "name": "Spinach",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "spinach"
+              ]
+            },
+            {
+              "id": "veg_squash",
+              "name": "Squash",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "squash",
+                "butternut squash",
+                "pumpkin"
+              ]
+            },
+            {
+              "id": "veg_sweet_potato",
+              "name": "Sweet potato",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "sweet potato",
+                "yam"
+              ]
+            },
+            {
+              "id": "veg_zucchini",
+              "name": "Zucchini",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "zucchini",
+                "courgette"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "vinegar",
+          "name": "Vinegar",
+          "ui_type": "severity_slider",
+          "max_levels": 2,
+          "triggers": [
+            "vinegar",
+            "distilled vinegar",
+            "apple cider vinegar",
+            "balsamic vinegar",
+            "red wine vinegar"
+          ]
+        },
+        {
+          "id": "wheat",
+          "name": "Wheat",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "wheat",
+            "bulgur",
+            "couscous",
+            "durum",
+            "einkorn",
+            "emmer",
+            "farina",
+            "farro",
+            "kamut",
+            "semolina",
+            "spelt",
+            "wheat berries",
+            "wheat germ",
+            "wheat starch",
+            "seitan"
+          ]
+        },
+        {
+          "id": "yeast",
+          "name": "Yeast",
+          "ui_type": "severity_slider",
+          "max_levels": 3,
+          "triggers": [
+            "yeast",
+            "baker's yeast",
+            "brewer's yeast",
+            "yeast extract",
+            "autolyzed yeast",
+            "torula yeast"
+          ]
+        }
+      ]
+    },
+    {
+      "category_id": "medical",
+      "category_name": "Medical Conditions",
+      "items": [
+        {
+          "id": "alzheimers_diet",
+          "name": "Alzheimer’s Disease",
+          "description": "Alzheimer’s Disease is a neurodegenerative disorder in which abnormal protein buildup damages brain cells, leading to progressive memory loss and cognitive decline.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "med_diet_alz",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "processed meats",
+                "refined grains",
+                "sugar-sweetened beverages",
+                "trans fats",
+                "highly processed foods"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "arthritis_diet",
+          "name": "Arthritis",
+          "description": "Arthritis is a general term for conditions that cause joint pain, swelling, stiffness, and reduced range of motion, often due to inflammation or joint damage.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "med_diet_arth",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "refined carbohydrates",
+                "fried foods",
+                "sugar",
+                "processed meats",
+                "omega-6 rich oils"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "celiac_disease",
+          "name": "Celiac Disease",
+          "description": "Celiac Disease is an autoimmune disorder in which ingestion of gluten triggers immune damage to the small intestine, impairing nutrient absorption and causing gastrointestinal symptoms.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "gluten_free_celiac",
+              "name": "Gluten free",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "wheat",
+                "barley",
+                "rye",
+                "spelt",
+                "kamut",
+                "triticale",
+                "malt",
+                "brewer's yeast",
+                "wheat starch"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cirs_condition",
+          "name": "Chronic Inflammatory Response Syndrome (CIRS)",
+          "description": "Chronic Inflammatory Response Syndrome (CIRS) is an emerging condition characterized by persistent inflammation following exposure to biotoxins like mold.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "anti_inflammatory_diet",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "refined sugar",
+                "artificial trans fats",
+                "processed meats",
+                "excessive alcohol",
+                "refined seed oils"
+              ]
+            },
+            {
+              "id": "mold_detox_diet",
+              "name": "Mold detox",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "mushrooms",
+                "yeast",
+                "cheese",
+                "dried fruits",
+                "peanuts",
+                "fermented foods",
+                "alcohol"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "crohns_disease",
+          "name": "Crohn’s Disease",
+          "description": "Crohn’s Disease is a chronic autoimmune condition that causes inflammation anywhere along the gastrointestinal tract, leading to abdominal pain, diarrhea, and malabsorption.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "crohns_fodmap",
+              "name": "Low FODMAP",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "fodmap_fructose",
+                  "name": "Fructose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "high fructose corn syrup",
+                    "honey",
+                    "agave",
+                    "apple",
+                    "pear",
+                    "mango",
+                    "watermelon"
+                  ]
+                },
+                {
+                  "id": "fodmap_lactose",
+                  "name": "Lactose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "soft cheese",
+                    "yogurt",
+                    "custard",
+                    "ice cream"
+                  ]
+                },
+                {
+                  "id": "fodmap_mannitol",
+                  "name": "Mannitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "mushrooms",
+                    "cauliflower",
+                    "celery",
+                    "sweet potato",
+                    "e421"
+                  ]
+                },
+                {
+                  "id": "fodmap_sorbitol",
+                  "name": "Sorbitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "blackberries",
+                    "peaches",
+                    "plums",
+                    "apricots",
+                    "e420"
+                  ]
+                },
+                {
+                  "id": "fodmap_gos",
+                  "name": "GOS",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "chickpeas",
+                    "lentils",
+                    "kidney beans",
+                    "soybeans"
+                  ]
+                },
+                {
+                  "id": "fodmap_fructans",
+                  "name": "Fructans",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "wheat",
+                    "rye",
+                    "garlic",
+                    "onion",
+                    "inulin",
+                    "artichoke"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "crohns_aip",
+              "name": "Autoimmune protocol (AIP)",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "aip_additives",
+                  "name": "AIP: additives & processed foods",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "carrageenan",
+                    "msg",
+                    "artificial flavors",
+                    "artificial colors",
+                    "gums"
+                  ]
+                },
+                {
+                  "id": "aip_alcohol",
+                  "name": "AIP: alcohol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "alcohol",
+                    "wine",
+                    "beer",
+                    "spirits"
+                  ]
+                },
+                {
+                  "id": "aip_coffee",
+                  "name": "AIP: coffee",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "coffee",
+                    "caffeine"
+                  ]
+                },
+                {
+                  "id": "aip_dairy",
+                  "name": "AIP: dairy",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "butter",
+                    "cheese",
+                    "ghee",
+                    "whey",
+                    "casein"
+                  ]
+                },
+                {
+                  "id": "aip_eggs",
+                  "name": "AIP: eggs",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "eggs",
+                    "egg whites",
+                    "egg yolks",
+                    "albumin"
+                  ]
+                },
+                {
+                  "id": "aip_grains",
+                  "name": "AIP: grains",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "wheat",
+                    "corn",
+                    "rice",
+                    "oats",
+                    "barley",
+                    "quinoa",
+                    "buckwheat"
+                  ]
+                },
+                {
+                  "id": "aip_legumes",
+                  "name": "AIP: legumes",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "beans",
+                    "lentils",
+                    "peanuts",
+                    "soy",
+                    "chickpeas",
+                    "peas"
+                  ]
+                },
+                {
+                  "id": "aip_nightshades",
+                  "name": "AIP: nightshades",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "tomato",
+                    "potato",
+                    "peppers",
+                    "eggplant",
+                    "paprika",
+                    "cayenne"
+                  ]
+                },
+                {
+                  "id": "aip_nuts",
+                  "name": "AIP: nuts",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "almonds",
+                    "walnuts",
+                    "cashews",
+                    "pistachios",
+                    "hazelnuts"
+                  ]
+                },
+                {
+                  "id": "aip_oils",
+                  "name": "AIP: processed oils",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "canola oil",
+                    "soybean oil",
+                    "corn oil",
+                    "sunflower oil",
+                    "safflower oil"
+                  ]
+                },
+                {
+                  "id": "aip_seeds_choc",
+                  "name": "AIP: seeds & chocolate",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "chia seeds",
+                    "flax seeds",
+                    "pumpkin seeds",
+                    "chocolate",
+                    "cocoa",
+                    "cacao"
+                  ]
+                },
+                {
+                  "id": "aip_sugar",
+                  "name": "AIP: sugar",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "sugar",
+                    "cane sugar",
+                    "molasses",
+                    "sucrose"
+                  ]
+                },
+                {
+                  "id": "aip_sweeteners",
+                  "name": "AIP: sweeteners & sugar alcohols",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "stevia",
+                    "aspartame",
+                    "sucralose",
+                    "xylitol",
+                    "sorbitol",
+                    "erythritol"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "crohns_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "red meat",
+                "processed meats",
+                "refined grains",
+                "highly processed snacks"
+              ]
+            },
+            {
+              "id": "crohns_anti_inflammatory",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "refined carbohydrates",
+                "omega-6 oils",
+                "added sugar",
+                "trans fats"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "diabetes_type_2",
+          "name": "Diabetes (Type 2)",
+          "description": "Diabetes (Type 2) is a metabolic disorder characterized by insulin resistance and eventual insulin deficiency, leading to elevated blood sugar.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "veg_diet_dia",
+              "name": "Vegetarian",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "meat",
+                "beef",
+                "pork",
+                "poultry",
+                "fish",
+                "gelatin",
+                "lard"
+              ]
+            },
+            {
+              "id": "med_diet_dia",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "processed sugar",
+                "refined flour",
+                "soda",
+                "trans fats",
+                "processed meat"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "diverticulitis_condition",
+          "name": "Diverticulitis",
+          "description": "Diverticulitis is a condition in which small pouches in the colon wall become inflamed or infected, causing abdominal pain and digestive symptoms.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "low_residue_diet",
+              "name": "Low residue",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "whole grains",
+                "raw vegetables",
+                "seeds",
+                "nuts",
+                "popcorn",
+                "dried fruit",
+                "legumes"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "eczema_condition",
+          "name": "Eczema",
+          "description": "Eczema is a chronic inflammatory skin condition in which the skin barrier becomes impaired, leading to dry, itchy, and inflamed patches.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "gluten_free_eczema",
+              "name": "Gluten free",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "wheat",
+                "barley",
+                "rye",
+                "malt",
+                "brewer's yeast"
+              ]
+            },
+            {
+              "id": "med_diet_eczema",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "highly processed foods",
+                "refined sugar",
+                "red meat"
+              ]
+            },
+            {
+              "id": "anti_inflammatory_eczema",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "dairy",
+                "soy",
+                "corn oil",
+                "nightshades",
+                "added sugar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "endometriosis_condition",
+          "name": "Endometriosis",
+          "description": "Endometriosis is a chronic condition where tissue similar to the lining of the uterus grows outside the uterus, causing inflammation and pain.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "endo_fodmap",
+              "name": "Low FODMAP",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "endo_fructose",
+                  "name": "Fructose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "honey",
+                    "agave",
+                    "high fructose corn syrup",
+                    "apple"
+                  ]
+                },
+                {
+                  "id": "endo_lactose",
+                  "name": "Lactose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "ice cream",
+                    "soft cheese"
+                  ]
+                },
+                {
+                  "id": "endo_mannitol",
+                  "name": "Mannitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "mushrooms",
+                    "sweet potato"
+                  ]
+                },
+                {
+                  "id": "endo_sorbitol",
+                  "name": "Sorbitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "avocado",
+                    "peaches",
+                    "sugar-free gum"
+                  ]
+                },
+                {
+                  "id": "endo_gos",
+                  "name": "GOS",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "beans",
+                    "lentils",
+                    "cashews"
+                  ]
+                },
+                {
+                  "id": "endo_fructans",
+                  "name": "Fructans",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "garlic",
+                    "onion",
+                    "wheat",
+                    "inulin"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "med_diet_endo",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "processed snacks",
+                "refined grains",
+                "red meat"
+              ]
+            },
+            {
+              "id": "anti_inflammatory_endo",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "trans fats",
+                "excessive caffeine",
+                "alcohol",
+                "sugary drinks"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "nafld_condition",
+          "name": "Fatty Liver Disease (NAFLD)",
+          "description": "Fatty Liver Disease (NAFLD) is a condition in which excess fat accumulates in liver cells, often leading to inflammation and liver damage.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "med_diet_nafld",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "added sugar",
+                "high fructose corn syrup",
+                "refined carbohydrates",
+                "saturated fats",
+                "processed meat",
+                "soda"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "galactosemia_condition",
+          "name": "Galactosemia",
+          "description": "Galactosemia is a rare genetic disorder in which the body is unable to metabolize galactose, a sugar found in milk, leading to toxic buildup.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "milk_galactosemia",
+              "name": "Milk",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "milk",
+                "lactose",
+                "galactose",
+                "whey",
+                "casein",
+                "butter",
+                "cheese",
+                "organ meats",
+                "hydrolyzed protein"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "glp1_support",
+          "name": "GLP-1 Support",
+          "description": "GLP‑1 receptor agonists reduce appetite and can slow stomach emptying. These dietary adjustments help manage side effects and support weight loss.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "glp1_fodmap",
+              "name": "Low FODMAP",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "glp1_fructose",
+                  "name": "Fructose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "honey",
+                    "agave",
+                    "apple",
+                    "mango"
+                  ]
+                },
+                {
+                  "id": "glp1_lactose",
+                  "name": "Lactose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "soft cheese",
+                    "yogurt"
+                  ]
+                },
+                {
+                  "id": "glp1_mannitol",
+                  "name": "Mannitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "mushrooms",
+                    "cauliflower"
+                  ]
+                },
+                {
+                  "id": "glp1_sorbitol",
+                  "name": "Sorbitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "avocado",
+                    "peaches",
+                    "e420"
+                  ]
+                },
+                {
+                  "id": "glp1_gos",
+                  "name": "GOS",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "lentils",
+                    "beans"
+                  ]
+                },
+                {
+                  "id": "glp1_fructans",
+                  "name": "Fructans",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "wheat",
+                    "garlic",
+                    "onion",
+                    "inulin"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "glp1_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "highly processed food",
+                "refined sugar",
+                "red meat"
+              ]
+            },
+            {
+              "id": "glp1_gerd",
+              "name": "GERD",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "gerd_alcohol",
+                  "name": "Alcoholic drinks",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "alcohol",
+                    "wine",
+                    "beer",
+                    "vodka"
+                  ]
+                },
+                {
+                  "id": "gerd_caffeine",
+                  "name": "Caffeinated drinks",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "coffee",
+                    "tea",
+                    "energy drinks"
+                  ]
+                },
+                {
+                  "id": "gerd_carbonated",
+                  "name": "Carbonated drinks",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "soda",
+                    "sparkling water",
+                    "carbonated"
+                  ]
+                },
+                {
+                  "id": "gerd_chocolate",
+                  "name": "Chocolates",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "chocolate",
+                    "cocoa",
+                    "cacao"
+                  ]
+                },
+                {
+                  "id": "gerd_citrus",
+                  "name": "Citrus fruits",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "lemon",
+                    "lime",
+                    "orange",
+                    "grapefruit"
+                  ]
+                },
+                {
+                  "id": "gerd_alliums",
+                  "name": "Garlic & onion",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "garlic",
+                    "onion",
+                    "shallots"
+                  ]
+                },
+                {
+                  "id": "gerd_high_fat_dairy",
+                  "name": "High fat dairy",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "whole milk",
+                    "heavy cream",
+                    "full fat cheese"
+                  ]
+                },
+                {
+                  "id": "gerd_fatty_foods",
+                  "name": "Fatty foods",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "fried food",
+                    "deep fried",
+                    "greasy food",
+                    "lard",
+                    "shortening"
+                  ]
+                },
+                {
+                  "id": "gerd_spicy",
+                  "name": "Spicy foods",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "chili",
+                    "hot sauce",
+                    "capsaicin",
+                    "cayenne",
+                    "jalapeno"
+                  ]
+                },
+                {
+                  "id": "gerd_tomato",
+                  "name": "Tomato",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "tomato",
+                    "ketchup",
+                    "marinara",
+                    "tomato sauce"
+                  ]
+                },
+                {
+                  "id": "gerd_other",
+                  "name": "Other GERD triggers",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "mint",
+                    "peppermint",
+                    "spearmint"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gout_condition",
+          "name": "Gout",
+          "description": "Gout is a form of inflammatory arthritis in which uric acid crystals accumulate in joints, causing sudden, severe pain and swelling.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "med_diet_gout",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "red meat",
+                "organ meats",
+                "shellfish",
+                "alcohol",
+                "high fructose corn syrup",
+                "sweetened beverages"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "graves_disease",
+          "name": "Graves’ Disease",
+          "description": "Graves’ Disease is an autoimmune condition in which the immune system stimulates the thyroid gland to produce excess hormones.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "anti_inflammatory_graves",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "processed foods",
+                "refined sugar",
+                "excessive iodine",
+                "trans fats",
+                "refined seed oils"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hashimotos_thyroiditis",
+          "name": "Hashimoto’s Thyroiditis",
+          "description": "Hashimoto’s Thyroiditis is an autoimmune condition in which the immune system attacks the thyroid gland, leading to hypothyroidism.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "gf_hashimoto",
+              "name": "Gluten free",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "wheat",
+                "barley",
+                "rye",
+                "malt",
+                "spelt",
+                "triticale"
+              ]
+            },
+            {
+              "id": "lf_hashimoto",
+              "name": "Lactose free",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "milk",
+                "cheese",
+                "cream",
+                "butter",
+                "lactose",
+                "whey"
+              ]
+            },
+            {
+              "id": "aip_hashimoto",
+              "name": "Autoimmune protocol (AIP)",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "aip_h_additives",
+                  "name": "AIP: additives & processed foods",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "carrageenan",
+                    "msg",
+                    "artificial flavors"
+                  ]
+                },
+                {
+                  "id": "aip_h_alcohol",
+                  "name": "AIP: alcohol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "alcohol",
+                    "beer",
+                    "wine"
+                  ]
+                },
+                {
+                  "id": "aip_h_coffee",
+                  "name": "AIP: coffee",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "coffee",
+                    "caffeine"
+                  ]
+                },
+                {
+                  "id": "aip_h_dairy",
+                  "name": "AIP: dairy",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "whey",
+                    "casein",
+                    "butter"
+                  ]
+                },
+                {
+                  "id": "aip_h_eggs",
+                  "name": "AIP: eggs",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "eggs",
+                    "egg white",
+                    "albumin"
+                  ]
+                },
+                {
+                  "id": "aip_h_grains",
+                  "name": "AIP: grains",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "wheat",
+                    "rice",
+                    "corn",
+                    "oats",
+                    "quinoa"
+                  ]
+                },
+                {
+                  "id": "aip_h_legumes",
+                  "name": "AIP: legumes",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "beans",
+                    "soy",
+                    "peanuts",
+                    "lentils"
+                  ]
+                },
+                {
+                  "id": "aip_h_nightshades",
+                  "name": "AIP: nightshades",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "tomato",
+                    "potato",
+                    "peppers",
+                    "eggplant",
+                    "paprika"
+                  ]
+                },
+                {
+                  "id": "aip_h_nuts",
+                  "name": "AIP: nuts",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "almonds",
+                    "cashews",
+                    "walnuts"
+                  ]
+                },
+                {
+                  "id": "aip_h_oils",
+                  "name": "AIP: processed oils",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "canola oil",
+                    "vegetable oil",
+                    "soybean oil"
+                  ]
+                },
+                {
+                  "id": "aip_h_seeds_choc",
+                  "name": "AIP: seeds & chocolate",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "chia",
+                    "flax",
+                    "chocolate",
+                    "cocoa"
+                  ]
+                },
+                {
+                  "id": "aip_h_sugar",
+                  "name": "AIP: sugar",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "sugar",
+                    "sucrose",
+                    "cane sugar"
+                  ]
+                },
+                {
+                  "id": "aip_h_sweeteners",
+                  "name": "AIP: sweeteners & sugar alcohols",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "xylitol",
+                    "stevia",
+                    "aspartame"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "anti_inf_hashimoto",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "processed sugar",
+                "refined seed oils",
+                "processed meat",
+                "soy"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "heart_disease",
+          "name": "Heart Disease",
+          "description": "Heart Disease involves plaque buildup in arteries that can lead to heart attacks or heart failure.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "vegetarian_heart",
+              "name": "Vegetarian",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "meat",
+                "beef",
+                "pork",
+                "poultry",
+                "fish",
+                "gelatin"
+              ]
+            },
+            {
+              "id": "med_diet_heart",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "saturated fat",
+                "trans fat",
+                "sodium",
+                "refined sugar",
+                "processed meat"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "high_cholesterol",
+          "name": "High Cholesterol",
+          "description": "High cholesterol involves elevated levels of LDL or 'bad' cholesterol in the blood, which contributes to plaque buildup in the arteries.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "veg_diet_chol",
+              "name": "Vegetarian",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "meat",
+                "beef",
+                "pork",
+                "poultry",
+                "fish",
+                "lard",
+                "tallow"
+              ]
+            },
+            {
+              "id": "med_diet_chol",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "saturated fat",
+                "trans fat",
+                "processed meat",
+                "butter",
+                "palm oil",
+                "coconut oil"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "histamine_intolerance",
+          "name": "Histamine Intolerance",
+          "description": "Histamine Intolerance is a condition in which the body cannot efficiently break down histamine, leading to headaches, rashes, and digestive issues.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "low_histamine_diet",
+              "name": "Low histamine",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "aged cheese",
+                "fermented foods",
+                "sauerkraut",
+                "wine",
+                "beer",
+                "processed meat",
+                "tomatoes",
+                "spinach",
+                "shellfish",
+                "vinegar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ibd_condition",
+          "name": "Inflammatory Bowel Disease (IBD)",
+          "description": "IBD is a group of autoimmune conditions, including Crohn’s disease and ulcerative colitis, where chronic inflammation damages the GI tract.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "ibd_fodmap",
+              "name": "Low FODMAP",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "ibd_fructose",
+                  "name": "Fructose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "high fructose corn syrup",
+                    "honey",
+                    "apple",
+                    "mango"
+                  ]
+                },
+                {
+                  "id": "ibd_lactose",
+                  "name": "Lactose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "soft cheese",
+                    "yogurt",
+                    "whey"
+                  ]
+                },
+                {
+                  "id": "ibd_mannitol",
+                  "name": "Mannitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "mushrooms",
+                    "cauliflower",
+                    "e421"
+                  ]
+                },
+                {
+                  "id": "ibd_sorbitol",
+                  "name": "Sorbitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "peaches",
+                    "plums",
+                    "sugar-free gum",
+                    "e420"
+                  ]
+                },
+                {
+                  "id": "ibd_gos",
+                  "name": "GOS",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "beans",
+                    "lentils",
+                    "hummus"
+                  ]
+                },
+                {
+                  "id": "ibd_fructans",
+                  "name": "Fructans",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "garlic",
+                    "onion",
+                    "wheat",
+                    "inulin"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ibd_aip",
+              "name": "Autoimmune protocol (AIP)",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "ibd_aip_additives",
+                  "name": "AIP: additives & processed foods",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "gums",
+                    "carrageenan",
+                    "artificial flavors"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_alcohol",
+                  "name": "AIP: alcohol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "alcohol",
+                    "beer",
+                    "wine"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_coffee",
+                  "name": "AIP: coffee",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "coffee",
+                    "caffeine"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_dairy",
+                  "name": "AIP: dairy",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "cheese",
+                    "butter",
+                    "casein"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_eggs",
+                  "name": "AIP: eggs",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "eggs",
+                    "egg lecithin"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_grains",
+                  "name": "AIP: grains",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "wheat",
+                    "corn",
+                    "rice",
+                    "oats"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_legumes",
+                  "name": "AIP: legumes",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "soy",
+                    "peanuts",
+                    "beans"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_nightshades",
+                  "name": "AIP: nightshades",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "tomato",
+                    "potato",
+                    "peppers"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_nuts",
+                  "name": "AIP: nuts",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "almonds",
+                    "cashews",
+                    "hazelnuts"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_oils",
+                  "name": "AIP: processed oils",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "canola oil",
+                    "soybean oil"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_seeds_choc",
+                  "name": "AIP: seeds & chocolate",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "chia",
+                    "flax",
+                    "chocolate",
+                    "cocoa"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_sugar",
+                  "name": "AIP: sugar",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "cane sugar",
+                    "beet sugar"
+                  ]
+                },
+                {
+                  "id": "ibd_aip_sweeteners",
+                  "name": "AIP: sweeteners & sugar alcohols",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "aspartame",
+                    "xylitol",
+                    "stevia"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ibd_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "red meat",
+                "processed snacks",
+                "refined flour"
+              ]
+            },
+            {
+              "id": "ibd_anti_inflammatory",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "fried foods",
+                "sugar-sweetened beverages",
+                "omega-6 oils"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "insulin_resistance_condition",
+          "name": "Insulin Resistance",
+          "description": "Insulin resistance is a metabolic condition in which cells become less responsive to insulin, leading to elevated blood sugar and increased risk of type 2 diabetes.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "ir_vegetarian",
+              "name": "Vegetarian",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "meat",
+                "beef",
+                "pork",
+                "poultry",
+                "fish",
+                "gelatin"
+              ]
+            },
+            {
+              "id": "ir_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "refined sugar",
+                "high fructose corn syrup",
+                "refined grains",
+                "trans fats",
+                "sugary beverages"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ibs_condition",
+          "name": "Irritable Bowel Syndrome (IBS)",
+          "description": "IBS is a functional gastrointestinal disorder characterized by abdominal pain, bloating, and altered bowel habits without underlying tissue damage.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "ibs_fodmap",
+              "name": "Low FODMAP",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "ibs_fructose",
+                  "name": "Fructose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "honey",
+                    "agave",
+                    "apple",
+                    "pear",
+                    "mango",
+                    "high fructose corn syrup"
+                  ]
+                },
+                {
+                  "id": "ibs_lactose",
+                  "name": "Lactose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "soft cheese",
+                    "yogurt",
+                    "ice cream"
+                  ]
+                },
+                {
+                  "id": "ibs_mannitol",
+                  "name": "Mannitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "mushrooms",
+                    "cauliflower",
+                    "celery"
+                  ]
+                },
+                {
+                  "id": "ibs_sorbitol",
+                  "name": "Sorbitol",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "avocado",
+                    "peaches",
+                    "plums",
+                    "sugar-free gum"
+                  ]
+                },
+                {
+                  "id": "ibs_gos",
+                  "name": "GOS",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "lentils",
+                    "chickpeas",
+                    "beans",
+                    "cashews",
+                    "pistachios"
+                  ]
+                },
+                {
+                  "id": "ibs_fructans",
+                  "name": "Fructans",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "garlic",
+                    "onion",
+                    "wheat",
+                    "rye",
+                    "inulin",
+                    "artichoke"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lupus_condition",
+          "name": "Lupus (Systemic Lupus Erythematosus)",
+          "description": "Lupus is a systemic autoimmune disease in which the immune system attacks healthy tissues, causing inflammation and organ damage throughout the body.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "lupus_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "processed meats",
+                "refined carbohydrates",
+                "sugar",
+                "excessive sodium"
+              ]
+            },
+            {
+              "id": "lupus_anti_inflammatory",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "nightshades",
+                "alfalfa sprouts",
+                "garlic",
+                "refined seed oils",
+                "artificial sweeteners"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mcas_condition",
+          "name": "Mast Cell Activation Syndrome (MCAS)",
+          "description": "MCAS is a condition in which mast cells release excessive inflammatory mediators, leading to symptoms such as hives, flushing, and anaphylaxis-like reactions.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "mcas_low_histamine",
+              "name": "Low histamine",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "aged cheese",
+                "fermented foods",
+                "alcohol",
+                "canned fish",
+                "tomatoes",
+                "spinach",
+                "leftovers",
+                "shellfish"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "metabolic_syndrome",
+          "name": "Metabolic Syndrome",
+          "description": "Metabolic Syndrome is a cluster of abnormalities—including high blood pressure and blood sugar—that increase the risk of heart disease and diabetes.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "met_syn_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "refined sugar",
+                "processed meat",
+                "refined grains",
+                "trans fats",
+                "soda",
+                "added salt"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "non_celiac_gluten_sensitivity",
+          "name": "Non-Celiac Gluten Sensitivity",
+          "description": "A condition where individuals experience symptoms similar to celiac disease when consuming gluten, without autoimmune or allergic markers.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "ncgs_gluten_free",
+              "name": "Gluten free",
+              "ui_type": "severity_slider",
+              "max_levels": 3,
+              "triggers": [
+                "wheat",
+                "barley",
+                "rye",
+                "malt",
+                "brewer's yeast",
+                "triticale",
+                "spelt"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "obesity_management",
+          "name": "Obesity (Weight Loss)",
+          "description": "Effective management focuses on sustainable lifestyle changes to reduce body fat while preserving lean muscle mass.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "obesity_vegetarian",
+              "name": "Vegetarian",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "meat",
+                "beef",
+                "pork",
+                "poultry",
+                "fish",
+                "gelatin",
+                "lard"
+              ]
+            },
+            {
+              "id": "obesity_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "processed sugar",
+                "ultra-processed foods",
+                "fried foods",
+                "refined flour",
+                "sugary beverages"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "osteoarthritis_condition",
+          "name": "Osteoarthritis",
+          "description": "A degenerative joint disease where cartilage wears down over time, leading to pain, stiffness, and reduced mobility.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "oa_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "refined carbohydrates",
+                "sugar",
+                "excessive sodium",
+                "omega-6 rich oils",
+                "processed meats"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "osteoporosis_condition",
+          "name": "Osteoporosis",
+          "description": "A condition in which bones become weak and brittle due to loss of bone density, increasing fracture risk.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "osteo_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "excessive caffeine",
+                "excessive alcohol",
+                "high sodium foods",
+                "sugary drinks"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "psoriasis_condition",
+          "name": "Psoriasis",
+          "description": "A chronic autoimmune skin condition leading to thick, scaly patches and systemic inflammation.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "psor_paleo",
+              "name": "Paleo",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "grains",
+                "dairy",
+                "legumes",
+                "processed sugar",
+                "refined vegetable oils",
+                "white potatoes"
+              ]
+            },
+            {
+              "id": "psor_vegan",
+              "name": "Vegan",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "meat",
+                "dairy",
+                "eggs",
+                "honey",
+                "gelatin",
+                "casein",
+                "whey"
+              ]
+            },
+            {
+              "id": "psor_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "nightshades",
+                "processed foods",
+                "red meat",
+                "refined sugar"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "psoriatic_arthritis",
+          "name": "Psoriatic Arthritis",
+          "description": "Psoriatic Arthritis is an inflammatory arthritis associated with psoriasis, where the immune system attacks joints and connective tissue.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "ps_arth_aip",
+              "name": "Autoimmune protocol (AIP)",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "psa_aip_additives",
+                  "name": "AIP: additives & processed foods",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "carrageenan",
+                    "msg",
+                    "artificial colors"
+                  ]
+                },
+                {
+                  "id": "psa_aip_nightshades",
+                  "name": "AIP: nightshades",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "tomato",
+                    "potato",
+                    "peppers",
+                    "eggplant",
+                    "paprika"
+                  ]
+                },
+                {
+                  "id": "psa_aip_dairy",
+                  "name": "AIP: dairy",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "cheese",
+                    "butter",
+                    "casein",
+                    "whey"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ps_arth_anti_inf",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "refined sugar",
+                "processed meats",
+                "trans fats",
+                "refined grains"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rheumatoid_arthritis",
+          "name": "Rheumatoid Arthritis",
+          "description": "An autoimmune condition in which the immune system attacks the joints, leading to chronic inflammation and joint deformity.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "ra_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "red meat",
+                "highly processed foods",
+                "added sugar",
+                "refined oils"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sibo_condition",
+          "name": "Small Intestinal Bacterial Overgrowth (SIBO)",
+          "description": "A condition where excessive bacteria grow in the small intestine, leading to gas, bloating, and malabsorption.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "sibo_fodmap",
+              "name": "Low FODMAP",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "sibo_fructose",
+                  "name": "Fructose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "honey",
+                    "agave",
+                    "apple",
+                    "mango"
+                  ]
+                },
+                {
+                  "id": "sibo_lactose",
+                  "name": "Lactose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "milk",
+                    "yogurt",
+                    "soft cheese"
+                  ]
+                },
+                {
+                  "id": "sibo_fructans",
+                  "name": "Fructans",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "garlic",
+                    "onion",
+                    "wheat",
+                    "inulin"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "stroke_condition",
+          "name": "Stroke",
+          "description": "A medical emergency in which blood flow to the brain is interrupted, causing potential neurological deficits.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "stroke_med_diet",
+              "name": "Mediterranean diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "excessive sodium",
+                "saturated fat",
+                "trans fat",
+                "processed meat",
+                "sugary drinks"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "thyroid_cancer",
+          "name": "Thyroid Cancer",
+          "description": "A malignancy of the thyroid gland that can disrupt hormone production.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "low_iodine_diet",
+              "name": "Low iodine",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "iodized salt",
+                "sea salt",
+                "seafood",
+                "fish",
+                "seaweed",
+                "kelp",
+                "dairy",
+                "egg yolks",
+                "iodates",
+                "red dye #3"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ulcerative_colitis",
+          "name": "Ulcerative Colitis",
+          "description": "A form of IBD where the immune system causes chronic inflammation and ulcers in the colon lining.",
+          "ui_type": "selection_modal",
+          "sub_options": [
+            {
+              "id": "uc_fodmap",
+              "name": "Low FODMAP",
+              "ui_type": "selection_modal",
+              "sub_options": [
+                {
+                  "id": "uc_fructose",
+                  "name": "Fructose",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "apple",
+                    "pear",
+                    "honey"
+                  ]
+                },
+                {
+                  "id": "uc_gos",
+                  "name": "GOS",
+                  "ui_type": "severity_slider",
+                  "max_levels": 2,
+                  "triggers": [
+                    "lentils",
+                    "beans"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "uc_anti_inf",
+              "name": "Anti-inflammatory diet",
+              "ui_type": "severity_slider",
+              "max_levels": 2,
+              "triggers": [
+                "refined sugar",
+                "corn oil",
+                "processed meats",
+                "alcohol"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+
+
+
+

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/dietDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="I prefer to avoid this"
+        android:textAlignment="center" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/dietSlider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:valueFrom="0"
+        android:valueTo="1"
+        android:stepSize="1" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView android:layout_alignParentStart="true" android:text="Preference" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/labelMiddle" android:layout_centerInParent="true" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/labelEnd" android:layout_alignParentEnd="true" android:text="Intolerance" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+    </RelativeLayout>
+</LinearLayout>

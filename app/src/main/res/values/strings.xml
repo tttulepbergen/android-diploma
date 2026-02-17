@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Scan&amp;Fit</string>
+    <string name="scan_fit"><![CDATA[Scan&Fit]]></string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="let_s_customize_your_experience_nto_meet_your_health_amp_diet_goals"><![CDATA[Let\'s customize your experience\nto meet your health & diet goals.]]></string>
+    <string name="favourites">Favourites</string>
+    <string name="clear_all">Clear All</string>
+    <string name="no_favourite_products">No Favourite Products</string>
+    <string name="no_favourites_description">Products you favorite will appear here for quick access.</string>
+    <string name="favourite_icon_description">Favourite icon</string>
+</resources>
