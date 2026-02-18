@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 
 object NetworkClient {
     private const val BASE_URL = "https://world.openfoodfacts.org/"
-    private const val AI_BASE_URL = "http://192.168.0.12:8080/"
+    private const val AI_BASE_URL = "http://192.168.0.101:8080/" //your ip here
     val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(2, TimeUnit.MINUTES) // Ждать соединения
         .readTimeout(3, TimeUnit.MINUTES)    // Ждать ответа от ИИ

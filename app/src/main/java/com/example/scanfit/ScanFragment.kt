@@ -29,6 +29,9 @@ import java.io.FileOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import okhttp3.RequestBody.Companion.toRequestBody
+import android.content.Intent  //from now for uploading img
+import android.net.Uri
+import androidx.activity.result.contract.ActivityResultContracts
 
 class ScanFragment : Fragment() {
 
@@ -59,6 +62,7 @@ class ScanFragment : Fragment() {
         binding.captureButton.setOnClickListener { takePhoto() }
         binding.btnBrowse.setOnClickListener { findNavController().navigate(R.id.action_nav_scan_to_categoriesFragment) }
         binding.btnSearch.setOnClickListener { findNavController().navigate(R.id.action_nav_scan_to_searchFragment) }
+        binding.btnUpload.setOnClickListener { openGallery() }
     }
 
     private fun startCamera() {
@@ -153,4 +157,31 @@ class ScanFragment : Fragment() {
         cameraExecutor.shutdown()
         _binding = null
     }
+
+    private val galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val file = uriToFile(it)
+            val compressed = getCompressedFile(file)
+            analyzeImageWithAi(compressed)
+            file.delete()
+        }
+    }
+    private fun uriToFile(uri: Uri): File {
+        val inputStream = requireContext().contentResolver.openInputStream(uri)
+        val file = File(requireContext().cacheDir, "gallery_${System.currentTimeMillis()}.jpg")
+        val outputStream = FileOutputStream(file)
+
+        inputStream?.copyTo(outputStream)
+
+        inputStream?.close()
+        outputStream.close()
+
+        return file
+    }
+    private fun openGallery() {
+        galleryLauncher.launch("image/*")
+    }
+
 }
