@@ -31,7 +31,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    // Подключаем общую ViewModel для отслеживания калорий
     private val trackerViewModel: TrackerViewModel by activityViewModels()
 
     // Настройка сканера ML Kit
@@ -287,18 +286,32 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun processScannedImage(uri: Uri) {
         lifecycleScope.launch {
             try {
-                Toast.makeText(requireContext(), "AI is analyzing...", Toast.LENGTH_SHORT).show()
+                // 1. Достаем болезни из SharedPreferences
+                val prefs = requireContext().getSharedPreferences("user_settings", android.content.Context.MODE_PRIVATE)
+                val diseasesSet = prefs.getStringSet("user_diseases", emptySet())
+                val healthInfo = diseasesSet?.joinToString(", ") ?: "Ограничений нет"
+
+                Toast.makeText(requireContext(), "AI is analyzing for: $healthInfo", Toast.LENGTH_SHORT).show()
+
+                // 2. Получаем Bitmap
                 val bitmap = uriToBitmap(uri)
-                val aiResponse = FoodAnalyzer.analyzeIngredients(bitmap)
+
+                // 3. Передаем и Bitmap, и healthInfo в анализатор
+                val aiResponse = FoodAnalyzer.analyzeIngredients(bitmap, healthInfo)
+
                 showAnalysisResult(aiResponse)
             } catch (e: Exception) {
                 Log.e("SCAN_DEBUG", "Error: ${e.message}")
+                Toast.makeText(requireContext(), "Analysis failed", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun showAnalysisResult(result: String) {
-        Toast.makeText(requireContext(), "Result received", Toast.LENGTH_LONG).show()
+        // Вместо простого текста можно передать результат в ProductDetailFragment
+        // Или пока просто выводи в лог, чтобы убедиться, что ИИ ответил
+        Log.d("SCAN_DEBUG", "AI Result: $result")
+        Toast.makeText(requireContext(), "AI: $result", Toast.LENGTH_LONG).show()
     }
 
     private fun uriToBitmap(uri: Uri): Bitmap {

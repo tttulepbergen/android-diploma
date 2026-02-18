@@ -1,5 +1,6 @@
 package com.example.scanfit
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -10,6 +11,8 @@ import com.example.scanfit.data.DietItem
 import com.example.scanfit.data.HealthData
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.gson.Gson
+import kotlin.collections.filter
+import kotlin.collections.mutableSetOf
 
 class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
 
@@ -39,6 +42,20 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
         recyclerView.adapter = adapter
 
         view.findViewById<Button>(R.id.btn_finish_setup).setOnClickListener {
+            // 1. Собираем названия выбранных диет/болезней
+            val selectedDiets = mutableSetOf<String>()
+            // Предполагаем, что у вас есть доступ к вашему списку в адаптере
+            // или вы можете отфильтровать healthData
+            healthData.categories.forEach { category ->
+                category.items.filter { it.isSelected }.forEach {
+                    selectedDiets.add(it.name)
+                }
+            }
+
+            // 2. Сохраняем в SharedPreferences
+            val prefs = requireContext().getSharedPreferences("user_settings", Context.MODE_PRIVATE)
+            prefs.edit().putStringSet("user_diseases", selectedDiets).apply()
+
             startActivity(Intent(requireContext(), ScanActivity::class.java))
             requireActivity().finish()
         }

@@ -1,7 +1,9 @@
 package com.example.scanfit
 
+
 import com.example.scanfit.model.Product
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -10,7 +12,6 @@ import retrofit2.http.Query
 
 interface FoodApiService {
 
-    // 1. Поиск по категориям (уже был у тебя)
     @GET("cgi/search.pl?action=process&json=true")
     suspend fun getProductsByCategory(
         @Query("tagtype_0") tagType: String = "categories",
@@ -19,7 +20,6 @@ interface FoodApiService {
         @Query("page_size") pageSize: Int = 20
     ): FoodResponse
 
-    // 2. Поиск по ключевым словам (добавляем для SearchFragment)
     @GET("cgi/search.pl?action=process&json=true")
     suspend fun searchProducts(
         @Query("search_terms") query: String,
@@ -27,9 +27,10 @@ interface FoodApiService {
     ): FoodResponse
 
     @Multipart
-    @POST("analyze-scan")
+    @POST("meal")
     suspend fun analyzeScan(
-        @Part file: MultipartBody.Part
+        @Part file: MultipartBody.Part,
+        @Part("health_info") healthInfo: RequestBody // Добавляем это поле
     ): AnalysisResponse
 }
 
@@ -41,4 +42,4 @@ data class AnalysisResponse(
     val health_score: Int,
     val risks: List<String>,
     val verdict: String
-)
+) : java.io.Serializable

@@ -14,7 +14,6 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
     private var _binding: FragmentForgotPasswordBinding? = null
     private val binding get() = _binding!!
 
-    // Инициализируем Firebase Auth
     private lateinit var auth: FirebaseAuth
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

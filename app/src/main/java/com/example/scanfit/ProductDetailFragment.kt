@@ -24,24 +24,6 @@ import kotlinx.coroutines.launch
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ... (ваши импорты остаются прежними)
-
 class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
     private val trackerViewModel: TrackerViewModel by activityViewModels()
@@ -53,6 +35,10 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProductDetailBinding.bind(view)
 
+        // 1. Проверяем, пришли ли данные от ИИ
+        val aiResponse = arguments?.getSerializable("ai_analysis") as? AnalysisResponse
+
+        // 2. Проверяем, пришел ли обычный продукт
         val foodItem = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             arguments?.getSerializable("foodItem", FoodItem::class.java)
         } else {
@@ -60,15 +46,16 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             arguments?.getSerializable("foodItem") as? FoodItem
         }
 
-        foodItem?.let { item ->
-            setupUI(item)
-            saveToRecent(item)
+        if (aiResponse != null) {
+            setupAiUI(aiResponse)
+        } else if (foodItem != null) {
+            setupUI(foodItem)
         }
 
-        binding.btnBack.setOnClickListener {
-            findNavController().navigateUp()
-        }
+        binding.btnBack.setOnClickListener { findNavController().navigateUp() }
     }
+
+
 
     private fun setupUI(item: FoodItem) {
         binding.tvProductName.text = item.title
@@ -220,6 +207,51 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         }
     }
 
+    private fun setupAiUI(response: AnalysisResponse) {
+        binding.tvProductName.text = "AI Analysis Result"
+        binding.tvCategoryLabel.text = "SCANNER"
+
+        // Превращаем числовой score (0-100) в букву (A-E)
+        val aiGrade = when {
+            response.health_score >= 80 -> "A"
+            response.health_score >= 60 -> "B"
+            response.health_score >= 40 -> "C"
+            response.health_score >= 20 -> "D"
+            else -> "E"
+        }
+
+        binding.tvGradeBadge.text = aiGrade
+        setupGradeColor(aiGrade) // Вызываем твой метод для покраски фона
+
+        // Устанавливаем текст вердикта
+        binding.tvAiVerdictDescription.text = response.verdict
+
+        // Заполняем список рисками
+        setupNutrientsFromAi(response.risks)
+
+        // Убираем кнопку "Add this food", так как у нас нет полных данных для трекера
+        binding.btnAddFood.visibility = View.GONE
+    }
+
+    private fun setupNutrientsFromAi(risks: List<String>) {
+        binding.nutrientsContainer.removeAllViews()
+
+        if (risks.isEmpty()) {
+            addNutrientRow("Health Risks", "None detected ✨")
+        } else {
+            risks.forEach { risk ->
+                // Используем ту же функцию отрисовки строк, что и для обычных продуктов
+                addNutrientRow("Risk", risk)
+            }
+        }
+
+        // Скрываем прогресс-бары КБЖУ, так как ИИ при простом сканировании рисков
+        // может не выдать точные граммовки (если твой сервер их не шлет)
+        binding.progressProtein.visibility = View.INVISIBLE
+        binding.progressCarbs.visibility = View.INVISIBLE
+        binding.progressFat.visibility = View.INVISIBLE
+        binding.tvCaloriesValue.text = "AI Scan\nComplete"
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

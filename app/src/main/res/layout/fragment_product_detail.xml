@@ -134,6 +134,7 @@
                 </LinearLayout>
             </LinearLayout>
 
+
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -157,21 +158,23 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tv_verdict_status"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:drawablePadding="8dp"
-                        android:text="✅ Safe for your condition."
+                        android:text="✅ AI Analysis"
                         android:textColor="#4CAF50"
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tv_ai_verdict_description"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:lineSpacingExtra="4dp"
                         android:text="Excellent choice for Diabetes management. This product has a low Glycemic Index (GI) and is rich in dietary fiber."
-                        android:textColor="#666666" />
+                        android:textColor="@color/black" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -301,5 +304,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

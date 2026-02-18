@@ -7,19 +7,32 @@ import java.util.concurrent.TimeUnit
 
 object NetworkClient {
     private const val BASE_URL = "https://world.openfoodfacts.org/"
+    private const val AI_BASE_URL = "http://192.168.0.12:8080/"
+    val okHttpClient = OkHttpClient.Builder()
+        .connectTimeout(2, TimeUnit.MINUTES) // Ждать соединения
+        .readTimeout(3, TimeUnit.MINUTES)    // Ждать ответа от ИИ
+        .writeTimeout(2, TimeUnit.MINUTES)   // Передавать файл
+        .build()
 
-    // Создаем OkHttpClient с увеличенными таймаутами
-    private val okHttpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS) // Таймаут подключения: 30 секунд
-        .readTimeout(30, TimeUnit.SECONDS)   // Таймаут чтения: 30 секунд
-        .writeTimeout(30, TimeUnit.SECONDS)   // Таймаут записи: 30 секунд
-        .retryOnConnectionFailure(true)      // Повторять при ошибке подключения
+    val retrofit = Retrofit.Builder()
+        .baseUrl(AI_BASE_URL)
+        .client(okHttpClient) // Применяем настройки
+        .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     val apiService: FoodApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(okHttpClient) // Используем настроенный OkHttpClient
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(FoodApiService::class.java)
+    }
+
+    val aiApiService: FoodApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(AI_BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(FoodApiService::class.java)
