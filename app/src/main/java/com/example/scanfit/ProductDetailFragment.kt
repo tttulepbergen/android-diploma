@@ -22,8 +22,6 @@ import com.example.scanfit.data.RecentProduct
 import com.example.scanfit.databinding.FragmentProductDetailBinding
 import kotlinx.coroutines.launch
 
-
-
 class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
     private val trackerViewModel: TrackerViewModel by activityViewModels()
@@ -35,10 +33,8 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProductDetailBinding.bind(view)
 
-        // 1. Проверяем, пришли ли данные от ИИ
         val aiResponse = arguments?.getSerializable("ai_analysis") as? AnalysisResponse
 
-        // 2. Проверяем, пришел ли обычный продукт
         val foodItem = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             arguments?.getSerializable("foodItem", FoodItem::class.java)
         } else {
@@ -66,29 +62,23 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             error(R.drawable.ic_launcher_foreground)
         }
 
-        // Парсим значения для прогресс-баров
         val p = item.proteins.replace(',', '.').filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
         val c = item.carbs.replace(',', '.').filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
         val f = item.fat.replace(',', '.').filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
 
-        // Устанавливаем прогресс (умножаем на 2, чтобы 50г был полным кругом, или настрой под себя)
         binding.progressProtein.progress = (p * 2).toInt()
         binding.progressCarbs.progress = (c * 2).toInt()
         binding.progressFat.progress = (f * 2).toInt()
 
-        // 1. Калории (используем значение, которое подготовил toFoodItem)
         binding.tvCaloriesValue.text = "${item.calories}\nper serving"
 
         binding.tvGradeBadge.text = item.grade ?: "B"
         setupGradeColor(item.grade)
 
-        // 2. ЦЕНТРАЛЬНЫЕ КРУГИ (Берем напрямую из FoodItem)
-        // Теперь здесь будет не "0g", а то же самое, что в списке внизу
         binding.tvProteinValue.text = item.proteins
         binding.tvCarbsValue.text = item.carbs
         binding.tvFatValue.text = item.fat
 
-        // 3. НИЖНИЙ СПИСОК
         setupNutrientsList(item)
 
         binding.btnAddFood.setOnClickListener {
@@ -115,8 +105,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private fun setupNutrientsList(item: FoodItem) {
         binding.nutrientsContainer.removeAllViews()
 
-        // Расширяем список нутриентов для информативности
-        // Все эти поля мы добавили в FoodItem и заполнили в toFoodItem
         val nutrientMap = linkedMapOf(
             "Total Fat" to item.fat,
             "Protein" to item.proteins,
@@ -128,7 +116,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         )
 
         for ((name, value) in nutrientMap) {
-            // Проверяем на null или пустую строку, чтобы не плодить пустые строки
             val displayValue = if (value.isNullOrBlank()) "0g" else value
             addNutrientRow(name, displayValue)
         }
@@ -207,30 +194,41 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         }
     }
 
-    private fun setupAiUI(response: AnalysisResponse) {
-        binding.tvProductName.text = "AI Analysis Result"
-        binding.tvCategoryLabel.text = "SCANNER"
 
-        // Превращаем числовой score (0-100) в букву (A-E)
-        val aiGrade = when {
-            response.health_score >= 80 -> "A"
-            response.health_score >= 60 -> "B"
-            response.health_score >= 40 -> "C"
-            response.health_score >= 20 -> "D"
-            else -> "E"
+    private fun setupAiUI(response: AnalysisResponse) {
+        binding.tvProductName.text = "AI Анализ"
+        binding.tvCategoryLabel.text = "СКАНЕР"
+
+        val (color, grade) = when {
+            response.health_score >= 80 -> "#4CAF50" to "A"
+            response.health_score >= 60 -> "#8BC34A" to "B"
+            response.health_score >= 40 -> "#FBC02D" to "C"
+            else -> "#F44336" to "E"
         }
 
-        binding.tvGradeBadge.text = aiGrade
-        setupGradeColor(aiGrade) // Вызываем твой метод для покраски фона
+        binding.tvGradeBadge.text = grade
+        binding.tvGradeBadge.background?.setTint(Color.parseColor(color))
+        binding.tvVerdictStatus.setTextColor(Color.parseColor(color))
+        binding.tvVerdictStatus.text = if (response.health_score < 40) "❌ ОПАСНО" else "✅ БЕЗОПАСНО"
 
-        // Устанавливаем текст вердикта
         binding.tvAiVerdictDescription.text = response.verdict
 
-        // Заполняем список рисками
-        setupNutrientsFromAi(response.risks)
+        response.macros?.let { m ->
+            binding.tvCaloriesValue.text = "${m.calories} kcal\nper portion"
+            binding.tvProteinValue.text = "${m.proteins}g"
+            binding.tvCarbsValue.text = "${m.carbs}g"
+            binding.tvFatValue.text = "${m.fats}g"
 
-        // Убираем кнопку "Add this food", так как у нас нет полных данных для трекера
-        binding.btnAddFood.visibility = View.GONE
+            binding.progressProtein.progress = (m.proteins * 2).toInt()
+            binding.progressCarbs.progress = (m.carbs * 2).toInt()
+            binding.progressFat.progress = (m.fats * 2).toInt()
+
+            binding.progressProtein.visibility = View.VISIBLE
+            binding.progressCarbs.visibility = View.VISIBLE
+            binding.progressFat.visibility = View.VISIBLE
+        }
+
+        setupNutrientsFromAi(response.risks)
     }
 
     private fun setupNutrientsFromAi(risks: List<String>) {
@@ -240,13 +238,10 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             addNutrientRow("Health Risks", "None detected ✨")
         } else {
             risks.forEach { risk ->
-                // Используем ту же функцию отрисовки строк, что и для обычных продуктов
                 addNutrientRow("Risk", risk)
             }
         }
 
-        // Скрываем прогресс-бары КБЖУ, так как ИИ при простом сканировании рисков
-        // может не выдать точные граммовки (если твой сервер их не шлет)
         binding.progressProtein.visibility = View.INVISIBLE
         binding.progressCarbs.visibility = View.INVISIBLE
         binding.progressFat.visibility = View.INVISIBLE

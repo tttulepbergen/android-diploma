@@ -16,7 +16,6 @@ class ResetPasswordFragment : Fragment(R.layout.fragment_reset_password) {
         _binding = FragmentResetPasswordBinding.bind(view)
 
         binding.btnResetPassword.setOnClickListener {
-            // Возвращаемся в самое начало (на логин)
             Toast.makeText(context, "Password updated!", Toast.LENGTH_SHORT).show()
             findNavController().navigate(R.id.action_resetPasswordFragment_to_loginFragment3)
         }

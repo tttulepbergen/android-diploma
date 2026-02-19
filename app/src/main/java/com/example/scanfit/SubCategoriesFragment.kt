@@ -18,16 +18,13 @@ class SubCategoriesFragment : Fragment(R.layout.fragment_sub_categories) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentSubCategoriesBinding.bind(view)
 
-        // 1. Получаем название категории
         val categoryName = arguments?.getString("categoryName") ?: "Fruits & Vegetables"
         binding.tvTitle.text = categoryName
 
-        // 2. Назад
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
 
-        // 3. RecyclerView
         setupRecyclerView(categoryName)
     }
 
@@ -42,7 +39,7 @@ class SubCategoriesFragment : Fragment(R.layout.fragment_sub_categories) {
                 findNavController().navigate(R.id.action_subCategoriesFragment_to_productListFragment, bundle)
             },
             onFavoriteClick = { },
-            showDetails = false // СКРЫВАЕМ
+            showDetails = false
         )
         binding.recyclerView.adapter = adapter
     }

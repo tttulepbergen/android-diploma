@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="#25666666"
+            android:background="#F2F2F2"
             android:padding="20dp">
 
             <LinearLayout
@@ -135,47 +135,51 @@
             </LinearLayout>
 
 
+
             <androidx.cardview.widget.CardView
+                android:id="@+id/cv_verdict_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 app:cardBackgroundColor="#F8F9FB"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="0dp">
+                app:cardElevation="4dp"> <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tv_verdict_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Health Verdict:"
+                    android:textColor="#1A1C1E"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_verdict_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:drawablePadding="12dp"
+                    android:gravity="center_vertical"
+                    android:text="✅ AI Analysis"
+                    android:textColor="#4CAF50"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_ai_verdict_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Health Verdict:"
-                        android:textColor="#1A1C1E"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tv_verdict_status"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:drawablePadding="8dp"
-                        android:text="✅ AI Analysis"
-                        android:textColor="#4CAF50"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tv_ai_verdict_description"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:lineSpacingExtra="4dp"
-                        android:text="Excellent choice for Diabetes management. This product has a low Glycemic Index (GI) and is rich in dietary fiber."
-                        android:textColor="@color/black" />
-                </LinearLayout>
+                    android:layout_marginTop="12dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Analyzing..."
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+            </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <LinearLayout

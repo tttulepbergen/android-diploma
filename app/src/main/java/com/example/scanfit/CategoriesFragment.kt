@@ -29,7 +29,7 @@ class CategoriesFragment : Fragment(R.layout.fragment_categories) {
                 findNavController().navigate(R.id.action_categoriesFragment_to_subCategoriesFragment, bundle)
             },
             onFavoriteClick = { /* логика */ },
-            showDetails = false // СКРЫВАЕМ
+            showDetails = false
         )
 
         binding.recyclerView.apply {
@@ -46,13 +46,12 @@ class CategoriesFragment : Fragment(R.layout.fragment_categories) {
                 findNavController().navigate(R.id.action_categoriesFragment_to_subCategoriesFragment, bundle)
             },
             onFavoriteClick = { },
-            showDetails = false // СКРЫВАЕМ
+            showDetails = false
         )
         binding.recyclerView.adapter = foodAdapter
     }
 
     private fun loadCategories() {
-        // ИСПОЛЬЗУЕМ ИМЕНОВАННЫЕ АРГУМЕНТЫ, чтобы исправить ошибки Type Mismatch
         val localList = listOf(
             FoodItem(title = "Fruits & Vegetables", subtitle = "Fresh picks", imageRes = R.drawable.ic_fruits),
             FoodItem(title = "Breads & Carbs", subtitle = "Bakery", imageRes = R.drawable.ic_bread),

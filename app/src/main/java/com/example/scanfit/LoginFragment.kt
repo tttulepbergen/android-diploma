@@ -16,30 +16,24 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentLoginBinding.bind(view)
 
-        // Переход на восстановление пароля
         binding.tvForgotPassword.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment3_to_forgotPasswordFragment)
         }
 
-        // Переход на регистрацию
         binding.tvSignUp.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment3_to_signUpFragment)
         }
 
-        // Кнопка логина с интеграцией Firebase
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
             if (email.isNotEmpty() && password.isNotEmpty()) {
-                // Пытаемся войти через Firebase
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            // Если вход успешен, переходим в ProfileFragment2 согласно схеме
                             findNavController().navigate(R.id.action_loginFragment3_to_profileFragment2)
                         } else {
-                            // Если ошибка (неверный пароль и т.д.), выводим сообщение
                             Toast.makeText(
                                 context,
                                 "Ошибка: ${task.exception?.message}",

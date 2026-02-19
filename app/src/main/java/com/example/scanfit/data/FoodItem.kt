@@ -16,23 +16,22 @@ data class HealthCategory(
 data class DietItem(
     val id: String,
     val name: String,
-    val ui_type: String, // "selection_modal", "severity_slider", "simple_toggle"
-    var isSelected: Boolean = false, // Новое поле для отслеживания выбора
-    val max_levels: Int? = 2, // Добавьте эту строку. По умолчанию будет 2 уровня.
+    val ui_type: String,
+    var isSelected: Boolean = false,
+    val max_levels: Int? = 2,
     val sub_options: List<SubOption>? = null,
     val triggers: List<String>? = null,
-    var category_name: String? = null // Поле для хранения имени категории после парсинга
+    var category_name: String? = null
 ) : Serializable
 
 data class SubOption(
     val id: String,
     val name: String,
-    val ui_type: String? = "severity_slider", // По умолчанию ползунок
+    val ui_type: String? = "severity_slider",
     val triggers: List<String>? = null,
-    val max_levels: Int? = null    // И это
+    val max_levels: Int? = null
 ) : Serializable
 
-// Модель для продуктов (сканирование)
 data class FoodItem(
     val title: String,
     val subtitle: String? = null,

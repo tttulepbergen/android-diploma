@@ -9,16 +9,13 @@ data class Product(
     @SerializedName("image_url") val imageUrl: String?,
     @SerializedName("nutriscore_grade") val nutriscoreGrade: String?,
 
-    // OpenFoodFacts хранит БЖУ внутри объекта nutriments
     @SerializedName("nutriments") val nutriments: NutrimentsData?,
 
-    // Дублируем калории для надежности (API может прислать их и в корне)
     @SerializedName("energy-kcal_100g") val energyKcal100g: Double?,
     @SerializedName("serving_size") val servingSize: String?,
     @SerializedName("quantity") val quantity: String?
 )
 
-// Файл: Product.kt
 data class NutrimentsData(
     @SerializedName("energy-kcal_100g") val energyKcal100g: Double?,
     @SerializedName("energy-kcal_serving") val energyKcalServing: Double?,

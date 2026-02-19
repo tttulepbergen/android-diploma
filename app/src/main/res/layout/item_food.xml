@@ -1,33 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp"
-    android:background="?android:attr/selectableItemBackground">
+    android:background="#F2F2F2"> <androidx.cardview.widget.CardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"> <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="9dp">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_image"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         app:cardCornerRadius="10dp"
         app:cardElevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/iv_food_icon"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            app:cardCornerRadius="10dp"
             android:src="@drawable/ic_launcher_foreground" />
     </androidx.cardview.widget.CardView>
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_marginStart="16dp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/iv_favorite"
         app:layout_constraintStart_toEndOf="@id/cv_image"
@@ -46,18 +57,18 @@
             android:id="@+id/tv_food_subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:text="Brand info"
             android:textColor="#9E9E9E"
-            android:textSize="12sp"
-            android:layout_marginTop="4dp" />
+            android:textSize="12sp" />
 
         <LinearLayout
             android:id="@+id/layout_calories_grade"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
             android:gravity="center_vertical"
-            android:layout_marginTop="4dp">
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/tv_calories"
@@ -67,18 +78,13 @@
                 android:textColor="#666666"
                 android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/tv_grade"
-                android:layout_width="24dp"
+            <ImageView
+                android:id="@+id/iv_nutri_score"
+                android:layout_width="wrap_content"
                 android:layout_height="24dp"
                 android:layout_marginStart="8dp"
-                android:gravity="center"
-                android:text="A"
-                android:textColor="@android:color/white"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:background="@drawable/grade_background"
-                android:visibility="gone" />
+                android:adjustViewBounds="true"
+                android:visibility="visible" />
         </LinearLayout>
     </LinearLayout>
 
@@ -86,10 +92,10 @@
         android:id="@+id/iv_favorite"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:padding="8dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_favourites"
         android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="8dp"
+        android:src="@drawable/ic_favourites"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/iv_arrow"
         app:layout_constraintTop_toTopOf="parent" />
@@ -105,4 +111,5 @@
         app:tint="#D1D1D1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
+</androidx.cardview.widget.CardView>
+</FrameLayout>

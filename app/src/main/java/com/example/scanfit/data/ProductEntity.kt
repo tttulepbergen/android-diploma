@@ -18,7 +18,7 @@ data class ProductEntity(
 
 @Entity(tableName = "favorites_table")
 data class FavoriteProduct(
-    @PrimaryKey val id: String, // barcode
+    @PrimaryKey val id: String,
     val productName: String,
     val name: String,
     val imageUrl: String?,

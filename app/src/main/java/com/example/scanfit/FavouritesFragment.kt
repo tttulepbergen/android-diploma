@@ -23,7 +23,6 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
         val database = AppDatabase.getDatabase(requireContext())
         setupRecyclerView()
 
-        // Слушаем изменения в базе данных через Flow
         viewLifecycleOwner.lifecycleScope.launch {
             database.productDao().getAllFavorites().collect { favoriteList ->
                 if (favoriteList.isEmpty()) {
@@ -33,27 +32,23 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
                     binding.layoutEmptyState.visibility = View.GONE
                     binding.rvFavorites.visibility = View.VISIBLE
 
-                    // Маппим данные из Entity базы данных в модель для UI
                     val foodItems = favoriteList.map { favorite ->
                         FoodItem(
-                            title = favorite.name,
-                            subtitle = "",
-                            imageUrl = favorite.imageUrl,
+                            title = favorite.productName,
+                            subtitle = favorite.name ?: "Unknown Brand",                            imageUrl = favorite.imageUrl,
                             calories = favorite.calories,
                             grade = favorite.grade,
-                            isFavorite = true // В этом экране все элементы — избранные
+                            isFavorite = true
                         )
                     }
 
-                    // Передаем true в параметр showFavoriteIcon, так как здесь нам НУЖНЫ сердечки
                     binding.rvFavorites.adapter = FoodAdapter(
                         items = foodItems,
-                        showFavoriteIcon = true, // Показываем иконку (сердечко)
+                        showFavoriteIcon = true,
                         onItemClick = { item ->
-                            // Тут будет переход на экран деталей, если нужно
+
                         },
                         onFavoriteClick = { item ->
-                            // Удаление из базы при нажатии на сердечко
                             viewLifecycleOwner.lifecycleScope.launch {
                                 val favoriteToDelete = favoriteList.find { it.name == item.title }
                                 favoriteToDelete?.let {
@@ -66,10 +61,9 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
             }
         }
 
-        // Логика для кнопки "Clear All" (если она есть в XML)
         binding.btnClearAll?.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
-                database.productDao().deleteAllFavorites() // Call the "Clear All" method
+                database.productDao().deleteAllFavorites()
             }
         }
     }
@@ -78,8 +72,6 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
         binding.rvFavorites.layoutManager = LinearLayoutManager(requireContext())
     }
 
-    // Метод loadFavorites() тебе больше не нужен, так как Flow в onViewCreated
-    // сам обновляет список автоматически при любых изменениях в базе.
 
     override fun onDestroyView() {
         super.onDestroyView()

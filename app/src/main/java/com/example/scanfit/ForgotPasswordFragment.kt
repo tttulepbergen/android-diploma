@@ -22,7 +22,6 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
 
         auth = FirebaseAuth.getInstance()
 
-        // Кнопка "Send reset link" (убедись, что ID в XML совпадает)
         binding.btnSendReset.setOnClickListener {
             val email = binding.etEmailForgot.text.toString().trim()
 
@@ -33,21 +32,17 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
             }
         }
 
-        // Ссылка "Back to Login"
         binding.tvBackToLogin.setOnClickListener {
             findNavController().popBackStack()
         }
     }
 
     private fun sendResetCode(email: String) {
-        // 1. Генерируем случайный 6-значный PIN-код
         val generatedPin = (100000..999999).random().toString()
 
-        // 2. Отправляем запрос в Firebase
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Письмо ушло! Теперь передаем сгенерированный PIN на следующий экран
                     val bundle = Bundle().apply {
                         putString("user_email", email)
                         putString("correct_pin", generatedPin)
@@ -56,13 +51,11 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
 
                     Toast.makeText(context, "Код отправлен на вашу почту", Toast.LENGTH_SHORT).show()
 
-                    // Переходим на экран Verify PIN
                     findNavController().navigate(
                         R.id.action_forgotPasswordFragment_to_verifyPinFragment,
                         bundle
                     )
                 } else {
-                    // Если почта не найдена в базе или нет интернета
                     Toast.makeText(
                         context,
                         "Ошибка: ${task.exception?.message}",

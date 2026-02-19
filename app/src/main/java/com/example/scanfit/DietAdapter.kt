@@ -37,7 +37,6 @@ class DietAdapter(
             val diet = items[position] as DietItem
             holder.nameText.text = diet.name
 
-            // Установка stroke цвета #589BFF если элемент выбран
             if (diet.isSelected) {
                 holder.itemView.setBackgroundResource(R.drawable.bg_diet_chip_selected)
                 holder.nameText.setTextColor(android.graphics.Color.parseColor("#589BFF"))
@@ -60,6 +59,5 @@ class DietAdapter(
 
     class DietViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val nameText: TextView = view.findViewById(R.id.dietName)
-        // val card: MaterialCardView = view.findViewById(R.id.dietCard) // Раскомментируй, если нужно менять стиль карточки
     }
 }

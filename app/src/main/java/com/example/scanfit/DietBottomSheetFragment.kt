@@ -16,7 +16,6 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
 
     private var dietItem: DietItem? = null
     private var isSubOptionMode = false
-    // Список для хранения ID выбранных чекбоксов
     private val selectedOptions = mutableSetOf<String>()
 
     override fun onCreateView(
@@ -43,15 +42,13 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
 
         saveBtn.setOnClickListener {
             if (dietItem?.ui_type == "selection_modal" && !isSubOptionMode) {
-                // Если мы в режиме выбора чекбоксов и нажали "Next"
                 if (selectedOptions.isNotEmpty()) {
                     isSubOptionMode = true
                     updateUI(view)
                 } else {
-                    // Можно добавить Toast "Please select at least one option"
+
                 }
             } else {
-                // Если мы уже на ползунке или это обычная диета — сохраняем всё
                 val result = Bundle().apply {
                     putBoolean("isSaved", true)
                     putStringArrayList("selected_ids", ArrayList(selectedOptions))
@@ -80,18 +77,16 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
             }
             "selection_modal" -> {
                 if (isSubOptionMode) {
-                    // ЭКРАН 2: Много ползунков
-                    subOptionsContainer.visibility = View.VISIBLE // Используем этот же контейнер для слайдеров
-                    sliderContainer.visibility = View.GONE        // Скрываем одиночный слайдер из XML
+                    subOptionsContainer.visibility = View.VISIBLE
+                    sliderContainer.visibility = View.GONE
                     saveBtn.text = "Save selection"
                     description.text = "Set avoidance level for each selected item"
 
-                    setupMultipleSliders(subOptionsContainer) // Генерируем слайдеры программно
+                    setupMultipleSliders(subOptionsContainer)
                 } else {
-                    // ЭКРАН 1: Множественный выбор чекбоксов
                     sliderContainer.visibility = View.GONE
                     subOptionsContainer.visibility = View.VISIBLE
-                    saveBtn.text = "Next" // Меняем текст кнопки
+                    saveBtn.text = "Next"
                     description.text = "Select all categories you want to avoid"
                     setupCheckboxes(subOptionsContainer)
                 }
@@ -102,11 +97,9 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
     private fun setupMultipleSliders(container: LinearLayout) {
         container.removeAllViews()
 
-        // Фильтруем только те подпункты, которые пользователь выбрал галочками
         val selectedSubOptions = dietItem?.sub_options?.filter { selectedOptions.contains(it.id) }
 
         selectedSubOptions?.forEach { subOption ->
-            // Создаем заголовок для каждого слайдера (например, "Mammalian meats")
             val subTitle = TextView(requireContext()).apply {
                 text = subOption.name
                 textSize = 16f
@@ -114,9 +107,6 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
                 setTextColor(resources.getColor(R.color.black, null)) // Замените на ваш цвет
             }
 
-            // Инфлейтим (раздуваем) макет одного слайдера.
-            // Вам нужно создать отдельный файл layout (например, item_diet_slider.xml),
-            // скопировав туда структуру вашего sliderContainer из основного диалога.
             val sliderView = layoutInflater.inflate(R.layout.item_diet_slider, container, false)
 
             val slider = sliderView.findViewById<Slider>(R.id.dietSlider)
@@ -124,7 +114,6 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
             val labelMiddle = sliderView.findViewById<TextView>(R.id.labelMiddle)
             val subDescription = sliderView.findViewById<TextView>(R.id.dietDescription)
 
-            // Настройка конкретного слайдера на основе данных subOption
             val maxLevels = subOption.max_levels ?: 2
             slider.valueFrom = 0f
             slider.valueTo = (maxLevels - 1).toFloat()
@@ -138,9 +127,7 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
                 labelEnd.text = "Intolerance"
             }
 
-            // Логика текста описания для каждого слайдера
             slider.addOnChangeListener { _, value, _ ->
-                // Здесь можно сохранять результат для каждого ID отдельно в Map
                 subDescription.text = if (value == 0f) "Preference" else "Intolerance"
             }
 
@@ -154,7 +141,6 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
         dietItem?.sub_options?.forEach { option ->
             val checkBox = MaterialCheckBox(requireContext()).apply {
                 text = option.name
-                // Устанавливаем состояние, если пользователь уже что-то выбрал
                 isChecked = selectedOptions.contains(option.id)
 
                 layoutParams = LinearLayout.LayoutParams(
@@ -162,7 +148,6 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply { setMargins(0, 8, 0, 8) }
 
-                // ТЕПЕРЬ ОБРАБАТЫВАЕМ ТОЛЬКО ГАЛОЧКУ, НЕ ПЕРЕХОДИМ СРАЗУ
                 setOnCheckedChangeListener { _, isChecked ->
                     if (isChecked) {
                         selectedOptions.add(option.id)
@@ -182,23 +167,20 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
         val labelMiddle = view.findViewById<TextView>(R.id.labelMiddle)
         val labelEnd = view.findViewById<TextView>(R.id.labelEnd)
 
-        // Читаем количество уровней из объекта (по умолчанию 2)
         val maxLevels = dietItem?.max_levels ?: 2
 
-        // Настраиваем количество точек на слайдере
         slider.valueFrom = 0f
         slider.valueTo = (maxLevels - 1).toFloat()
         slider.stepSize = 1f
 
-        // Настраиваем текстовые подписи под слайдером
         if (maxLevels == 3) {
-            labelMiddle.text = "Intolerance" // В центре
+            labelMiddle.text = "Intolerance"
             labelEnd.visibility = View.VISIBLE
-            labelEnd.text = "Severe"        // Справа
+            labelEnd.text = "Severe"
         } else {
-            labelMiddle.text = ""           // Очищаем центр
+            labelMiddle.text = ""
             labelEnd.visibility = View.VISIBLE
-            labelEnd.text = "Intolerance"   // Справа
+            labelEnd.text = "Intolerance"
         }
 
         val states = if (maxLevels == 3) {
@@ -222,7 +204,6 @@ class DietBottomSheetFragment : BottomSheetDialogFragment() {
             }
         }
 
-        // Устанавливаем начальный текст
         description.text = states[slider.value.toInt()]
     }
 
