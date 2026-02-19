@@ -30,6 +30,7 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             // 3. Получаем данные из полей ввода
             val email = binding.etEmailRegister.text.toString().trim()
             val password = binding.etPasswordRegister.text.toString().trim()
+            val name = binding.etName.text.toString().trim()
 
             // Простая проверка на заполнение
             if (email.isNotEmpty() && password.length >= 6) {
@@ -38,9 +39,16 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
+                            val user = auth.currentUser
+                            val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                                .setDisplayName(name)
+                                .build()
                             // Успешно! Пользователь появится в консоли Firebase
-                            Toast.makeText(context, "Регистрация успешна!", Toast.LENGTH_SHORT).show()
-                            findNavController().navigate(R.id.action_signUpFragment_to_loginFragment3)
+                            user?.updateProfile(profileUpdates)?.addOnCompleteListener {
+                                Toast.makeText(context, "Регистрация успешна!", Toast.LENGTH_SHORT)
+                                    .show()
+                                findNavController().navigate(R.id.action_signUpFragment_to_loginFragment3)
+                            }
                         } else {
                             // Ошибка (например, email уже занят или нет интернета)
                             Toast.makeText(context, "Ошибка: ${task.exception?.message}", Toast.LENGTH_LONG).show()

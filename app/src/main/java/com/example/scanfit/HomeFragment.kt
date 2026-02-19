@@ -25,6 +25,7 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import kotlinx.coroutines.launch
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.auth.FirebaseAuth
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -57,7 +58,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding = FragmentHomeBinding.bind(view)
 
         // 1. Инициализация статичных данных
-        binding.tvGreeting.text = "Hi, Anel"
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val username = currentUser?.displayName ?: "User"
+        binding.tvGreeting.text = "Hi, $username"
 
         // 2. Наблюдение за данными из ViewModel (Калории и Прогресс)
         setupTrackerObserver()

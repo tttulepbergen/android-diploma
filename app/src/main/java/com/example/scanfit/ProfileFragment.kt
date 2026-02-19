@@ -62,21 +62,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             else -> "Prefer not to say"
         }
 
-        if (height.isEmpty() || weight.isEmpty() || birthdate.isEmpty()) {
-            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
-        } else {
-            // СОХРАНЯЕМ В ПАМЯТЬ
-            val prefs = requireContext().getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE)
-            prefs.edit().apply {
-                putString("user_height", height)
-                putString("user_weight", weight)
-                putString("user_gender", gender)
-                putString("user_birthdate", birthdate)
-                apply()
-            }
-
-            findNavController().navigate(R.id.action_profileFragment2_to_dietSelectionFragment)
+        val prefs = requireContext().getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            if (height.isNotEmpty()) putString("user_height", height)
+            if (weight.isNotEmpty()) putString("user_weight", weight)
+            if (birthdate.isNotEmpty()) putString("user_birthdate", birthdate)
+            putString("user_gender", gender)
+            apply()
         }
+
+        findNavController().navigate(R.id.action_profileFragment2_to_dietSelectionFragment)
     }
 
     override fun onDestroyView() {
