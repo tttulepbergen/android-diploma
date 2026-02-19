@@ -2,7 +2,6 @@ package com.example.scanfit.mainNavigation
 
 import android.app.Activity
 import android.app.DatePickerDialog
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.ImageDecoder
@@ -25,13 +24,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
-import com.example.scanfit.mainNavigation.TrackerViewModel
-import com.example.scanfit.analyzer.FoodAnalyzer
 import com.example.scanfit.databinding.FragmentHomeBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
