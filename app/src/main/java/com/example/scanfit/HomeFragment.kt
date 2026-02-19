@@ -206,25 +206,37 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
 
+
+
+
     private fun renderWaterGlasses(count: Int) {
         binding.waterStack.removeAllViews()
 
-        val maxGlasses = 8
+        val maxGlasses = 7
         val glassSize = 40
+        val glassCapacity = 0.25
+        val dailyGoal = 1.74
+
+        binding.waterStack.weightSum = maxGlasses.toFloat()
 
         for (i in 0 until maxGlasses) {
             val imageView = ImageView(requireContext())
+
             val params = LinearLayout.LayoutParams(
+                0,
                 dpToPx(glassSize),
-                dpToPx(glassSize)
+                1f
             ).apply {
-                setMargins(dpToPx(4), 0, dpToPx(4), 0)
+                setMargins(dpToPx(2), 0, dpToPx(2), 0)
             }
             imageView.layoutParams = params
 
             when {
                 i < count -> {
                     imageView.setImageResource(R.drawable.ic_glass_full)
+                    imageView.setOnClickListener {
+                        trackerViewModel.removeWaterGlass()
+                    }
                 }
                 i == count -> {
                     imageView.setImageResource(R.drawable.ic_glass_add)
@@ -237,6 +249,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 }
             }
             binding.waterStack.addView(imageView)
+        }
+
+        val consumed = count * glassCapacity
+        val remaining = dailyGoal - consumed
+
+        binding.tvWaterGoal.text = if (remaining > 0) {
+            String.format("Goal %.2f L left", remaining)
+        } else {
+            "Goal reached! 🎉"
         }
     }
 
