@@ -10,7 +10,7 @@ import com.example.scanfit.databinding.FragmentFavouritesBinding
 import kotlinx.coroutines.launch
 import com.example.scanfit.data.FoodItem
 import com.example.scanfit.data.ProductDao
-
+import androidx.navigation.fragment.findNavController
 class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
 
     private var _binding: FragmentFavouritesBinding? = null
@@ -46,14 +46,15 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
                         items = foodItems,
                         showFavoriteIcon = true,
                         onItemClick = { item ->
-
+                            val bundle = androidx.core.os.bundleOf("foodItem" to item)
+                            findNavController().navigate(
+                                R.id.action_favoritesFragment_to_productDetailFragment,
+                                bundle
+                            )
                         },
                         onFavoriteClick = { item ->
                             viewLifecycleOwner.lifecycleScope.launch {
-                                val favoriteToDelete = favoriteList.find { it.name == item.title }
-                                favoriteToDelete?.let {
-                                    database.productDao().deleteFavorite(it)
-                                }
+                                database.productDao().deleteFavoriteById(item.title)
                             }
                         }
                     )
