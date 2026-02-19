@@ -11,6 +11,8 @@ import com.example.scanfit.data.AppDatabase
 import com.example.scanfit.databinding.FragmentFavouritesBinding
 import kotlinx.coroutines.launch
 import com.example.scanfit.data.FoodItem
+import androidx.navigation.fragment.findNavController
+import androidx.core.os.bundleOf
 
 class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
 
@@ -51,7 +53,11 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
                         items = foodItems,
                         showFavoriteIcon = true, // Показываем иконку (сердечко)
                         onItemClick = { item ->
-                            // Тут будет переход на экран деталей, если нужно
+                            val bundle = bundleOf("foodItem" to item)
+                            findNavController().navigate(
+                                R.id.action_favoritesFragment_to_productDetailFragment,
+                                bundle
+                            )
                         },
                         onFavoriteClick = { item ->
                             // Удаление из базы при нажатии на сердечко

@@ -16,6 +16,7 @@ import com.example.scanfit.databinding.FragmentSearchBinding
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.core.os.bundleOf
 
 // ... (импорты остаются те же)
 import kotlinx.coroutines.Dispatchers
@@ -93,7 +94,12 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
     private fun setupRecyclerView() {
         foodAdapter = FoodAdapter(
             items = emptyList(),
-            onItemClick = { product -> /* Переход к деталям */ },
+            onItemClick = { product ->
+                val bundle = bundleOf("foodItem" to product)
+                findNavController().navigate(
+                    R.id.action_searchFragment_to_productDetailFragment,
+                    bundle
+                ) },
             showFavoriteIcon = true,
             showDetails = true
         )
