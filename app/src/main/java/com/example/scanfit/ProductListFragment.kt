@@ -41,11 +41,23 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
         }
     }
 
-
     private fun setupRecyclerView() {
         foodAdapter = FoodAdapter(
             items = emptyList(),
             onItemClick = { selectedProduct ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val recentEntity = com.example.scanfit.data.RecentProduct(
+                        id = selectedProduct.title,
+                        title = selectedProduct.title,
+                        subtitle = selectedProduct.subtitle,
+                        imageUrl = selectedProduct.imageUrl,
+                        calories = selectedProduct.calories,
+                        grade = selectedProduct.grade,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    database.productDao().insertRecent(recentEntity)
+                }
+
                 val bundle = bundleOf("foodItem" to selectedProduct)
                 findNavController().navigate(R.id.action_productListFragment_to_productDetailFragment, bundle)
             },
