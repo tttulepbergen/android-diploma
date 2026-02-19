@@ -19,16 +19,12 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // Убираем верхнюю панель (Action Bar) для красоты
         supportActionBar?.hide()
 
-        // Задержка 2000 миллисекунд (2 секунды)
         Handler(Looper.getMainLooper()).postDelayed({
-            // Переход в AuthActivity (где наши фрагменты регистрации)
             val intent = Intent(this, AuthActivity::class.java)
             startActivity(intent)
 
-            // finish() нужен, чтобы пользователь не вернулся на Splash кнопкой "Назад"
             finish()
         }, 2000)
     }

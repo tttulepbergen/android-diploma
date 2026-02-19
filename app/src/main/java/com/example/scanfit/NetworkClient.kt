@@ -9,14 +9,14 @@ object NetworkClient {
     private const val BASE_URL = "https://world.openfoodfacts.org/"
     private const val AI_BASE_URL = "http://192.168.0.12:8080/"
     val okHttpClient = OkHttpClient.Builder()
-        .connectTimeout(2, TimeUnit.MINUTES) // Ждать соединения
-        .readTimeout(3, TimeUnit.MINUTES)    // Ждать ответа от ИИ
-        .writeTimeout(2, TimeUnit.MINUTES)   // Передавать файл
+        .connectTimeout(2, TimeUnit.MINUTES)
+        .readTimeout(3, TimeUnit.MINUTES)
+        .writeTimeout(2, TimeUnit.MINUTES)
         .build()
 
     val retrofit = Retrofit.Builder()
         .baseUrl(AI_BASE_URL)
-        .client(okHttpClient) // Применяем настройки
+        .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

@@ -24,7 +24,6 @@
         android:text="@string/clear_all"
         android:textColor="#EB5757"
         android:layout_marginEnd="16dp"
-        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/tv_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tv_title" />
@@ -73,6 +72,7 @@
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
+        android:background="#F2F2F2"
         android:id="@+id/rv_favorites"
         android:layout_width="match_parent"
         android:layout_height="0dp"

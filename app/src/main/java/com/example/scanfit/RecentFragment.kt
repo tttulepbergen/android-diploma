@@ -21,30 +21,25 @@ class RecentFragment : Fragment(R.layout.fragment_recent) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentRecentBinding.bind(view)
 
-        // 1. Инициализируем адаптер
         foodAdapter = FoodAdapter(
             items = emptyList(),
             onItemClick = { selectedItem ->
-                // Переход в детали (убедись, что action ID верный в твоем графе)
                 val bundle = bundleOf("foodItem" to selectedItem)
                 findNavController().navigate(R.id.action_recentFragment_to_productDetailFragment, bundle)
             }
         )
 
-        // 2. Настройка RecyclerView (исправлены ID под твой XML)
         binding.rvRecent.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = foodAdapter
         }
 
-        // 3. Логика кнопки "Clear all"
         binding.btnClearAll.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
                 database.productDao().clearRecent()
             }
         }
 
-        // 4. Подписка на данные из БД
         viewLifecycleOwner.lifecycleScope.launch {
             database.productDao().getAllRecent().collect { recentList ->
                 if (recentList.isEmpty()) {

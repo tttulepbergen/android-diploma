@@ -30,7 +30,6 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProductListBinding.bind(view)
 
-        // Получаем название подкатегории из аргументов
         val subCategory = arguments?.getString("subCategoryName") ?: "Products"
         binding.tvTitle.text = subCategory
 
@@ -44,11 +43,9 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
 
 
     private fun setupRecyclerView() {
-        // Инициализируем адаптер сразу пустым списком
         foodAdapter = FoodAdapter(
             items = emptyList(),
             onItemClick = { selectedProduct ->
-                // Переход на экран деталей
                 val bundle = bundleOf("foodItem" to selectedProduct)
                 findNavController().navigate(R.id.action_productListFragment_to_productDetailFragment, bundle)
             },
@@ -60,7 +57,7 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
 
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = foodAdapter // Теперь адаптер привязан СРАЗУ
+            adapter = foodAdapter
         }
     }
 
@@ -72,14 +69,11 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
                 val response = apiService.getProductsByCategory(category = apiCategory)
                 val favoritesIds = database.productDao().getAllFavoritesOnce().map { it.id }.toSet()
 
-                // В файле ProductListFragment.kt внутри loadProducts:
-
                 val products = response.products.map { product ->
                     val id = product.productName ?: "Unknown"
                     val isFav = favoritesIds.contains(id)
                     val nut = product.nutriments
 
-                    // Калории
                     val energy = nut?.energyKcal100g ?: nut?.energyKcalServing ?: product.energyKcal100g ?: 0.0
 
                     FoodItem(
@@ -90,24 +84,19 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
                         grade = product.nutriscoreGrade?.uppercase() ?: "B",
                         isFavorite = isFav,
 
-                        // БЖУ (используем Double для точности, так как 0.5г белка — это не 0)
                         proteins = "${nut?.proteins100g ?: nut?.proteinsServing ?: 0.0}g",
                         fat = "${nut?.fat100g ?: nut?.fatServing ?: 0.0}g",
                         carbs = "${nut?.carbohydrates100g ?: nut?.carbohydratesServing ?: 0.0}g",
 
-                        // Сахар и клетчатка
                         sugars = "${nut?.sugars100g ?: nut?.sugarsServing ?: 0.0}g",
                         fiber = "${nut?.fiber100g ?: nut?.fiberServing ?: 0.0}g",
 
-                        // НАТРИЙ: Конвертируем граммы в миллиграммы (0.01g -> 10mg)
                         sodium = "${((nut?.sodium100g ?: nut?.sodiumServing ?: 0.0) * 1000).toInt()}mg",
 
-                        // ХОЛЕСТЕРИН: Обычно в мг, если есть в базе
                         cholesterol = "${nut?.cholesterol100g ?: nut?.cholesterolServing ?: 0.0}mg"
                     )
                 }
 
-                // Просто обновляем список в уже существующем адаптере
                 foodAdapter.updateList(products)
 
             } catch (e: Exception) {
@@ -115,15 +104,15 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
+
         }
     }
 
     private fun handleFavoriteAction(item: FoodItem) {
         viewLifecycleOwner.lifecycleScope.launch {
-            val id = item.title // Используем название как ID для простоты
+            val id = item.title
 
             if (item.isFavorite) {
-                // Добавляем в Room
                 val entity = FavoriteProduct(
                     id = id,
                     productName = item.title,
@@ -135,7 +124,6 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
                 database.productDao().insertFavorite(entity)
                 Toast.makeText(context, "Saved to favourites", Toast.LENGTH_SHORT).show()
             } else {
-                // Удаляем из Room
                 database.productDao().deleteFavoriteById(id)
                 Toast.makeText(context, "Removed from favourites", Toast.LENGTH_SHORT).show()
             }

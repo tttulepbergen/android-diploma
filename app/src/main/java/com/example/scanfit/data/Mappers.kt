@@ -6,7 +6,6 @@ import com.example.scanfit.model.Product
 fun Product.toFoodItem(): FoodItem {
     val nutris = this.nutriments
 
-    // Приоритет на порцию, если нет - берем на 100г
     val kcal = nutris?.energyKcalServing ?: nutris?.energyKcal100g ?: 0.0
 
     return FoodItem(
@@ -20,7 +19,6 @@ fun Product.toFoodItem(): FoodItem {
         fat = "${nutris?.fatServing ?: nutris?.fat100g ?: 0.0}g",
         carbs = "${nutris?.carbohydratesServing ?: nutris?.carbohydrates100g ?: 0.0}g",
 
-        // Добавляем логику: порция ИЛИ 100г для всех остальных полей
         cholesterol = "${nutris?.cholesterolServing ?: nutris?.cholesterol100g ?: 0.0}mg",
         sodium = "${nutris?.sodiumServing ?: nutris?.sodium100g ?: 0.0}mg",
         sugars = "${nutris?.sugarsServing ?: nutris?.sugars100g ?: 0.0}g",

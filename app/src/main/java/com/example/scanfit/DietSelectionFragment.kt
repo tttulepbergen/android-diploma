@@ -16,13 +16,11 @@ import kotlin.collections.mutableSetOf
 
 class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
 
-    // 1. Выносим recyclerView на уровень класса
     private lateinit var recyclerView: RecyclerView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Инициализируем переменную
         recyclerView = view.findViewById(R.id.rv_diets)
 
         val layoutManager = FlexboxLayoutManager(context)
@@ -42,17 +40,13 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
         recyclerView.adapter = adapter
 
         view.findViewById<Button>(R.id.btn_finish_setup).setOnClickListener {
-            // 1. Собираем названия выбранных диет/болезней
             val selectedDiets = mutableSetOf<String>()
-            // Предполагаем, что у вас есть доступ к вашему списку в адаптере
-            // или вы можете отфильтровать healthData
             healthData.categories.forEach { category ->
                 category.items.filter { it.isSelected }.forEach {
                     selectedDiets.add(it.name)
                 }
             }
 
-            // 2. Сохраняем в SharedPreferences
             val prefs = requireContext().getSharedPreferences("user_settings", Context.MODE_PRIVATE)
             prefs.edit().putStringSet("user_diseases", selectedDiets).apply()
 

@@ -30,7 +30,7 @@ interface FoodApiService {
     @POST("meal")
     suspend fun analyzeScan(
         @Part file: MultipartBody.Part,
-        @Part("health_info") healthInfo: RequestBody // Добавляем это поле
+        @Part("health_info") healthInfo: RequestBody
     ): AnalysisResponse
 }
 
@@ -41,5 +41,15 @@ data class FoodResponse(
 data class AnalysisResponse(
     val health_score: Int,
     val risks: List<String>,
-    val verdict: String
+    val is_food: Boolean,
+    val product_type: String?,
+    val verdict: String,
+    val macros: AnalysisMacros? = null
+) : java.io.Serializable
+
+data class AnalysisMacros(
+    val calories: Int,
+    val proteins: Float,
+    val carbs: Float,
+    val fats: Float
 ) : java.io.Serializable

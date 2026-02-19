@@ -9,7 +9,7 @@
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Recent Products"
+        android:text="Recent"
         android:textSize="27sp"
         android:textStyle="bold"
         android:layout_margin="16dp"
@@ -24,7 +24,6 @@
         android:text="Clear All"
         android:textColor="#EB5757"
         android:layout_marginEnd="16dp"
-        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/tv_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tv_title" />
@@ -73,6 +72,7 @@
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
+        android:background="#F2F2F2"
         android:id="@+id/rv_recent"
         android:layout_width="match_parent"
         android:layout_height="0dp"

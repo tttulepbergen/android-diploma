@@ -48,7 +48,6 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
                 searchJob = viewLifecycleOwner.lifecycleScope.launch {
                     delay(500)
-                    // ПЕРЕДАЕМ В ФОНОВЫЙ ПОТОК (Dispatchers.IO)
                     fetchRealProducts(query)
                 }
             }
@@ -56,12 +55,10 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
     }
 
     private suspend fun fetchRealProducts(query: String) {
-        // Указываем, что этот блок кода должен работать в потоке для ввода-вывода (IO)
         withContext(Dispatchers.IO) {
             try {
                 android.util.Log.d("SEARCH_CHECK", "Отправляю запрос в API...")
 
-                // Используем твой NetworkClient
                 val response = NetworkClient.apiService.searchProducts(query)
 
                 val foodItems = response.products.map { apiProduct ->
@@ -74,7 +71,6 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                     )
                 }
 
-                // Возвращаемся в Главный поток, чтобы обновить список
                 withContext(Dispatchers.Main) {
                     foodAdapter.updateList(foodItems)
                     android.util.Log.d("SEARCH_CHECK", "Успех! Найдено продуктов: ${foodItems.size}")

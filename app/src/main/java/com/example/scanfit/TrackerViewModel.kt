@@ -19,11 +19,9 @@ class TrackerViewModel : ViewModel() {
     val totalCarbs: LiveData<Float> = _totalCarbs
 
     fun addFoodData(item: FoodItem) {
-        // Калории
         val cal = item.calories?.filter { it.isDigit() }?.toIntOrNull() ?: 0
         _totalCalories.value = (_totalCalories.value ?: 0) + cal
 
-        // БЖУ: заменяем запятую на точку перед парсингом
         fun String?.toCleanFloat(): Float {
             if (this == null) return 0f
             val cleanString = this.replace(',', '.').filter { it.isDigit() || it == '.' }
@@ -35,23 +33,20 @@ class TrackerViewModel : ViewModel() {
         _totalCarbs.value = (_totalCarbs.value ?: 0f) + item.carbs.toCleanFloat()
     }
 
-    // В TrackerViewModel.kt
     private val _waterGlasses = MutableLiveData(0)
     val waterGlasses: LiveData<Int> = _waterGlasses
 
     fun addWaterGlass() {
         val current = _waterGlasses.value ?: 0
-        if (current < 8) { // Например, максимум 8 стаканов
+        if (current < 8) {
             _waterGlasses.value = current + 1
         }
     }
 
-    // В TrackerViewModel.kt
     private val _selectedDate = MutableLiveData(java.util.Calendar.getInstance())
     val selectedDate: LiveData<java.util.Calendar> = _selectedDate
 
     fun setSelectedDate(calendar: java.util.Calendar) {
         _selectedDate.value = calendar
-        // Здесь позже можно добавить загрузку данных из базы именно за этот день
     }
 }

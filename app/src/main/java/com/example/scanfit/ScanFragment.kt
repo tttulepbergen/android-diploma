@@ -61,48 +61,80 @@ class ScanFragment : Fragment() {
         binding.btnSearch.setOnClickListener { findNavController().navigate(R.id.action_nav_scan_to_searchFragment) }
     }
 
+
     private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+        val context = context ?: return // Проверка, что фрагмент еще прикреплен к контексту
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+
         cameraProviderFuture.addListener({
+            // Используем безопасную проверку _binding
+            val currentBinding = _binding ?: return@addListener
+
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
             val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+                it.setSurfaceProvider(currentBinding.viewFinder.surfaceProvider)
             }
-            imageCapture = ImageCapture.Builder().build()
+
+            imageCapture = ImageCapture.Builder()
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                .build()
+
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
             try {
                 cameraProvider.unbindAll()
+                // Используем viewLifecycleOwner только если он доступен
                 cameraProvider.bindToLifecycle(viewLifecycleOwner, cameraSelector, preview, imageCapture)
             } catch (exc: Exception) {
                 Log.e("SCAN_DEBUG", "Use case binding failed", exc)
             }
-        }, ContextCompat.getMainExecutor(requireContext()))
+        }, ContextCompat.getMainExecutor(context))
     }
 
+
+
     private fun takePhoto() {
+        val currentContext = context ?: return
         val imageCapture = imageCapture ?: return
-        val photoFile = File(requireContext().cacheDir, "scan_${System.currentTimeMillis()}.jpg")
+        val photoFile = File(currentContext.cacheDir, "scan_${System.currentTimeMillis()}.jpg")
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-        imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(requireContext()),
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(currentContext),
             object : ImageCapture.OnImageSavedCallback {
+
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    // Сжимаем перед отправкой
-                    val compressedFile = getCompressedFile(photoFile)
-                    analyzeImageWithAi(compressedFile)
-                    photoFile.delete() // Удаляем оригинал
+                    // Проверяем, жив ли фрагмент и binding, прежде чем идти дальше
+                    if (_binding != null && isAdded) {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                val compressedFile = getCompressedFile(photoFile)
+                                withContext(Dispatchers.Main) {
+                                    analyzeImageWithAi(compressedFile)
+                                }
+                            } catch (e: Exception) {
+                                Log.e("SCAN_DEBUG", "Compression failed", e)
+                            }
+                        }
+                    }
                 }
-                override fun onError(exc: ImageCaptureException) {
-                    Log.e("SCAN_DEBUG", "Photo capture failed: ${exc.message}")
+
+                // Тот самый метод, который требовал компилятор:
+                override fun onError(exception: ImageCaptureException) {
+                    Log.e("SCAN_DEBUG", "Photo capture failed: ${exception.message}", exception)
+                    if (isAdded) {
+                        Toast.makeText(currentContext, "Ошибка камеры", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            })
+            }
+        )
     }
 
     private fun getCompressedFile(file: File): File {
         val bitmap = BitmapFactory.decodeFile(file.path)
         val compressedFile = File(requireContext().cacheDir, "compressed_${file.name}")
         val out = FileOutputStream(compressedFile)
-        // 60% качества — идеально для ИИ, чтобы быстро передать по сети
         bitmap.compress(Bitmap.CompressFormat.JPEG, 60, out)
         out.flush()
         out.close()
@@ -112,11 +144,9 @@ class ScanFragment : Fragment() {
 
     private fun analyzeImageWithAi(file: File) {
         val prefs = requireContext().getSharedPreferences("user_settings", android.content.Context.MODE_PRIVATE)
-        // Достаем список
         val diseasesSet = prefs.getStringSet("user_diseases", emptySet())
         val diseasesText = diseasesSet?.joinToString(", ") ?: "Ограничений нет"
 
-        // ЛОГ ПЕРЕД ОТПРАВКОЙ (Мы должны увидеть это в Logcat!)
         Log.d("SCAN_DEBUG", "=== ПОДГОТОВКА ЗАПРОСА ===")
         Log.d("SCAN_DEBUG", "Файл: ${file.name} (${file.length() / 1024} KB)")
         Log.d("SCAN_DEBUG", "Данные здоровья: $diseasesText")

@@ -21,25 +21,21 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProfileBinding.bind(view)
 
-        // 1. Настройка выбора даты (Birthdate)
         binding.etBirthdate.setOnClickListener {
             showDatePicker()
         }
 
-        // 2. Логика кнопки Continue
         binding.btnContinue.setOnClickListener {
             validateAndContinue()
         }
     }
 
     private fun showDatePicker() {
-        // Создаем календарь
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Select your birthdate")
             .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
             .build()
 
-        // Когда пользователь выбрал дату и нажал "ОК"
         datePicker.addOnPositiveButtonClickListener { selection ->
             val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
             val dateString = formatter.format(Date(selection))
@@ -65,7 +61,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         if (height.isEmpty() || weight.isEmpty() || birthdate.isEmpty()) {
             Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
         } else {
-            // СОХРАНЯЕМ В ПАМЯТЬ
             val prefs = requireContext().getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE)
             prefs.edit().apply {
                 putString("user_height", height)
