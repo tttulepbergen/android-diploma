@@ -20,7 +20,7 @@
         android:theme="@style/Theme.ScanFit">
 
         <activity
-            android:name=".SplashActivity"
+            android:name=".utils.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,11 +29,11 @@
         </activity>
 
         <activity
-            android:name=".AuthActivity"
+            android:name=".utils.AuthActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ScanActivity"
+            android:name=".utils.ScanActivity"
             android:exported="false" />
 
     </application>
