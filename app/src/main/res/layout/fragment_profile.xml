@@ -11,7 +11,7 @@
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="A little about yourself"
+        android:text="A little about yourself (optional)"
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="#1A1C1E"
