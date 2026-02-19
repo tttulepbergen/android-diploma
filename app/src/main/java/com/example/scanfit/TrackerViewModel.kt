@@ -43,6 +43,13 @@ class TrackerViewModel : ViewModel() {
         }
     }
 
+    fun removeWaterGlass() {
+        val current = _waterGlasses.value ?: 0
+        if (current > 0) {
+            _waterGlasses.value = current - 1
+        }
+    }
+
     private val _selectedDate = MutableLiveData(java.util.Calendar.getInstance())
     val selectedDate: LiveData<java.util.Calendar> = _selectedDate
 
