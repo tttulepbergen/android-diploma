@@ -23,6 +23,7 @@ fun Product.toFoodItem(): FoodItem {
         sodium = "${nutris?.sodiumServing ?: nutris?.sodium100g ?: 0.0}mg",
         sugars = "${nutris?.sugarsServing ?: nutris?.sugars100g ?: 0.0}g",
         fiber = "${nutris?.fiberServing ?: nutris?.fiber100g ?: 0.0}g",
-        description = this.quantity ?: ""
+        description = this.quantity ?: "",
+        ingredients = this.ingredientsText ?: this.ingredientsTextEn ?: ""
     )
 }

@@ -22,7 +22,7 @@
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:text="Hi, Anel"
+            android:text="Hi, Urer"
             android:textColor="#1A1C1E"
             android:textSize="32sp"
             android:textStyle="bold"
