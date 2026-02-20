@@ -23,5 +23,6 @@ data class FavoriteProduct(
     val name: String,
     val imageUrl: String?,
     val calories: String?,
-    val grade: String?
+    val grade: String?,
+    val ingredients: String? = ""
 )

@@ -1,0 +1,62 @@
+package com.example.scanfit.mainNavigation // Пакет от Sunbekova
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.example.scanfit.data.FoodItem
+import java.util.Calendar // Чистый импорт от Sunbekova
+
+class TrackerViewModel : ViewModel() {
+    private val _totalCalories = MutableLiveData(0)
+    val totalCalories: LiveData<Int> = _totalCalories
+
+    private val _totalProteins = MutableLiveData(0f)
+    val totalProteins: LiveData<Float> = _totalProteins
+
+    private val _totalFat = MutableLiveData(0f)
+    val totalFat: LiveData<Float> = _totalFat
+
+    private val _totalCarbs = MutableLiveData(0f)
+    val totalCarbs: LiveData<Float> = _totalCarbs
+
+    // Логика добавления нутриентов (одинаковая у обоих)
+    fun addFoodData(item: FoodItem) {
+        val cal = item.calories?.filter { it.isDigit() }?.toIntOrNull() ?: 0
+        _totalCalories.value = (_totalCalories.value ?: 0) + cal
+
+        fun String?.toCleanFloat(): Float {
+            if (this == null) return 0f
+            val cleanString = this.replace(',', '.').filter { it.isDigit() || it == '.' }
+            return cleanString.toFloatOrNull() ?: 0f
+        }
+
+        _totalProteins.value = (_totalProteins.value ?: 0f) + item.proteins.toCleanFloat()
+        _totalFat.value = (_totalFat.value ?: 0f) + item.fat.toCleanFloat()
+        _totalCarbs.value = (_totalCarbs.value ?: 0f) + item.carbs.toCleanFloat()
+    }
+
+    private val _waterGlasses = MutableLiveData(0)
+    val waterGlasses: LiveData<Int> = _waterGlasses
+
+    fun addWaterGlass() {
+        val current = _waterGlasses.value ?: 0
+        if (current < 8) {
+            _waterGlasses.value = current + 1
+        }
+    }
+
+    // ТВОЯ ЛОГИКА: Возвращаем удаление стакана воды
+    fun removeWaterGlass() {
+        val current = _waterGlasses.value ?: 0
+        if (current > 0) {
+            _waterGlasses.value = current - 1
+        }
+    }
+
+    private val _selectedDate = MutableLiveData(Calendar.getInstance())
+    val selectedDate: LiveData<Calendar> = _selectedDate
+
+    fun setSelectedDate(calendar: Calendar) {
+        _selectedDate.value = calendar
+    }
+}

@@ -13,7 +13,11 @@ data class Product(
 
     @SerializedName("energy-kcal_100g") val energyKcal100g: Double?,
     @SerializedName("serving_size") val servingSize: String?,
-    @SerializedName("quantity") val quantity: String?
+    @SerializedName("quantity") val quantity: String?,
+
+    @SerializedName("ingredients_text") val ingredientsText: String?,
+    @SerializedName("ingredients_text_en") val ingredientsTextEn: String?
+
 )
 
 data class NutrimentsData(
