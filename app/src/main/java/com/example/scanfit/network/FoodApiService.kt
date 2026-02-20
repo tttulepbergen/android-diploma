@@ -18,20 +18,27 @@ interface FoodApiService {
         @Query("tagtype_0") tagType: String = "categories",
         @Query("tag_contains_0") tagContains: String = "contains",
         @Query("tag_0") category: String,
-        @Query("page_size") pageSize: Int = 20
+        @Query("page_size") pageSize: Int = 20,
+        @Query("fields") fields: String = "product_name,brands,image_url,nutriscore_grade,nutriments,ingredients_text,ingredients_text_en"
     ): FoodResponse
 
     @GET("cgi/search.pl?action=process&json=true")
     suspend fun searchProducts(
         @Query("search_terms") query: String,
-        @Query("page_size") pageSize: Int = 50
+        @Query("page_size") pageSize: Int = 50,
+        @Query("fields") fields: String = "product_name,brands,image_url,nutriscore_grade,nutriments,ingredients_text,ingredients_text_en"
     ): FoodResponse
 
     @Multipart
-    @POST("meal")
+    @POST("analyze-scan")
     suspend fun analyzeScan(
         @Part file: MultipartBody.Part,
         @Part("health_info") healthInfo: RequestBody
+    ): AnalysisResponse
+
+    @POST("ingredient")
+    suspend fun analyzeIngredients(
+        @retrofit2.http.Body data: Map<String, String>
     ): AnalysisResponse
 }
 
@@ -40,17 +47,17 @@ data class FoodResponse(
 )
 
 data class AnalysisResponse(
-    val health_score: Int,
-    val risks: List<String>,
-    val is_food: Boolean,
-    val product_type: String?,
-    val verdict: String,
+    val health_score: Int? = 0,
+    val risks: List<String>? = emptyList(),
+    val is_food: Boolean? = true,
+    val product_type: String? = "unknown",
+    val verdict: String? = "Нет данных",
     val macros: AnalysisMacros? = null
 ) : java.io.Serializable
 
 data class AnalysisMacros(
-    val calories: Int,
-    val proteins: Float,
-    val carbs: Float,
-    val fats: Float
+    val calories: Double? = 0.0,
+    val proteins: Double? = 0.0,
+    val carbs: Double? = 0.0,
+    val fats: Double? = 0.0
 ) : java.io.Serializable

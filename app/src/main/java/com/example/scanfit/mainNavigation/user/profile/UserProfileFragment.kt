@@ -42,7 +42,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         setupButtons()
 
-        binding.toggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
+        binding.toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
                     R.id.btn_my_account -> showAccountInfo()
@@ -57,7 +57,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun showAccountInfo() {
         binding.layoutAccountInfo.visibility = View.VISIBLE
         binding.layoutMeasurements.visibility = View.GONE
-
         binding.btnLogout.visibility = View.VISIBLE
         binding.btnDeleteAccount.visibility = View.VISIBLE
     }
@@ -65,7 +64,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun showMeasurements() {
         binding.layoutAccountInfo.visibility = View.GONE
         binding.layoutMeasurements.visibility = View.VISIBLE
-
         binding.btnLogout.visibility = View.GONE
         binding.btnDeleteAccount.visibility = View.GONE
 
@@ -93,10 +91,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     private fun loadUserMeasurements() {
         val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-
         binding.tvHeightValue.text = prefs.getString("user_height", "not set")
         binding.tvWeightValue.text = prefs.getString("user_weight", "not set")
         binding.tvGenderValue.text = prefs.getString("user_gender", "please select")
+        binding.tvBirthValue.text = prefs.getString("user_birth", "not set")
     }
 
     private fun saveData(key: String, value: String) {
@@ -104,62 +102,16 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         prefs.edit().putString(key, value).apply()
     }
 
-
     private fun setupButtons() {
         binding.btnLogout.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             Toast.makeText(requireContext(), "Logged out", Toast.LENGTH_SHORT).show()
-
             requireActivity().finish()
         }
 
         binding.btnDeleteAccount.setOnClickListener {
             Toast.makeText(requireContext(), "Delete feature coming soon", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun showGenderPicker() {
-        val options = arrayOf("Gal", "Guy", "Prefer not to say")
-        AlertDialog.Builder(requireContext())
-            .setTitle("Select Gender")
-            .setItems(options) { _, which ->
-                val selected = options[which]
-                binding.tvGenderValue.text = selected
-                saveData("user_gender", selected)
-            }
-            .show()
-    }
-
-    private fun showWeightInputDialog() {
-        val input = EditText(requireContext())
-        input.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-        input.setPadding(50, 40, 50, 40)
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("My current weight is")
-            .setView(input)
-            .setPositiveButton("Save") { _, _ ->
-                val newWeight = input.text.toString()
-                if (newWeight.isNotEmpty()) {
-                    binding.tvWeightValue.text = "$newWeight kg"
-                    saveData("user_weight", "$newWeight kg")
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun showHeightPicker() {
-        val heights = (140..220).map { "$it cm" }.toTypedArray()
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("My height is")
-            .setItems(heights) { _, which ->
-                val selectedHeight = heights[which]
-                binding.tvHeightValue.text = selectedHeight
-                saveData("user_height", selectedHeight)
-            }
-            .show()
     }
 
     private fun showPickerSheet(title: String, options: Array<String>, key: String, textView: TextView) {
@@ -176,7 +128,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         picker.wrapSelectorWheel = false
 
         btnCancel.setOnClickListener { dialog.dismiss() }
-
         btnDone.setOnClickListener {
             val selectedValue = options[picker.value]
             textView.text = selectedValue
@@ -201,7 +152,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         datePicker.visibility = View.VISIBLE
 
         btnCancel.setOnClickListener { dialog.dismiss() }
-
         btnDone.setOnClickListener {
             val dateString = "${datePicker.dayOfMonth}.${datePicker.month + 1}.${datePicker.year}"
             binding.tvBirthValue.text = dateString
@@ -217,13 +167,13 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val dialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.layout_picker_bottom_sheet, null)
 
-        val container = view.findViewById<android.widget.LinearLayout>(R.id.number_picker).parent as android.widget.LinearLayout
-        view.findViewById<android.widget.NumberPicker>(R.id.number_picker).visibility = View.GONE
+        val container = view.findViewById<NumberPicker>(R.id.number_picker).parent as LinearLayout
+        view.findViewById<NumberPicker>(R.id.number_picker).visibility = View.GONE
 
         val input = EditText(requireContext()).apply {
             inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
             hint = "Enter value"
-            textSize = 24f // Изменили sp на f
+            textSize = 24f
             gravity = Gravity.CENTER
         }
         container.addView(input)
@@ -243,7 +193,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         dialog.setContentView(view)
         dialog.show()
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

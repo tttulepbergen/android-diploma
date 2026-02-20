@@ -12,5 +12,6 @@ data class RecentProduct(
     val imageUrl: String?,
     val calories: String?,
     val grade: String?,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val ingredients: String? = ""
 ) : Serializable

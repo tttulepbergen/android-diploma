@@ -135,7 +135,6 @@
             </LinearLayout>
 
 
-
             <androidx.cardview.widget.CardView
                 android:id="@+id/cv_verdict_card"
                 android:layout_width="match_parent"
@@ -143,43 +142,61 @@
                 android:layout_marginTop="24dp"
                 app:cardBackgroundColor="#F8F9FB"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"> <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                app:cardElevation="4dp">
 
-                <TextView
-                    android:id="@+id/tv_verdict_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Health Verdict:"
-                    android:textColor="#1A1C1E"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tv_verdict_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:drawablePadding="12dp"
-                    android:gravity="center_vertical"
-                    android:text="✅ AI Analysis"
-                    android:textColor="#4CAF50"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tv_ai_verdict_description"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:lineSpacingExtra="4dp"
-                    android:text="Analyzing..."
-                    android:textColor="@color/black"
-                    android:textSize="15sp" />
-            </LinearLayout>
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tv_verdict_label"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="Health Verdict:"
+                            android:textColor="#1A1C1E"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <ProgressBar
+                            android:id="@+id/ai_progress_bar"
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_verdict_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:drawablePadding="12dp"
+                        android:gravity="center_vertical"
+                        android:text="✅ AI Analysis"
+                        android:textColor="#4CAF50"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_ai_verdict_description"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:lineSpacingExtra="4dp"
+                        android:text="Analyzing..."
+                        android:textColor="@color/black"
+                        android:textSize="15sp" />
+                </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <LinearLayout
@@ -190,6 +207,7 @@
                 android:orientation="horizontal">
 
                 <LinearLayout
+                    android:id="@+id/macros_container"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"

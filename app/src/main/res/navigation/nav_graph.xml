@@ -73,15 +73,12 @@
     </fragment>
 
     <fragment
-        android:id="@+id/homeFragment"
-        android:name="com.example.scanfit.mainNavigation.HomeFragment"
-        android:label="HomeFragment" >
+        android:id="@+id/dietSelectionFragment"
+        android:name="com.example.scanfit.mainNavigation.user.profile.DietSelectionFragment"
+        android:label="DietSelectionFragment" >
         <action
-            android:id="@+id/action_homeFragment_to_userProfileFragment"
-            app:destination="@id/userProfileFragment" />
-        <action
-            android:id="@+id/action_homeFragment_to_nav_scan"
-            app:destination="@id/nav_scan" />
+            android:id="@+id/action_dietSelectionFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
     </fragment>
 
     <fragment
@@ -94,13 +91,52 @@
     </fragment>
 
     <fragment
-        android:id="@+id/subCategoriesFragment"
-        android:name="com.example.scanfit.mainNavigation.browse.categories.SubCategoriesFragment"
-        android:label="fragment_sub_categories"
-        tools:layout="@layout/fragment_sub_categories" >
+        android:id="@+id/homeFragment"
+        android:name="com.example.scanfit.mainNavigation.HomeFragment"
+        android:label="HomeFragment" >
         <action
-            android:id="@+id/action_subCategoriesFragment_to_productListFragment"
-            app:destination="@id/productListFragment" />
+            android:id="@+id/action_homeFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_categoriesFragment"
+            app:destination="@id/categoriesFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_nav_scan"
+            app:destination="@id/nav_scan" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.scanfit.mainNavigation.HomeFragment"
+        android:label="Tracker" >
+        <action
+            android:id="@+id/action_homeFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_scan"
+        android:name="com.example.scanfit.mainNavigation.scan.ScanFragment"
+        android:label="Scan"
+        tools:layout="@layout/fragment_scan" >
+        <action
+            android:id="@+id/action_nav_scan_to_categoriesFragment"
+            app:destination="@id/categoriesFragment" />
+        <action
+            android:id="@+id/action_nav_scan_to_searchFragment"
+            app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_nav_scan_to_productDetailFragment"
+            app:destination="@id/productDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_recent"
+        android:name="com.example.scanfit.mainNavigation.RecentFragment"
+        android:label="Recent" >
+        <action
+            android:id="@+id/action_recentFragment_to_productDetailFragment"
+            app:destination="@id/productDetailFragment" />
     </fragment>
 
     <fragment
@@ -110,6 +146,16 @@
         <action
             android:id="@+id/action_categoriesFragment_to_subCategoriesFragment"
             app:destination="@id/subCategoriesFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/subCategoriesFragment"
+        android:name="com.example.scanfit.mainNavigation.browse.categories.SubCategoriesFragment"
+        android:label="fragment_sub_categories"
+        tools:layout="@layout/fragment_sub_categories" >
+        <action
+            android:id="@+id/action_subCategoriesFragment_to_productListFragment"
+            app:destination="@id/productListFragment" />
     </fragment>
 
     <fragment
@@ -146,52 +192,6 @@
         <action
             android:id="@+id/action_searchFragment_to_productDetailFragment"
             app:destination="@id/productDetailFragment" />
-    </fragment>
-
-
-    <fragment
-        android:id="@+id/nav_scan"
-        android:name="com.example.scanfit.mainNavigation.scan.ScanFragment"
-        android:label="Scan"
-        tools:layout="@layout/fragment_scan" >
-
-        <action
-            android:id="@+id/action_nav_scan_to_categoriesFragment"
-            app:destination="@id/categoriesFragment" />
-
-        <action
-            android:id="@+id/action_nav_scan_to_searchFragment"
-            app:destination="@id/searchFragment" />
-
-        <action
-            android:id="@+id/action_nav_scan_to_productDetailFragment"
-            app:destination="@id/productDetailFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/nav_home"
-        android:name="com.example.scanfit.mainNavigation.HomeFragment"
-        android:label="Tracker" >
-        <action
-            android:id="@+id/action_homeFragment_to_userProfileFragment"
-            app:destination="@id/userProfileFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/nav_recent"
-        android:name="com.example.scanfit.mainNavigation.RecentFragment"
-        android:label="Recent" >
-        <action
-            android:id="@+id/action_recentFragment_to_productDetailFragment"
-            app:destination="@id/productDetailFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/dietSelectionFragment"
-        android:name="com.example.scanfit.mainNavigation.user.profile.DietSelectionFragment"
-        android:label="DietSelectionFragment" >
-        <action
-            android:id="@+id/action_dietSelectionFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
     </fragment>
 
 </navigation>

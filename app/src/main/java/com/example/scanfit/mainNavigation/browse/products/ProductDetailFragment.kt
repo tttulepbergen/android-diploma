@@ -18,16 +18,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import coil.load
-import com.example.scanfit.network.AnalysisResponse
 import com.example.scanfit.R
-import com.example.scanfit.mainNavigation.TrackerViewModel
 import com.example.scanfit.data.AppDatabase
 import com.example.scanfit.data.FoodItem
 import com.example.scanfit.data.RecentProduct
 import com.example.scanfit.databinding.FragmentProductDetailBinding
+import com.example.scanfit.mainNavigation.TrackerViewModel
+import com.example.scanfit.network.AnalysisResponse
 import kotlinx.coroutines.launch
-import kotlin.collections.iterator
-
 
 class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
@@ -36,13 +34,14 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private var _binding: FragmentProductDetailBinding? = null
     private val binding get() = _binding!!
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProductDetailBinding.bind(view)
 
         val aiResponse = arguments?.getSerializable("ai_analysis") as? AnalysisResponse
 
-        val foodItem = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        val foodItem = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             arguments?.getSerializable("foodItem", FoodItem::class.java)
         } else {
             @Suppress("DEPRECATION")
@@ -53,12 +52,58 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             setupAiUI(aiResponse)
         } else if (foodItem != null) {
             setupUI(foodItem)
+            saveToRecent(foodItem)
+            startAiAnalysis(foodItem)
         }
 
         binding.btnBack.setOnClickListener { findNavController().navigateUp() }
     }
 
 
+    private fun startAiAnalysis(item: FoodItem) {
+        val queryText = if (item.ingredients.isNullOrBlank()) {
+            Log.d("AI_DEBUG", "No ingredients for ${item.title}, using title as fallback.")
+            "Product: ${item.title}. Ingredients unknown, please analyze based on general knowledge of this product."
+        } else {
+            Log.d("AI_DEBUG", "Analyzing ingredients for: ${item.title}")
+            item.ingredients
+        }
+
+        binding.aiProgressBar.visibility = View.VISIBLE
+        binding.tvAiVerdictDescription.text = "AI is analyzing..."
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val response = FoodAnalyzer.analyzeTextIngredientsFull(queryText, "General Analysis")
+
+                Log.d("AI_DEBUG", "AI Response Success: ${response.verdict}")
+
+                binding.aiProgressBar.visibility = View.GONE
+
+                handleProductType(response.product_type)
+
+                setupAiUI(response)
+
+            } catch (e: Exception) {
+                Log.e("AI_DEBUG", "AI Analysis FAILED: ${e.message}")
+                e.printStackTrace()
+
+                binding.aiProgressBar.visibility = View.GONE
+                binding.tvAiVerdictDescription.text = "AI Analysis unavailable. Showing standard info."
+
+            }
+        }
+    }
+
+    private fun handleProductType(type: String?) {
+        if (type == "pharmacy") {
+            binding.macrosContainer.visibility = View.GONE
+            binding.tvVerdictStatus.text = "💊 Pharmacy Info"
+            binding.tvVerdictStatus.setTextColor(Color.BLUE)
+        } else {
+            binding.macrosContainer.visibility = View.VISIBLE
+        }
+    }
 
     private fun setupUI(item: FoodItem) {
         binding.tvProductName.text = item.title
@@ -69,6 +114,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             error(R.drawable.ic_launcher_foreground)
         }
 
+        // Парсинг макросов
         val p = item.proteins.replace(',', '.').filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
         val c = item.carbs.replace(',', '.').filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
         val f = item.fat.replace(',', '.').filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
@@ -78,7 +124,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.progressFat.progress = (f * 2).toInt()
 
         binding.tvCaloriesValue.text = "${item.calories}\nper serving"
-
         binding.tvGradeBadge.text = item.grade ?: "B"
         setupGradeColor(item.grade)
 
@@ -95,7 +140,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         }
     }
 
-
     private fun setupGradeColor(grade: String?) {
         val color = when (grade?.uppercase()) {
             "A" -> "#2E7D32"
@@ -108,10 +152,8 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.tvGradeBadge.background?.setTint(Color.parseColor(color))
     }
 
-
     private fun setupNutrientsList(item: FoodItem) {
         binding.nutrientsContainer.removeAllViews()
-
         val nutrientMap = linkedMapOf(
             "Total Fat" to item.fat,
             "Protein" to item.proteins,
@@ -130,7 +172,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
     private fun addNutrientRow(name: String, value: String) {
         val context = requireContext()
-
         val rowLayout = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
@@ -150,10 +191,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         }
 
         val valueTextView = TextView(context).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             text = value
             setPadding(0, 0, 16, 0)
             setTextColor(Color.parseColor("#1A1C1E"))
@@ -164,7 +202,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         val checkIcon = ImageView(context).apply {
             val iconSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 18f, resources.displayMetrics).toInt()
             layoutParams = LinearLayout.LayoutParams(iconSize, iconSize)
-            setImageResource(R.drawable.ic_baby_food) // Замени на свою иконку галочки
+            setImageResource(R.drawable.ic_baby_food)
             imageTintList = ColorStateList.valueOf(Color.BLACK)
         }
 
@@ -196,59 +234,60 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             try {
                 database.productDao().insertRecent(recentProduct)
             } catch (e: Exception) {
-                Log.e("ProductDetail", "Error: ${e.message}")
+                Log.e("ProductDetail", "Error saving to recent: ${e.message}")
             }
         }
     }
 
-
     private fun setupAiUI(response: AnalysisResponse) {
-        binding.tvProductName.text = "AI Анализ"
-        binding.tvCategoryLabel.text = "СКАНЕР"
+        binding.tvProductName.text = "AI Analysis"
+        binding.tvCategoryLabel.text = "SCANNER"
+
+        // Добавляем ?: 0, чтобы безопасно сравнивать
+        val score = response.health_score ?: 0
 
         val (color, grade) = when {
-            response.health_score >= 80 -> "#4CAF50" to "A"
-            response.health_score >= 60 -> "#8BC34A" to "B"
-            response.health_score >= 40 -> "#FBC02D" to "C"
+            score >= 80 -> "#4CAF50" to "A"
+            score >= 60 -> "#8BC34A" to "B"
+            score >= 40 -> "#FBC02D" to "C"
             else -> "#F44336" to "E"
         }
 
         binding.tvGradeBadge.text = grade
         binding.tvGradeBadge.background?.setTint(Color.parseColor(color))
         binding.tvVerdictStatus.setTextColor(Color.parseColor(color))
-        binding.tvVerdictStatus.text = if (response.health_score < 40) "❌ ОПАСНО" else "✅ БЕЗОПАСНО"
 
-        binding.tvAiVerdictDescription.text = response.verdict
+        // Здесь тоже используем score
+        binding.tvVerdictStatus.text = if (score < 40) "❌ Dangerous" else "✅ Safe"
+        binding.tvAiVerdictDescription.text = response.verdict ?: "No description"
 
         response.macros?.let { m ->
-            binding.tvCaloriesValue.text = "${m.calories} kcal\nper portion"
-            binding.tvProteinValue.text = "${m.proteins}g"
-            binding.tvCarbsValue.text = "${m.carbs}g"
-            binding.tvFatValue.text = "${m.fats}g"
+            // Добавляем ?: 0.0 для макросов, так как они теперь Double?
+            val cal = m.calories ?: 0.0
+            val prot = m.proteins ?: 0.0
+            val carb = m.carbs ?: 0.0
+            val fat = m.fats ?: 0.0
 
-            binding.progressProtein.progress = (m.proteins * 2).toInt()
-            binding.progressCarbs.progress = (m.carbs * 2).toInt()
-            binding.progressFat.progress = (m.fats * 2).toInt()
+            binding.tvCaloriesValue.text = "${cal} kcal\nper portion"
+            binding.tvProteinValue.text = "${prot}g"
+            binding.tvCarbsValue.text = "${carb}g"
+            binding.tvFatValue.text = "${fat}g"
 
-            binding.progressProtein.visibility = View.VISIBLE
-            binding.progressCarbs.visibility = View.VISIBLE
-            binding.progressFat.visibility = View.VISIBLE
+            binding.progressProtein.progress = (prot * 2).toInt()
+            binding.progressCarbs.progress = (carb * 2).toInt()
+            binding.progressFat.progress = (fat * 2).toInt()
         }
 
-        setupNutrientsFromAi(response.risks)
+        setupNutrientsFromAi(response.risks ?: emptyList())
     }
 
     private fun setupNutrientsFromAi(risks: List<String>) {
         binding.nutrientsContainer.removeAllViews()
-
         if (risks.isEmpty()) {
             addNutrientRow("Health Risks", "None detected ✨")
         } else {
-            risks.forEach { risk ->
-                addNutrientRow("Risk", risk)
-            }
+            risks.forEach { risk -> addNutrientRow("Risk", risk) }
         }
-
         binding.progressProtein.visibility = View.INVISIBLE
         binding.progressCarbs.visibility = View.INVISIBLE
         binding.progressFat.visibility = View.INVISIBLE
@@ -257,4 +296,5 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }}
+    }
+}

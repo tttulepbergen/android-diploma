@@ -1,4 +1,4 @@
-package com.example.scanfit.network
+package com.example.scanfit
 
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit

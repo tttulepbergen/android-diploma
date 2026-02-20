@@ -1,11 +1,16 @@
-package com.example.scanfit.mainNavigation
+package com.example.scanfit.mainNavigation // Новая папка от Sunbekova
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.scanfit.R
+import com.example.scanfit.adapters.FoodAdapter
 import com.example.scanfit.data.AppDatabase
+import com.example.scanfit.data.FoodItem
 import com.example.scanfit.databinding.FragmentFavouritesBinding
 import kotlinx.coroutines.launch
 import com.example.scanfit.data.FoodItem
@@ -26,7 +31,7 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
         val database = AppDatabase.getDatabase(requireContext())
         setupRecyclerView()
 
-        // Слушаем изменения в базе данных через Flow
+        // Используем Flow для автоматического обновления списка (как предложила Sunbekova)
         viewLifecycleOwner.lifecycleScope.launch {
             database.productDao().getAllFavorites().collect { favoriteList ->
                 if (favoriteList.isEmpty()) {
@@ -36,19 +41,18 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
                     binding.layoutEmptyState.visibility = View.GONE
                     binding.rvFavorites.visibility = View.VISIBLE
 
-                    // Маппим данные из Entity базы данных в модель для UI
                     val foodItems = favoriteList.map { favorite ->
                         FoodItem(
-                            title = favorite.name,
-                            subtitle = "",
+                            title = favorite.productName,
+                            subtitle = favorite.name ?: "Unknown Brand", // Ваша версия (более детальная)
                             imageUrl = favorite.imageUrl,
                             calories = favorite.calories,
                             grade = favorite.grade,
-                            isFavorite = true // В этом экране все элементы — избранные
+                            isFavorite = true,
+                            ingredients = favorite.ingredients
                         )
                     }
 
-                    // Передаем true в параметр showFavoriteIcon, так как здесь нам НУЖНЫ сердечки
                     binding.rvFavorites.adapter = FoodAdapter(
                         items = foodItems,
                         showFavoriteIcon = true, // Показываем иконку (сердечко)
@@ -61,10 +65,7 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
                         onFavoriteClick = { item ->
                             // Удаление из базы при нажатии на сердечко
                             viewLifecycleOwner.lifecycleScope.launch {
-                                val favoriteToDelete = favoriteList.find { it.name == item.title }
-                                favoriteToDelete?.let {
-                                    database.productDao().deleteFavorite(it)
-                                }
+                                database.productDao().deleteFavoriteById(item.title)
                             }
                         }
                     )
@@ -72,10 +73,9 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
             }
         }
 
-        // Логика для кнопки "Clear All" (если она есть в XML)
         binding.btnClearAll?.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
-                database.productDao().deleteAllFavorites() // Call the "Clear All" method
+                database.productDao().deleteAllFavorites()
             }
         }
     }
@@ -83,9 +83,6 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
     private fun setupRecyclerView() {
         binding.rvFavorites.layoutManager = LinearLayoutManager(requireContext())
     }
-
-    // Метод loadFavorites() тебе больше не нужен, так как Flow в onViewCreated
-    // сам обновляет список автоматически при любых изменениях в базе.
 
     override fun onDestroyView() {
         super.onDestroyView()

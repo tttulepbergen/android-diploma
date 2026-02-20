@@ -22,7 +22,9 @@ object FoodAnalyzer {
 
             val response = NetworkClient.aiApiService.analyzeScan(body, healthInfoBody)
 
-            response.verdict
+            // ИСПРАВЛЕНИЕ ТУТ: Добавляем значение по умолчанию
+            response.verdict ?: "Вердикт отсутствует"
+
         } catch (e: Exception) {
             "Error: ${e.localizedMessage}"
         }

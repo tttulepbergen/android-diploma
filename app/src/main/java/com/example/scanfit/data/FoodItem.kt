@@ -1,5 +1,6 @@
 package com.example.scanfit.data
 
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 // Основной объект, соответствующий корню JSON
@@ -47,5 +48,7 @@ data class FoodItem(
     val cholesterol: String? = "0mg",
     val sodium: String? = "0mg",
     val sugars: String? = "0g",
-    val fiber: String? = "0g"
-) : Serializable
+    val fiber: String? = "0g",
+    @SerializedName("ingredients_text")
+    val ingredients: String?
+    ) : Serializable

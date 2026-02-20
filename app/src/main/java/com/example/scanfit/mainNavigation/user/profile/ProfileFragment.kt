@@ -3,13 +3,14 @@ package com.example.scanfit.mainNavigation.user.profile
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentProfileBinding
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.text.SimpleDateFormat
 import java.util.*
-import com.example.scanfit.R
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
@@ -44,7 +45,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         datePicker.show(parentFragmentManager, "DATE_PICKER")
     }
 
-
     private fun validateAndContinue() {
         val height = binding.etHeightCm.text.toString()
         val weight = binding.etWeight.text.toString()
@@ -57,16 +57,20 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             else -> "Prefer not to say"
         }
 
-        val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-        prefs.edit().apply {
-            if (height.isNotEmpty()) putString("user_height", height)
-            if (weight.isNotEmpty()) putString("user_weight", weight)
-            if (birthdate.isNotEmpty()) putString("user_birthdate", birthdate)
-            putString("user_gender", gender)
-            apply()
+        if (height.isEmpty() || weight.isEmpty() || birthdate.isEmpty()) {
+            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+        } else {
+            val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+            prefs.edit().apply {
+                putString("user_height", height)
+                putString("user_weight", weight)
+                putString("user_gender", gender)
+                putString("user_birthdate", birthdate)
+                apply()
+            }
+            // Переход к выбору диеты
+            findNavController().navigate(R.id.action_profileFragment2_to_dietSelectionFragment)
         }
-
-        findNavController().navigate(R.id.action_profileFragment2_to_dietSelectionFragment)
     }
 
     override fun onDestroyView() {

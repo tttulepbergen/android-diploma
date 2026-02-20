@@ -6,8 +6,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
-import com.google.firebase.auth.FirebaseAuth // Импортируем Firebase
 import com.example.scanfit.databinding.FragmentSignUpBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 
 class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
@@ -29,22 +29,25 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         binding.btnRegister.setOnClickListener {
             val email = binding.etEmailRegister.text.toString().trim()
             val password = binding.etPasswordRegister.text.toString().trim()
-            val name = binding.etName.text.toString().trim()
+            val name = binding.etName.text.toString().trim() // Достаем имя (от Sunbekova)
 
             if (email.isNotEmpty() && password.length >= 6) {
-
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             val user = auth.currentUser
+
+                            // Создаем запрос на обновление профиля, чтобы сохранить имя
                             val profileUpdates = UserProfileChangeRequest.Builder()
                                 .setDisplayName(name)
                                 .build()
-                            // Успешно! Пользователь появится в консоли Firebase
-                            user?.updateProfile(profileUpdates)?.addOnCompleteListener {
-                                Toast.makeText(context, "Регистрация успешна!", Toast.LENGTH_SHORT)
-                                    .show()
-                                findNavController().navigate(R.id.action_signUpFragment_to_loginFragment3)
+
+                            user?.updateProfile(profileUpdates)?.addOnCompleteListener { profileTask ->
+                                if (isAdded) {
+                                    Toast.makeText(context, "Регистрация успешна!", Toast.LENGTH_SHORT).show()
+                                    // Переход на логин после успешного создания профиля
+                                    findNavController().navigate(R.id.action_signUpFragment_to_loginFragment3)
+                                }
                             }
                         } else {
                             Toast.makeText(context, "Ошибка: ${task.exception?.message}", Toast.LENGTH_LONG).show()

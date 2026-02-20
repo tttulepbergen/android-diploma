@@ -70,7 +70,8 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                         subtitle = apiProduct.brands ?: "No brand",
                         calories = "${apiProduct.nutriments?.energyKcal100g?.toInt() ?: 0} kcal",
                         imageUrl = apiProduct.imageUrl,
-                        isFavorite = false
+                        isFavorite = false,
+                        ingredients = apiProduct.ingredientsText ?: apiProduct.ingredientsTextEn ?: ""
                     )
                 }
 

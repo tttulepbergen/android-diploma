@@ -33,9 +33,15 @@ class DietAdapter(
     }
 
 
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is DietViewHolder) {
-            val diet = items[position] as DietItem
+        val item = items[position]
+
+        if (holder is HeaderViewHolder && item is String) {
+            holder.title.text = item
+        }
+        else if (holder is DietViewHolder && item is DietItem) {
+            val diet = item
             holder.nameText.text = diet.name
 
             if (diet.isSelected) {

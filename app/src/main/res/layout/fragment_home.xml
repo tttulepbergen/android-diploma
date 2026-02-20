@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/main_background"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -42,6 +43,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/img"
+
                 android:padding="8dp"/>
         </androidx.cardview.widget.CardView>
 
@@ -148,7 +150,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_energy" app:tint="#4CAF50"/>
+
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_energy"
+                        app:tint="#4CAF50" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:text="Calories" android:textStyle="bold" android:textSize="18sp" android:textColor="@color/black"/>
                 </LinearLayout>
 
@@ -397,6 +404,17 @@
                     app:layout_constraintTop_toBottomOf="@id/tv_water_title"
                     app:layout_constraintStart_toStartOf="parent"/>
 
+                <TextView
+                    android:id="@+id/tv_water_goal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Goal 1,74 L"
+                    android:textColor="#9E9E9E"
+                    android:textSize="14sp"
+                    app:layout_constraintTop_toBottomOf="@id/tv_water_count"
+                    app:layout_constraintStart_toStartOf="parent"
+                    />
+
                 <ImageView
                     android:id="@+id/iv_water_illustration"
                     android:layout_width="150dp"
@@ -411,7 +429,6 @@
                     android:id="@+id/water_divider"
                     android:layout_width="0dp"
                     android:layout_height="1dp"
-                    android:layout_marginTop="8dp"
                     android:background="#E0E0E0"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -423,7 +440,7 @@
                     android:layout_height="60dp"
                     android:layout_marginTop="16dp"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
+                    android:gravity="center"
                     app:layout_constraintTop_toBottomOf="@id/water_divider">
                 </LinearLayout>
 
