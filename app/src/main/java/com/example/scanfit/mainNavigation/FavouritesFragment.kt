@@ -13,11 +13,6 @@ import com.example.scanfit.data.AppDatabase
 import com.example.scanfit.data.FoodItem
 import com.example.scanfit.databinding.FragmentFavouritesBinding
 import kotlinx.coroutines.launch
-import com.example.scanfit.data.FoodItem
-import androidx.navigation.fragment.findNavController
-import androidx.core.os.bundleOf
-import com.example.scanfit.adapters.FoodAdapter
-import com.example.scanfit.R
 
 class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
 

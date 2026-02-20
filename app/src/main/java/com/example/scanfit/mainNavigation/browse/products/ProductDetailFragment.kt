@@ -20,12 +20,14 @@ import androidx.navigation.fragment.findNavController
 import coil.load
 import com.example.scanfit.R
 import com.example.scanfit.data.AppDatabase
+import com.example.scanfit.data.FavoriteProduct
 import com.example.scanfit.data.FoodItem
 import com.example.scanfit.data.RecentProduct
 import com.example.scanfit.databinding.FragmentProductDetailBinding
 import com.example.scanfit.mainNavigation.TrackerViewModel
 import com.example.scanfit.network.AnalysisResponse
 import kotlinx.coroutines.launch
+import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
 
 class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
@@ -112,6 +114,17 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             crossfade(true)
             placeholder(R.drawable.ic_launcher_foreground)
             error(R.drawable.ic_launcher_foreground)
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val existing = database.productDao().getFavoriteById(item.title)
+            item.isFavorite = existing != null
+            updateFavoriteIcon(item.isFavorite)
+        }
+
+        binding.ivFavorite.setOnClickListener {
+            item.isFavorite = !item.isFavorite
+            updateFavoriteIcon(item.isFavorite)
+            handleFavoriteAction(item)
         }
 
         // Парсинг макросов
@@ -296,5 +309,43 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun updateFavoriteIcon(isFavorite: Boolean) {
+        val iconRes = if (isFavorite) {
+            R.drawable.ic_favourites_liked
+        } else {
+            R.drawable.ic_favourites
+        }
+
+        binding.ivFavorite.setImageResource(iconRes)
+
+        val color = if (isFavorite) "#FF4B4B" else "#BDBDBD"
+        binding.ivFavorite.setColorFilter(Color.parseColor(color))
+    }
+    private fun handleFavoriteAction(item: FoodItem) {
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            if (item.isFavorite) {
+
+                val entity = FavoriteProduct(
+                    id = item.title,
+                    productName = item.title,
+                    name = item.title,
+                    imageUrl = item.imageUrl,
+                    calories = item.calories,
+                    grade = item.grade,
+                    ingredients = item.ingredients
+                )
+
+                database.productDao().insertFavorite(entity)
+                Toast.makeText(requireContext(), "Saved to favourites", Toast.LENGTH_SHORT).show()
+
+            } else {
+
+                database.productDao().deleteFavoriteById(item.title)
+                Toast.makeText(requireContext(), "Removed from favourites", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

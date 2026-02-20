@@ -16,6 +16,7 @@ import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.gson.Gson
 import kotlin.collections.filter
 import kotlin.collections.mutableSetOf
+import androidx.navigation.fragment.findNavController
 
 class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
 
@@ -43,18 +44,34 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
         recyclerView.adapter = adapter
 
         view.findViewById<Button>(R.id.btn_finish_setup).setOnClickListener {
+
             val selectedDiets = mutableSetOf<String>()
+
             healthData.categories.forEach { category ->
                 category.items.filter { it.isSelected }.forEach {
                     selectedDiets.add(it.name)
                 }
             }
 
-            val prefs = requireContext().getSharedPreferences("user_settings", Context.MODE_PRIVATE)
-            prefs.edit().putStringSet("user_diseases", selectedDiets).apply()
+            val prefs = requireContext()
+                .getSharedPreferences("user_settings", Context.MODE_PRIVATE)
 
-            startActivity(Intent(requireContext(), ScanActivity::class.java))
-            requireActivity().finish()
+            prefs.edit().apply {
+                putStringSet("user_diseases", selectedDiets)
+
+                val uid = com.google.firebase.auth.FirebaseAuth
+                    .getInstance().currentUser?.uid
+
+                if (uid != null) {
+                    putBoolean("profile_completed_$uid", true)
+                }
+
+                apply()
+            }
+
+            findNavController().navigate(
+                R.id.action_dietSelectionFragment_to_homeFragment
+            )
         }
     }
 

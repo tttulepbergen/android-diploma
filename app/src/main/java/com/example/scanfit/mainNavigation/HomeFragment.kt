@@ -5,19 +5,16 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
-import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -29,11 +26,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
-import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
+import com.example.scanfit.network.AnalysisResponse
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -252,7 +250,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 val diseasesSet = prefs.getStringSet("user_diseases", emptySet())
                 val healthInfo = diseasesSet?.joinToString(", ") ?: "Ограничений нет"
                 val bitmap = uriToBitmap(uri)
-                val aiResponse = FoodAnalyzer.analyzeIngredients(bitmap, healthInfo)
+                val aiResponse = arguments?.getSerializable("ai_analysis") as? AnalysisResponse
                 showAnalysisResult(aiResponse)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Analysis failed", Toast.LENGTH_SHORT).show()
@@ -260,8 +258,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun showAnalysisResult(result: String) {
-        Toast.makeText(requireContext(), "AI: $result", Toast.LENGTH_LONG).show()
+    private fun showAnalysisResult(result: AnalysisResponse?) {
+
+        if (result == null) {
+            Toast.makeText(requireContext(), "Analysis failed", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val bundle = Bundle().apply {
+            putSerializable("ai_analysis", result)
+        }
+
+        findNavController().navigate(
+            R.id.productDetailFragment,
+            bundle
+        )
     }
 
     private fun uriToBitmap(uri: Uri): Bitmap {

@@ -1,5 +1,6 @@
 package com.example.scanfit.mainNavigation.user.authorization
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -33,7 +34,15 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            findNavController().navigate(R.id.action_loginFragment3_to_profileFragment2)
+                            val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+                            val uid = FirebaseAuth.getInstance().currentUser?.uid
+                            val isProfileCompleted = prefs.getBoolean("profile_completed_$uid", false)
+
+                            if (isProfileCompleted) {
+                                findNavController().navigate(R.id.action_loginFragment3_to_nav_scan)
+                            } else {
+                                findNavController().navigate(R.id.action_loginFragment3_to_profileFragment2)
+                            }
                         } else {
                             Toast.makeText(
                                 context,

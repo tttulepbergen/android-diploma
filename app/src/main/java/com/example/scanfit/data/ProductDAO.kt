@@ -17,6 +17,9 @@ interface ProductDao {
     @Query("SELECT * FROM favorites_table")
     fun getAllFavorites(): Flow<List<FavoriteProduct>> // Используем FavoriteProduct
 
+    @Query("SELECT * FROM favorites_table WHERE id = :id LIMIT 1")
+    suspend fun getFavoriteById(id: String): FavoriteProduct?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFavorite(item: FavoriteProduct)
 
