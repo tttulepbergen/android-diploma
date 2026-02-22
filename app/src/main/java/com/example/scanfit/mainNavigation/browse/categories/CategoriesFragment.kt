@@ -24,16 +24,19 @@ class CategoriesFragment : Fragment(R.layout.fragment_categories) {
     }
 
     private fun setupRecyclerView() {
+
         foodAdapter = FoodAdapter(
             items = emptyList(),
             onItemClick = { selectedItem ->
-                val bundle = bundleOf("categoryName" to selectedItem.title)
-                findNavController().navigate(
-                    R.id.action_categoriesFragment_to_subCategoriesFragment,
-                    bundle
-                )
+
+                if (findNavController().currentDestination?.id == R.id.categoriesFragment) {
+                    val bundle = bundleOf("categoryName" to selectedItem.title)
+                    findNavController().navigate(
+                        R.id.action_categoriesFragment_to_subCategoriesFragment,
+                        bundle
+                    )
+                }
             },
-            onFavoriteClick = { /* логика */ },
             showDetails = false
         )
 
@@ -43,22 +46,6 @@ class CategoriesFragment : Fragment(R.layout.fragment_categories) {
         }
     }
 
-    private fun updateUI(newList: List<FoodItem>) {
-        foodAdapter = FoodAdapter(
-            items = newList,
-            onItemClick = { selectedItem ->
-                val bundle = bundleOf("categoryName" to selectedItem.title)
-                findNavController().navigate(
-                    R.id.action_categoriesFragment_to_subCategoriesFragment,
-                    bundle
-                )
-            },
-            onFavoriteClick = { },
-            showDetails = false
-        )
-        binding.recyclerView.adapter = foodAdapter
-    }
-
     private fun loadCategories() {
         val localList = listOf(
             FoodItem(title = "Fruits & Vegetables", subtitle = "Fresh picks", imageRes = R.drawable.ic_fruits, ingredients = ""),
@@ -66,11 +53,11 @@ class CategoriesFragment : Fragment(R.layout.fragment_categories) {
             FoodItem(title = "Breakfast", subtitle = "Morning energy", imageRes = R.drawable.ic_breakfast, ingredients = ""),
             FoodItem(title = "Dairy & Eggs", subtitle = "Farm products", imageRes = R.drawable.ic_eggs, ingredients = ""),
             FoodItem(title = "Meat & Fish", subtitle = "Proteins", imageRes = R.drawable.ic_meat, ingredients = ""),
-            FoodItem(title = "Other Proteins", subtitle = "Alternative proteins", imageRes = R.drawable.ic_proteins, ingredients = ""),
-            FoodItem(title = "Condiments & More", subtitle = "Sauces and spices", imageRes = R.drawable.ic_condiment, ingredients = ""),
-            FoodItem(title = "Dips, Spreads & Jams", subtitle = "Spreads", imageRes = R.drawable.ic_jam, ingredients = ""),
-            FoodItem(title = "Prepared Foods & Soups", subtitle = "Ready meals", imageRes = R.drawable.ic_soup, ingredients = ""),
-            FoodItem(title = "Fast Food", subtitle = "Quick meals", imageRes = R.drawable.ic_fastfood, ingredients = ""),
+            FoodItem(title = "Other Proteins", subtitle = "Alternative proteins", imageUrl = "https://static.vecteezy.com/system/resources/thumbnails/025/222/302/small/tofu-cubes-isolated-on-transparent-background-png.png", ingredients = ""),
+            FoodItem(title = "Condiments & More", subtitle = "Sauces and spices", imageUrl = "https://static.vecteezy.com/system/resources/thumbnails/036/512/737/small/ai-generated-spices-and-herbs-in-wooden-bowl-isolated-on-transparent-background-png.png", ingredients = ""),
+            FoodItem(title = "Dips, Spreads & Jams", subtitle = "Spreads", imageUrl = "https://static.vecteezy.com/system/resources/previews/047/655/748/non_2x/tasty-strawberry-jam-jar-isolated-on-a-transparent-background-free-png.png", ingredients = ""),
+            FoodItem(title = "Prepared Foods & Soups", subtitle = "Ready meals", imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjGF65yuVOrGgljtQ0OAPXN4_HhXI5KfAuTw&s", ingredients = ""),
+            FoodItem(title = "Fast Food", subtitle = "Quick meals", imageUrl = "https://static.vecteezy.com/system/resources/previews/045/809/893/non_2x/a-hamburger-and-fries-with-a-drink-on-a-transparent-background-free-png.png", ingredients = ""),
             FoodItem(title = "Restaurant", subtitle = "Dining out", imageRes = R.drawable.ic_restaurant, ingredients = ""),
             FoodItem(title = "Chains (by ABC)", subtitle = "Restaurant chains", imageRes = R.drawable.ic_drive_thru, ingredients = ""),
             FoodItem(title = "Salty Snacks", subtitle = "Chips and snacks", imageRes = R.drawable.ic_salty, ingredients = ""),
@@ -81,10 +68,8 @@ class CategoriesFragment : Fragment(R.layout.fragment_categories) {
             FoodItem(title = "Pet Food", subtitle = "Animal food", imageRes = R.drawable.ic_pet_food, ingredients = "")
         )
 
-        updateUI(localList)
+        foodAdapter.updateList(localList)
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()

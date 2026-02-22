@@ -1,4 +1,4 @@
-package com.example.scanfit.mainNavigation.user.profile // Пакет от Sunbekova
+package com.example.scanfit.mainNavigation.user.profile
 
 import android.app.AlertDialog
 import android.content.Context
@@ -31,7 +31,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val auth = FirebaseAuth.getInstance()
         val user = auth.currentUser
 
-        // Отображение данных из Firebase (Имя и Email)
         user?.let {
             binding.tvProfileEmail.text = it.email
             binding.tvProfileUsername.text = it.displayName ?: it.email?.substringBefore("@") ?: "User"
@@ -43,7 +42,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         setupButtons()
 
-        // Переключение между вкладками "Аккаунт" и "Замеры"
         binding.toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
@@ -116,7 +114,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
     }
 
-    // Вспомогательные методы для выбора данных (BottomSheet)
     private fun showPickerSheet(title: String, options: Array<String>, key: String, textView: TextView) {
         val dialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.layout_picker_bottom_sheet, null)

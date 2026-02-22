@@ -1,4 +1,4 @@
-package com.example.scanfit.mainNavigation // Пакет от Sunbekova
+package com.example.scanfit.mainNavigation
 
 import android.app.Activity
 import android.app.DatePickerDialog
@@ -9,14 +9,12 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -28,11 +26,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
-import com.example.scanfit.mainNavigation.scan.FoodAnalyzer // Путь от Sunbekova
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
+import com.example.scanfit.network.AnalysisResponse
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -62,7 +61,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
-        // Динамическое приветствие от Sunbekova
         val currentUser = FirebaseAuth.getInstance().currentUser
         val username = currentUser?.displayName ?: "Anel"
         binding.tvGreeting.text = "Hi, $username"
@@ -172,8 +170,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             binding.calorieProgressBar.progress = (total.toFloat() / limit * 100).toInt()
         }
 
-        // ... Наблюдатели для белков, жиров, углеводов аналогично ...
-        // (Они почти идентичны в обеих версиях)
         trackerViewModel.totalProteins.observe(viewLifecycleOwner) { total ->
             val limit = 150
             binding.tvProteinsMain.text = "${total.toInt()} g"
@@ -204,21 +200,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    // ТВОЯ ЛОГИКА СТАКАНОВ (7 штук, расчет литров, удаление кликом)
+
+
     private fun renderWaterGlasses(count: Int) {
         binding.waterStack.removeAllViews()
         val maxGlasses = 7
-        val glassSize = 40
-        val dailyGoal = 1.74
-
-        binding.waterStack.weightSum = maxGlasses.toFloat()
-
+        val glassHeight = 75
         for (i in 0 until maxGlasses) {
             val imageView = ImageView(requireContext())
-            val params = LinearLayout.LayoutParams(0, dpToPx(glassSize), 1f).apply {
+
+            val params = LinearLayout.LayoutParams(0, dpToPx(glassHeight), 1f).apply {
                 setMargins(dpToPx(2), 0, dpToPx(2), 0)
             }
+
             imageView.layoutParams = params
+
+            imageView.scaleType = ImageView.ScaleType.FIT_CENTER
 
             when {
                 i < count -> {
@@ -235,9 +232,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
             binding.waterStack.addView(imageView)
         }
-
-        val remaining = dailyGoal - (count * 0.25)
-        binding.tvWaterGoal.text = if (remaining > 0) String.format("Goal %.2f L left", remaining) else "Goal reached! 🎉"
     }
 
     private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
@@ -251,7 +245,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 val diseasesSet = prefs.getStringSet("user_diseases", emptySet())
                 val healthInfo = diseasesSet?.joinToString(", ") ?: "Ограничений нет"
                 val bitmap = uriToBitmap(uri)
-                val aiResponse = FoodAnalyzer.analyzeIngredients(bitmap, healthInfo)
+                val aiResponse = arguments?.getSerializable("ai_analysis") as? AnalysisResponse
                 showAnalysisResult(aiResponse)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Analysis failed", Toast.LENGTH_SHORT).show()
@@ -259,8 +253,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun showAnalysisResult(result: String) {
-        Toast.makeText(requireContext(), "AI: $result", Toast.LENGTH_LONG).show()
+    private fun showAnalysisResult(result: AnalysisResponse?) {
+
+        if (result == null) {
+            Toast.makeText(requireContext(), "Analysis failed", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val bundle = Bundle().apply {
+            putSerializable("ai_analysis", result)
+        }
+
+        findNavController().navigate(
+            R.id.productDetailFragment,
+            bundle
+        )
     }
 
     private fun uriToBitmap(uri: Uri): Bitmap {

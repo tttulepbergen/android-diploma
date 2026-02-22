@@ -1,4 +1,4 @@
-package com.example.scanfit.mainNavigation // Пакет от Sunbekova
+package com.example.scanfit.mainNavigation
 
 import android.os.Bundle
 import android.view.View
@@ -25,7 +25,6 @@ class RecentFragment : Fragment(R.layout.fragment_recent) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentRecentBinding.bind(view)
 
-        // ТВОЯ ЛОГИКА: Добавляем onFavoriteClick и showFavoriteIcon, которых нет у Sunbekova
         foodAdapter = FoodAdapter(
             items = emptyList(),
             onItemClick = { selectedItem ->
@@ -54,7 +53,6 @@ class RecentFragment : Fragment(R.layout.fragment_recent) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             database.productDao().getAllRecent().collect { recentList ->
-                // ТВОЯ ЛОГИКА: Проверяем, какие из недавних продуктов уже в избранном
                 val favoritesIds = database.productDao().getAllFavoritesOnce().map { it.id }.toSet()
 
                 if (recentList.isEmpty()) {
@@ -81,7 +79,6 @@ class RecentFragment : Fragment(R.layout.fragment_recent) {
         }
     }
 
-    // ТВОЯ ЛОГИКА: Полностью возвращаем функцию обработки лайков
     private fun handleFavoriteAction(item: FoodItem) {
         viewLifecycleOwner.lifecycleScope.launch {
             val id = item.title

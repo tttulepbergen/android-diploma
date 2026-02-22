@@ -17,7 +17,7 @@ class SplashActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            val intent = Intent(this, AuthActivity::class.java)
+            val intent = Intent(this, ScanActivity::class.java)
             startActivity(intent)
 
             finish()

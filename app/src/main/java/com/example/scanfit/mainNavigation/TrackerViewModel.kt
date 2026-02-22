@@ -1,10 +1,10 @@
-package com.example.scanfit.mainNavigation // Пакет от Sunbekova
+package com.example.scanfit.mainNavigation
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.scanfit.data.FoodItem
-import java.util.Calendar // Чистый импорт от Sunbekova
+import java.util.Calendar
 
 class TrackerViewModel : ViewModel() {
     private val _totalCalories = MutableLiveData(0)
@@ -19,7 +19,6 @@ class TrackerViewModel : ViewModel() {
     private val _totalCarbs = MutableLiveData(0f)
     val totalCarbs: LiveData<Float> = _totalCarbs
 
-    // Логика добавления нутриентов (одинаковая у обоих)
     fun addFoodData(item: FoodItem) {
         val cal = item.calories?.filter { it.isDigit() }?.toIntOrNull() ?: 0
         _totalCalories.value = (_totalCalories.value ?: 0) + cal
@@ -45,7 +44,6 @@ class TrackerViewModel : ViewModel() {
         }
     }
 
-    // ТВОЯ ЛОГИКА: Возвращаем удаление стакана воды
     fun removeWaterGlass() {
         val current = _waterGlasses.value ?: 0
         if (current > 0) {

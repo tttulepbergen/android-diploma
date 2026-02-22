@@ -1,4 +1,4 @@
-package com.example.scanfit.mainNavigation.browse.products // Пакет от Sunbekova
+package com.example.scanfit.mainNavigation.browse.products
 
 import android.os.Bundle
 import android.view.View
@@ -17,8 +17,6 @@ import com.example.scanfit.data.RecentProduct // Твой импорт
 import com.example.scanfit.databinding.FragmentProductListBinding
 import com.example.scanfit.network.NetworkClient // Пакет от Sunbekova
 import kotlinx.coroutines.launch
-
-// ... твои импорты ...
 
 class ProductListFragment : Fragment(R.layout.fragment_product_list) {
 
@@ -64,7 +62,10 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
                 }
 
                 val bundle = bundleOf("foodItem" to selectedProduct)
-                findNavController().navigate(R.id.action_productListFragment_to_productDetailFragment, bundle)
+                findNavController().navigate(
+                    R.id.action_productListFragment_to_productDetailFragment,
+                    bundle
+                )
             },
             onFavoriteClick = { clickedItem ->
                 handleFavoriteAction(clickedItem)

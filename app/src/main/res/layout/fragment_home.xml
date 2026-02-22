@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/main_background"
+    android:background="@color/white"
     android:fillViewport="true"
     >
 
@@ -22,7 +22,7 @@
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:text="Hi, Urer"
+            android:text="Hi, User"
             android:textColor="#1A1C1E"
             android:textSize="32sp"
             android:textStyle="bold"
@@ -82,7 +82,7 @@
                 android:layout_weight="0.8"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#FFFFFF"> <TextView
+                app:cardBackgroundColor="#F9FAFC"> <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="Wed\n21"
@@ -140,7 +140,7 @@
             app:layout_constraintTop_toBottomOf="@id/layout_calendar">
 
             <LinearLayout
-                android:background="@color/white"
+                android:background="#F9FAFC"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -377,7 +377,7 @@
             app:layout_constraintTop_toBottomOf="@id/card_calories">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:background="@color/white"
+                android:background="#F9FAFC"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="24dp">
@@ -397,9 +397,9 @@
                     android:id="@+id/tv_water_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1 L"
+                    android:text="1L"
                     android:textColor="#2196F3"
-                    android:textSize="28sp"
+                    android:textSize="32sp"
                     android:textStyle="bold"
                     app:layout_constraintTop_toBottomOf="@id/tv_water_title"
                     app:layout_constraintStart_toStartOf="parent"/>
@@ -419,30 +419,22 @@
                     android:id="@+id/iv_water_illustration"
                     android:layout_width="150dp"
                     android:layout_height="130dp"
-                    android:src="@drawable/ic_water"
+                    android:src="@drawable/image"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toTopOf="@id/water_divider" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
-
-                <View
-                    android:id="@+id/water_divider"
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:background="#E0E0E0"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/iv_water_illustration" />
 
                 <LinearLayout
                     android:id="@+id/waterStack"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:orientation="horizontal"
                     android:gravity="center"
-                    app:layout_constraintTop_toBottomOf="@id/water_divider">
-                </LinearLayout>
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/iv_water_illustration" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>

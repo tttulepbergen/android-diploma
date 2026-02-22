@@ -33,16 +33,16 @@
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/iv_barcode"
+            app:layout_constraintEnd_toStartOf="@+id/iv_favorite"
             app:layout_constraintStart_toEndOf="@id/btn_back"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
-            android:id="@+id/iv_barcode"
+            android:id="@+id/iv_favorite"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_recent"
+            android:src="@drawable/ic_favourites"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -133,8 +133,6 @@
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
-
-
 
 
             <androidx.cardview.widget.CardView

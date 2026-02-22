@@ -1,4 +1,4 @@
-package com.example.scanfit.mainNavigation.user.profile // Пакет от Sunbekova
+package com.example.scanfit.mainNavigation.user.profile
 
 import android.content.Context
 import android.os.Bundle
@@ -9,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentProfileBinding
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -56,22 +57,21 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             R.id.btn_male -> "Guy"
             else -> "Prefer not to say"
         }
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        // ТВОЯ ЛОГИКА: жесткая валидация (лучше для профиля)
-        if (height.isEmpty() || weight.isEmpty() || birthdate.isEmpty()) {
-            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
-        } else {
-            val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-            prefs.edit().apply {
-                putString("user_height", height)
-                putString("user_weight", weight)
-                putString("user_gender", gender)
-                putString("user_birthdate", birthdate)
-                apply()
-            }
-            // Переход к выбору диеты
-            findNavController().navigate(R.id.action_profileFragment2_to_dietSelectionFragment)
+
+        val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            putString("user_height_$uid", height)
+            putString("user_weight_$uid", weight)
+            putString("user_gender_$uid", gender)
+            putString("user_birthdate_$uid", birthdate)
+            putBoolean("profile_completed_$uid", true)
+            apply()
         }
+        // Переход к выбору диеты
+        findNavController().navigate(R.id.action_profileFragment2_to_dietSelectionFragment)
+
     }
 
     override fun onDestroyView() {

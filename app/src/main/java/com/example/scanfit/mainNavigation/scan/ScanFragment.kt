@@ -1,4 +1,4 @@
-package com.example.scanfit.mainNavigation.scan // Пакет от Sunbekova
+package com.example.scanfit.mainNavigation.scan
 
 import android.Manifest
 import android.content.Context
@@ -184,7 +184,6 @@ class ScanFragment : Fragment() {
         binding.captureButton.isEnabled = false // Блокируем кнопку, чтобы не спамили
         Toast.makeText(requireContext(), "Анализ пошел, подождите 30-40 сек...", Toast.LENGTH_LONG).show()
 
-        // Используем lifecycleScope, но внутри защищаем сетевой вызов
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
@@ -194,7 +193,6 @@ class ScanFragment : Fragment() {
                 val diseasesText = prefs.getStringSet("user_diseases", emptySet())?.joinToString(", ") ?: "None"
                 val healthInfoBody = diseasesText.toRequestBody("text/plain".toMediaTypeOrNull())
 
-                // Делаем сам запрос
                 val response = NetworkClient.aiApiService.analyzeScan(body, healthInfoBody)
 
                 Log.d("SCAN_DEBUG", "Ответ получен!")

@@ -34,6 +34,7 @@ class DietAdapter(
 
 
 
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
 
@@ -66,5 +67,10 @@ class DietAdapter(
 
     class DietViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val nameText: TextView = view.findViewById(R.id.dietName)
+    }
+
+    fun updateData(newItems: List<Any>) {
+        this.items = newItems
+        notifyDataSetChanged()
     }
 }

@@ -1,4 +1,4 @@
-package com.example.scanfit.mainNavigation.user.authorization // Пакет от Sunbekova
+package com.example.scanfit.mainNavigation.user.authorization
 
 import android.os.Bundle
 import android.view.View
