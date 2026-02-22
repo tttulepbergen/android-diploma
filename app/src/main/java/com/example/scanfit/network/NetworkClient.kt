@@ -14,12 +14,6 @@ object NetworkClient {
         .writeTimeout(2, TimeUnit.MINUTES)
         .build()
 
-    val retrofit = Retrofit.Builder()
-        .baseUrl(AI_BASE_URL)
-        .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
     val apiService: FoodApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

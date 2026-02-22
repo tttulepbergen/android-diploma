@@ -1,4 +1,4 @@
-package com.example.scanfit.mainNavigation // Новая папка от Sunbekova
+package com.example.scanfit.mainNavigation
 
 import android.os.Bundle
 import android.view.View
@@ -26,7 +26,6 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
         val database = AppDatabase.getDatabase(requireContext())
         setupRecyclerView()
 
-        // Используем Flow для автоматического обновления списка (как предложила Sunbekova)
         viewLifecycleOwner.lifecycleScope.launch {
             database.productDao().getAllFavorites().collect { favoriteList ->
                 if (favoriteList.isEmpty()) {
@@ -39,7 +38,7 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
                     val foodItems = favoriteList.map { favorite ->
                         FoodItem(
                             title = favorite.productName,
-                            subtitle = favorite.name ?: "Unknown Brand", // Ваша версия (более детальная)
+                            subtitle = favorite.name ?: "Unknown Brand",
                             imageUrl = favorite.imageUrl,
                             calories = favorite.calories,
                             grade = favorite.grade,
@@ -50,7 +49,7 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
 
                     binding.rvFavorites.adapter = FoodAdapter(
                         items = foodItems,
-                        showFavoriteIcon = true, // Показываем иконку (сердечко)
+                        showFavoriteIcon = true,
                         onItemClick = { item ->
                             val bundle = bundleOf("foodItem" to item)
                             findNavController().navigate(
@@ -58,7 +57,6 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
                                 bundle
                             )                        },
                         onFavoriteClick = { item ->
-                            // Удаление из базы при нажатии на сердечко
                             viewLifecycleOwner.lifecycleScope.launch {
                                 database.productDao().deleteFavoriteById(item.title)
                             }

@@ -46,13 +46,13 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                         } else {
                             Toast.makeText(
                                 context,
-                                "Ошибка: ${task.exception?.message}",
+                                "Error: ${task.exception?.message}",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
                     }
             } else {
-                Toast.makeText(context, "Заполните все поля", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
             }
         }
     }

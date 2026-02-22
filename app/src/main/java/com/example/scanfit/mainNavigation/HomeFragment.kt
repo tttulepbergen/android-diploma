@@ -61,7 +61,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
-        // Динамическое приветствие от Sunbekova
         val currentUser = FirebaseAuth.getInstance().currentUser
         val username = currentUser?.displayName ?: "Anel"
         binding.tvGreeting.text = "Hi, $username"
@@ -171,8 +170,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             binding.calorieProgressBar.progress = (total.toFloat() / limit * 100).toInt()
         }
 
-        // ... Наблюдатели для белков, жиров, углеводов аналогично ...
-        // (Они почти идентичны в обеих версиях)
         trackerViewModel.totalProteins.observe(viewLifecycleOwner) { total ->
             val limit = 150
             binding.tvProteinsMain.text = "${total.toInt()} g"
@@ -204,20 +201,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
 
+
     private fun renderWaterGlasses(count: Int) {
         binding.waterStack.removeAllViews()
         val maxGlasses = 7
-        val glassSize = 40
-        val dailyGoal = 1.74
-
-        binding.waterStack.weightSum = maxGlasses.toFloat()
-
+        val glassHeight = 75
         for (i in 0 until maxGlasses) {
             val imageView = ImageView(requireContext())
-            val params = LinearLayout.LayoutParams(0, dpToPx(glassSize), 1f).apply {
+
+            val params = LinearLayout.LayoutParams(0, dpToPx(glassHeight), 1f).apply {
                 setMargins(dpToPx(2), 0, dpToPx(2), 0)
             }
+
             imageView.layoutParams = params
+
+            imageView.scaleType = ImageView.ScaleType.FIT_CENTER
 
             when {
                 i < count -> {
@@ -234,9 +232,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
             binding.waterStack.addView(imageView)
         }
-
-        val remaining = dailyGoal - (count * 0.25)
-        binding.tvWaterGoal.text = if (remaining > 0) String.format("Goal %.2f L left", remaining) else "Goal reached! 🎉"
     }
 
     private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()

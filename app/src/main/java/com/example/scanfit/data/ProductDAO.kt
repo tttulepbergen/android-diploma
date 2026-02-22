@@ -15,7 +15,7 @@ interface ProductDao {
     suspend fun getProduct(barcode: String): ProductEntity?
 
     @Query("SELECT * FROM favorites_table")
-    fun getAllFavorites(): Flow<List<FavoriteProduct>> // Используем FavoriteProduct
+    fun getAllFavorites(): Flow<List<FavoriteProduct>>
 
     @Query("SELECT * FROM favorites_table WHERE id = :id LIMIT 1")
     suspend fun getFavoriteById(id: String): FavoriteProduct?
@@ -23,7 +23,7 @@ interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFavorite(item: FavoriteProduct)
 
-    @Query("DELETE FROM favorites_table") // Replace with your actual table name
+    @Query("DELETE FROM favorites_table")
     suspend fun deleteAllFavorites()
 
     @Delete

@@ -52,7 +52,8 @@
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:src="@drawable/ic_favourites"
-            android:contentDescription="@string/favourite_icon_description" />
+            android:contentDescription="@string/favourite_icon_description"
+            app:tint="#9E9E9E"/>
 
         <TextView
             android:layout_width="wrap_content"
