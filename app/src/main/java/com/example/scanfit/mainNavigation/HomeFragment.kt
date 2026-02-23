@@ -62,7 +62,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding = FragmentHomeBinding.bind(view)
 
         val currentUser = FirebaseAuth.getInstance().currentUser
-        val username = currentUser?.displayName ?: "Anel"
+        val username = currentUser?.displayName ?: "User"
         binding.tvGreeting.text = "Hi, $username"
 
         setupTrackerObserver()

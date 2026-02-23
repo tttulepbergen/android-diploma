@@ -25,6 +25,20 @@ class ScanActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
         binding.bottomNavigation.setupWithNavController(navController)
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.loginFragment3,
+                R.id.forgotPasswordFragment,
+                R.id.resetPasswordFragment,
+                R.id.signUpFragment,
+                R.id.verifyPinFragment -> {
+                    binding.bottomNavigation.visibility = android.view.View.GONE
+                }
+                else -> {
+                    binding.bottomNavigation.visibility = android.view.View.VISIBLE
+                }
+            }
+        }
 
         setupSystemBars()
     }
