@@ -7,7 +7,9 @@ import java.util.concurrent.TimeUnit
 
 object NetworkClient {
     private const val BASE_URL = "https://world.openfoodfacts.org/"
-    private const val AI_BASE_URL = "http://192.168.0.102:8080/" //your ip here
+    private const val AI_BASE_URL = "http://192.168.0.102:8080/"
+    private const val AUTH_BASE_URL = "http://46.101.137.109:3000/"
+
     val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(2, TimeUnit.MINUTES)
         .readTimeout(3, TimeUnit.MINUTES)
@@ -30,5 +32,14 @@ object NetworkClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(FoodApiService::class.java)
+    }
+
+    val authApiService: AuthApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(AUTH_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(AuthApiService::class.java)
     }
 }

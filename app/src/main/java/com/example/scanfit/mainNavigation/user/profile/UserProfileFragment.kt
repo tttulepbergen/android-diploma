@@ -16,25 +16,24 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentUserProfileBinding
+import com.example.scanfit.utils.SessionManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.firebase.auth.FirebaseAuth
 
 class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     private var _binding: FragmentUserProfileBinding? = null
     private val binding get() = _binding!!
+    private lateinit var sessionManager: SessionManager
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentUserProfileBinding.bind(view)
+        sessionManager = SessionManager(requireContext())
 
-        val auth = FirebaseAuth.getInstance()
-        val user = auth.currentUser
-
-        user?.let {
-            binding.tvProfileEmail.text = it.email
-            binding.tvProfileUsername.text = it.displayName ?: it.email?.substringBefore("@") ?: "User"
-        }
+        // Note: Firebase user info removed as we switched to custom backend
+        // In a real app, you'd fetch user info from the backend using the token
+        binding.tvProfileEmail.text = "User" 
+        binding.tvProfileUsername.text = "Account"
 
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
@@ -104,9 +103,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     private fun setupButtons() {
         binding.btnLogout.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
+            sessionManager.clearData()
             Toast.makeText(requireContext(), "Logged out", Toast.LENGTH_SHORT).show()
             requireActivity().finish()
+            // Optionally restart the app or navigate to login
         }
 
         binding.btnDeleteAccount.setOnClickListener {
