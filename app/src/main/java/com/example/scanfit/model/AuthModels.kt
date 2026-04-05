@@ -15,6 +15,15 @@ data class LoginRequest(
     val password: String
 )
 
+data class ForgotPasswordRequest(
+    val email: String
+)
+
+data class BaseResponse(
+    val message: String?,
+    val success: Boolean
+)
+
 data class AuthResponse(
     val data: AuthData?,
     val message: String?,
