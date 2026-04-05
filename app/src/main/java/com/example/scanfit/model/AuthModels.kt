@@ -56,6 +56,7 @@ data class AuthResponse(
 )
 
 data class AuthData(
+    val id: Int,
     @SerializedName("access_token")
     val accessToken: String,
     @SerializedName("expires_in")

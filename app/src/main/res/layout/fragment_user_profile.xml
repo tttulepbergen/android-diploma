@@ -424,6 +424,18 @@
 
             </LinearLayout>
         </ScrollView>
+
+        <ScrollView
+            android:id="@+id/layout_dietary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+            <LinearLayout
+                android:id="@+id/dietary_items_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
     </FrameLayout>
 
     <com.google.android.material.button.MaterialButton

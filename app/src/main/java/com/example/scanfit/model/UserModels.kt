@@ -67,3 +67,47 @@ data class UserMeasureData(
     val updatedAt: String?,
     val weight: Int?
 )
+
+data class UserAccountResponse(
+    val data: UserAccountData?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class UserAccountData(
+    val id: Int,
+    val email: String,
+    val username: String?,
+    @SerializedName("birth_date")
+    val birthDate: String?,
+    val mygoal: String?,
+    val photo: String?,
+    @SerializedName("created_at")
+    val createdAt: String?,
+    @SerializedName("updated_at")
+    val updatedAt: String?
+)
+
+data class DietTypeListResponse(
+    val data: List<DietType>?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class DietType(
+    val id: Int,
+    val name: String,
+    @SerializedName("is_active")
+    val isActive: Boolean,
+    val category: String?
+)
+
+data class UpdateDietTypeRequest(
+    @SerializedName("is_active")
+    val isActive: Boolean
+)
+
+data class UpdateDietTypeResponse(
+    val message: String?,
+    val success: Boolean
+)

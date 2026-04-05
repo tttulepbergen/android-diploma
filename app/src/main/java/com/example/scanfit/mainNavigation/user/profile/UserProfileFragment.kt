@@ -16,11 +16,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentUserProfileBinding
+import com.example.scanfit.model.DietType
+import com.example.scanfit.model.UpdateDietTypeRequest
 import com.example.scanfit.model.UpdateUserMeasureRequest
+import com.example.scanfit.model.UserAccountData
 import com.example.scanfit.model.UserMeasureData
 import com.example.scanfit.network.NetworkClient
 import com.example.scanfit.utils.SessionManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -31,7 +35,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private var _binding: FragmentUserProfileBinding? = null
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
-    private var currentData: UserMeasureData? = null
+    private var currentMeasureData: UserMeasureData? = null
     private var isUpdatingUI = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -50,27 +54,47 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 when (checkedId) {
                     R.id.btn_my_account -> showAccountInfo()
                     R.id.btn_measurements -> showMeasurements()
+                    R.id.btn_dietary -> showDietary()
                 }
             }
         }
 
         setupMeasurementClickListeners()
-        fetchUserMeasurements()
+        
+        if (binding.toggleGroup.checkedButtonId == R.id.btn_my_account) {
+            showAccountInfo()
+        } else if (binding.toggleGroup.checkedButtonId == R.id.btn_measurements) {
+            showMeasurements()
+        } else {
+            showDietary()
+        }
     }
 
     private fun showAccountInfo() {
         binding.layoutAccountInfo.visibility = View.VISIBLE
         binding.layoutMeasurements.visibility = View.GONE
+        binding.layoutDietary.visibility = View.GONE
         binding.btnLogout.visibility = View.VISIBLE
         binding.btnDeleteAccount.visibility = View.VISIBLE
+        fetchUserAccount()
     }
 
     private fun showMeasurements() {
         binding.layoutAccountInfo.visibility = View.GONE
         binding.layoutMeasurements.visibility = View.VISIBLE
+        binding.layoutDietary.visibility = View.GONE
         binding.btnLogout.visibility = View.GONE
         binding.btnDeleteAccount.visibility = View.GONE
         fetchUserMeasurements()
+    }
+
+    private fun showDietary() {
+        binding.layoutAccountInfo.visibility = View.GONE
+        binding.layoutMeasurements.visibility = View.GONE
+        binding.layoutDietary.visibility = View.VISIBLE
+        binding.btnLogout.visibility = View.GONE
+        binding.btnDeleteAccount.visibility = View.GONE
+        fetchDietTypes()
     }
 
     private fun setupMeasurementClickListeners() {
@@ -119,22 +143,44 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
     }
 
+    private fun fetchUserAccount() {
+        val token = sessionManager.fetchAuthToken() ?: return
+        val userId = sessionManager.fetchUserId()
+        if (userId == -1) return
+
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.getUserAccount("Bearer $token", userId)
+                if (response.success && response.data != null) {
+                    displayAccountData(response.data)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error fetching account: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun displayAccountData(data: UserAccountData) {
+        binding.tvProfileEmail.text = data.email
+        binding.tvProfileUsername.text = data.username ?: data.email.substringBefore("@")
+    }
+
     private fun fetchUserMeasurements() {
         val token = sessionManager.fetchAuthToken() ?: return
         lifecycleScope.launch {
             try {
                 val response = NetworkClient.userApiService.getMeasure("Bearer $token")
                 if (response.success && response.data != null) {
-                    currentData = response.data
-                    displayData(response.data)
+                    currentMeasureData = response.data
+                    displayMeasureData(response.data)
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Error fetching data: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Error fetching measurements: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun displayData(data: UserMeasureData) {
+    private fun displayMeasureData(data: UserMeasureData) {
         isUpdatingUI = true
         binding.tvGenderValue.text = data.gender ?: "please select"
         binding.tvBirthValue.text = data.birthDate ?: "not set"
@@ -147,8 +193,99 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         isUpdatingUI = false
     }
 
+    private fun fetchDietTypes() {
+        val token = sessionManager.fetchAuthToken() ?: return
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.getDietTypes("Bearer $token")
+                if (response.success && response.data != null) {
+                    populateDietaryUI(response.data)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error fetching dietary: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun populateDietaryUI(dietTypes: List<DietType>) {
+        binding.dietaryItemsContainer.removeAllViews()
+        
+        val categories = dietTypes.groupBy { it.category ?: "Other" }
+        
+        for ((category, items) in categories) {
+            val titleView = TextView(context).apply {
+                text = if (category == "Other") "My Diet" else category
+                textSize = 18f
+                setPadding(0, 40, 0, 8)
+                setTextColor(resources.getColor(R.color.black, null))
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+            }
+            binding.dietaryItemsContainer.addView(titleView)
+            
+            val descView = TextView(context).apply {
+                text = "(Premium feature - Scan&Fit Pro)"
+                textSize = 12f
+                setPadding(0, 0, 0, 16)
+                setTextColor(resources.getColor(R.color.black, null))
+                alpha = 0.5f
+            }
+            binding.dietaryItemsContainer.addView(descView)
+
+            for (item in items) {
+                val row = createDietRow(item)
+                binding.dietaryItemsContainer.addView(row)
+            }
+        }
+    }
+
+    private fun createDietRow(item: DietType): View {
+        val layout = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                110 // height in pixels approx 55dp
+            )
+            gravity = android.view.Gravity.CENTER_VERTICAL
+        }
+
+        val nameView = TextView(context).apply {
+            text = item.name
+            textSize = 16f
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            setTextColor(resources.getColor(R.color.black, null))
+        }
+
+        val switch = SwitchMaterial(requireContext()).apply {
+            isChecked = item.isActive
+            setOnCheckedChangeListener { _, isChecked ->
+                updateDietary(item.id, isChecked)
+            }
+        }
+
+        layout.addView(nameView)
+        layout.addView(switch)
+        
+        return layout
+    }
+
+    private fun updateDietary(id: Int, isActive: Boolean) {
+        val token = sessionManager.fetchAuthToken() ?: return
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.updateDietType("Bearer $token", id, UpdateDietTypeRequest(isActive))
+                if (response.success) {
+                    Toast.makeText(context, "Dietary preference updated", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun updateSingleField(updateBlock: (UpdateUserMeasureRequest) -> UpdateUserMeasureRequest) {
-        val data = currentData ?: return
+        val data = currentMeasureData ?: return
         val token = sessionManager.fetchAuthToken() ?: return
 
         val currentRequest = UpdateUserMeasureRequest(
@@ -170,15 +307,15 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             try {
                 val response = NetworkClient.userApiService.updateMeasure("Bearer $token", updatedRequest)
                 if (response.success && response.data != null) {
-                    currentData = response.data
-                    displayData(response.data)
+                    currentMeasureData = response.data
+                    displayMeasureData(response.data)
+                    Toast.makeText(context, "Updated successfully", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                // Revert UI if needed
-                currentData?.let { displayData(it) }
+                currentMeasureData?.let { displayMeasureData(it) }
             }
         }
     }

@@ -51,6 +51,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 if (response.success && response.data != null) {
                     sessionManager.saveAuthToken(response.data.accessToken)
                     sessionManager.saveRefreshToken(response.data.refreshToken)
+                    sessionManager.saveUserId(response.data.id)
 
                     val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
                     val isProfileCompleted = prefs.getBoolean("profile_completed", false)
