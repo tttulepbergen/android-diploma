@@ -6,9 +6,13 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentVerifyPinBinding
+import com.example.scanfit.model.VerifyPinRequest
+import com.example.scanfit.network.NetworkClient
+import kotlinx.coroutines.launch
 
 class VerifyPinFragment : Fragment(R.layout.fragment_verify_pin) {
 
@@ -19,9 +23,7 @@ class VerifyPinFragment : Fragment(R.layout.fragment_verify_pin) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentVerifyPinBinding.bind(view)
 
-        val correctPin = arguments?.getString("correct_pin")
         val userEmail = arguments?.getString("user_email")
-
         binding.tvEmailDisplay.text = userEmail ?: "your email"
 
         setupPinInputs()
@@ -31,17 +33,33 @@ class VerifyPinFragment : Fragment(R.layout.fragment_verify_pin) {
 
             if (enteredPin.length < 6) {
                 Toast.makeText(context, "Введите все 6 цифр", Toast.LENGTH_SHORT).show()
-            } else if (enteredPin == correctPin) {
-                Toast.makeText(context, "Код подтвержден!", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.action_verifyPinFragment_to_resetPasswordFragment)
-            } else {
-                Toast.makeText(context, "Неверный код. Попробуйте еще раз", Toast.LENGTH_SHORT).show()
-                clearInputs()
+            } else if (userEmail != null) {
+                verifyPin(userEmail, enteredPin)
             }
         }
 
         binding.tvResendCode.setOnClickListener {
             findNavController().popBackStack()
+        }
+    }
+
+    private fun verifyPin(email: String, pin: String) {
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.authApiService.verifyPin(VerifyPinRequest(email, pin))
+                if (response.success && response.data != null) {
+                    val bundle = Bundle().apply {
+                        putString("user_email", email)
+                        putString("reset_token", response.data.token)
+                    }
+                    Toast.makeText(context, "Код подтвержден!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.action_verifyPinFragment_to_resetPasswordFragment, bundle)
+                } else {
+                    Toast.makeText(context, response.message ?: "Неверный код", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -52,16 +70,6 @@ class VerifyPinFragment : Fragment(R.layout.fragment_verify_pin) {
                 binding.etDigit4.text.toString() +
                 binding.etDigit5.text.toString() +
                 binding.etDigit6.text.toString()
-    }
-
-    private fun clearInputs() {
-        binding.etDigit1.text.clear()
-        binding.etDigit2.text.clear()
-        binding.etDigit3.text.clear()
-        binding.etDigit4.text.clear()
-        binding.etDigit5.text.clear()
-        binding.etDigit6.text.clear()
-        binding.etDigit1.requestFocus()
     }
 
     private fun setupPinInputs() {
@@ -78,11 +86,7 @@ class VerifyPinFragment : Fragment(R.layout.fragment_verify_pin) {
                         editTexts[i + 1].requestFocus()
                     }
                 }
-                override fun afterTextChanged(s: Editable?) {
-                    if (s?.isEmpty() == true && i > 0) {
-                        editTexts[i - 1].requestFocus()
-                    }
-                }
+                override fun afterTextChanged(s: Editable?) {}
             })
         }
     }
