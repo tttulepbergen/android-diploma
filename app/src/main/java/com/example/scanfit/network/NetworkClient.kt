@@ -42,4 +42,13 @@ object NetworkClient {
             .build()
             .create(AuthApiService::class.java)
     }
+
+    val userApiService: UserApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(AUTH_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(UserApiService::class.java)
+    }
 }

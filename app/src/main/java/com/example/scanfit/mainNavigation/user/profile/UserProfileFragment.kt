@@ -1,6 +1,5 @@
 package com.example.scanfit.mainNavigation.user.profile
 
-import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.InputType
@@ -13,27 +12,32 @@ import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentUserProfileBinding
+import com.example.scanfit.model.UpdateUserMeasureRequest
+import com.example.scanfit.model.UserMeasureData
+import com.example.scanfit.network.NetworkClient
 import com.example.scanfit.utils.SessionManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     private var _binding: FragmentUserProfileBinding? = null
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
+    private var currentData: UserMeasureData? = null
+    private var isUpdatingUI = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentUserProfileBinding.bind(view)
         sessionManager = SessionManager(requireContext())
-
-        // Note: Firebase user info removed as we switched to custom backend
-        // In a real app, you'd fetch user info from the backend using the token
-        binding.tvProfileEmail.text = "User" 
-        binding.tvProfileUsername.text = "Account"
 
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
@@ -50,7 +54,8 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             }
         }
 
-        loadUserMeasurements()
+        setupMeasurementClickListeners()
+        fetchUserMeasurements()
     }
 
     private fun showAccountInfo() {
@@ -65,40 +70,140 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         binding.layoutMeasurements.visibility = View.VISIBLE
         binding.btnLogout.visibility = View.GONE
         binding.btnDeleteAccount.visibility = View.GONE
-
-        loadUserMeasurements()
-        setupMeasurementClickListeners()
+        fetchUserMeasurements()
     }
 
     private fun setupMeasurementClickListeners() {
         binding.rowGender.setOnClickListener {
-            showPickerSheet("I am a", arrayOf("Gal", "Guy", "Prefer not to say"), "user_gender", binding.tvGenderValue)
+            showPickerSheet("I am a", arrayOf("Guy", "Gal", "Prefer not to say")) { selected ->
+                updateSingleField { it.copy(gender = selected) }
+            }
         }
 
         binding.rowBirth.setOnClickListener {
-            showDatePickerSheet()
+            showDatePickerSheet { date ->
+                updateSingleField { it.copy(birthDate = date, age = calculateAge(date)) }
+            }
         }
 
         binding.rowHeight.setOnClickListener {
-            showEditInputSheet("My height is", "cm", "user_height", binding.tvHeightValue)
+            showEditInputSheet("My height is", "cm") { value ->
+                val h = value.toIntOrNull() ?: 0
+                updateSingleField { 
+                    val newBmi = calculateBmi(h, it.weight)
+                    it.copy(height = h, bmi = newBmi) 
+                }
+            }
         }
 
         binding.rowWeight.setOnClickListener {
-            showEditInputSheet("My current weight is", "kg", "user_weight", binding.tvWeightValue)
+            showEditInputSheet("My current weight is", "kg") { value ->
+                val w = value.toIntOrNull() ?: 0
+                updateSingleField { 
+                    val newBmi = calculateBmi(it.height, w)
+                    it.copy(weight = w, bmi = newBmi) 
+                }
+            }
+        }
+
+        binding.switchBloodPressure.setOnCheckedChangeListener { _, isChecked ->
+            if (!isUpdatingUI) {
+                updateSingleField { it.copy(bloodPressure = if (isChecked) 1 else 0) }
+            }
+        }
+
+        binding.switchCholesterol.setOnCheckedChangeListener { _, isChecked ->
+            if (!isUpdatingUI) {
+                updateSingleField { it.copy(cholesterol = if (isChecked) 1 else 0) }
+            }
         }
     }
 
-    private fun loadUserMeasurements() {
-        val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-        binding.tvHeightValue.text = prefs.getString("user_height", "not set")
-        binding.tvWeightValue.text = prefs.getString("user_weight", "not set")
-        binding.tvGenderValue.text = prefs.getString("user_gender", "please select")
-        binding.tvBirthValue.text = prefs.getString("user_birth", "not set")
+    private fun fetchUserMeasurements() {
+        val token = sessionManager.fetchAuthToken() ?: return
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.getMeasure("Bearer $token")
+                if (response.success && response.data != null) {
+                    currentData = response.data
+                    displayData(response.data)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error fetching data: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
-    private fun saveData(key: String, value: String) {
-        val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-        prefs.edit().putString(key, value).apply()
+    private fun displayData(data: UserMeasureData) {
+        isUpdatingUI = true
+        binding.tvGenderValue.text = data.gender ?: "please select"
+        binding.tvBirthValue.text = data.birthDate ?: "not set"
+        binding.tvHeightValue.text = "${data.height ?: 0} cm"
+        binding.tvWeightValue.text = "${data.weight ?: 0} kg"
+        binding.tvBmiValue.text = String.format("%.1f", data.bmi?.toDouble() ?: 0.0)
+        
+        binding.switchBloodPressure.isChecked = (data.bloodPressure ?: 0) == 1
+        binding.switchCholesterol.isChecked = (data.cholesterol ?: 0) == 1
+        isUpdatingUI = false
+    }
+
+    private fun updateSingleField(updateBlock: (UpdateUserMeasureRequest) -> UpdateUserMeasureRequest) {
+        val data = currentData ?: return
+        val token = sessionManager.fetchAuthToken() ?: return
+
+        val currentRequest = UpdateUserMeasureRequest(
+            age = data.age ?: "0",
+            birthDate = data.birthDate ?: "2000-01-01",
+            bloodPressure = data.bloodPressure ?: 0,
+            bmi = data.bmi ?: 0,
+            cholesterol = data.cholesterol ?: 0,
+            dailyCaloriesGoal = data.dailyCaloriesGoal ?: 0,
+            dailyWaterGoal = data.dailyWaterGoal ?: 0,
+            gender = data.gender ?: "string",
+            height = data.height ?: 0,
+            weight = data.weight ?: 0
+        )
+
+        val updatedRequest = updateBlock(currentRequest)
+
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.updateMeasure("Bearer $token", updatedRequest)
+                if (response.success && response.data != null) {
+                    currentData = response.data
+                    displayData(response.data)
+                } else {
+                    Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                // Revert UI if needed
+                currentData?.let { displayData(it) }
+            }
+        }
+    }
+
+    private fun calculateBmi(heightCm: Int, weightKg: Int): Int {
+        if (heightCm == 0) return 0
+        val heightM = heightCm / 100.0
+        return (weightKg / (heightM * heightM)).toInt()
+    }
+
+    private fun calculateAge(birthDate: String): String {
+        return try {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val date = sdf.parse(birthDate) ?: return "0"
+            val dob = Calendar.getInstance()
+            dob.time = date
+            val today = Calendar.getInstance()
+            var age = today.get(Calendar.YEAR) - dob.get(Calendar.YEAR)
+            if (today.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)) {
+                age--
+            }
+            age.toString()
+        } catch (e: Exception) {
+            "0"
+        }
     }
 
     private fun setupButtons() {
@@ -106,7 +211,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             sessionManager.clearData()
             Toast.makeText(requireContext(), "Logged out", Toast.LENGTH_SHORT).show()
             requireActivity().finish()
-            // Optionally restart the app or navigate to login
         }
 
         binding.btnDeleteAccount.setOnClickListener {
@@ -114,7 +218,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
     }
 
-    private fun showPickerSheet(title: String, options: Array<String>, key: String, textView: TextView) {
+    private fun showPickerSheet(title: String, options: Array<String>, onSelected: (String) -> Unit) {
         val dialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.layout_picker_bottom_sheet, null)
 
@@ -129,9 +233,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         btnCancel.setOnClickListener { dialog.dismiss() }
         btnDone.setOnClickListener {
-            val selectedValue = options[picker.value]
-            textView.text = selectedValue
-            saveData(key, selectedValue)
+            onSelected(options[picker.value])
             dialog.dismiss()
         }
 
@@ -139,7 +241,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         dialog.show()
     }
 
-    private fun showDatePickerSheet() {
+    private fun showDatePickerSheet(onDateSelected: (String) -> Unit) {
         val dialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.layout_picker_bottom_sheet, null)
 
@@ -153,9 +255,8 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         btnCancel.setOnClickListener { dialog.dismiss() }
         btnDone.setOnClickListener {
-            val dateString = "${datePicker.dayOfMonth}.${datePicker.month + 1}.${datePicker.year}"
-            binding.tvBirthValue.text = dateString
-            saveData("user_birth", dateString)
+            val dateString = String.format("%04d-%02d-%02d", datePicker.year, datePicker.month + 1, datePicker.dayOfMonth)
+            onDateSelected(dateString)
             dialog.dismiss()
         }
 
@@ -163,7 +264,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         dialog.show()
     }
 
-    private fun showEditInputSheet(title: String, unit: String, key: String, textView: TextView) {
+    private fun showEditInputSheet(title: String, unit: String, onValueEntered: (String) -> Unit) {
         val dialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.layout_picker_bottom_sheet, null)
 
@@ -171,19 +272,21 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         view.findViewById<NumberPicker>(R.id.number_picker).visibility = View.GONE
 
         val input = EditText(requireContext()).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+            inputType = InputType.TYPE_CLASS_NUMBER
             hint = "Enter value"
             textSize = 24f
             gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(40, 40, 40, 40) }
         }
         container.addView(input)
 
         view.findViewById<TextView>(R.id.tv_done).setOnClickListener {
             val value = input.text.toString()
             if (value.isNotEmpty()) {
-                val result = "$value $unit"
-                textView.text = result
-                saveData(key, result)
+                onValueEntered(value)
             }
             dialog.dismiss()
         }
