@@ -43,8 +43,32 @@ interface UserApiService {
         @Header("Authorization") token: String
     ): DietTypeListResponse
 
+    @GET("api/v1/user/dietary-preference/list")
+    suspend fun getDietaryPreferences(
+        @Header("Authorization") token: String
+    ): DietTypeListResponse
+
+    @GET("api/v1/user/health-condition/list")
+    suspend fun getHealthConditions(
+        @Header("Authorization") token: String
+    ): DietTypeListResponse
+
     @PUT("api/v1/user/diet-type/update/{id}")
     suspend fun updateDietType(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body request: UpdateDietTypeRequest
+    ): UpdateDietTypeResponse
+
+    @PUT("api/v1/user/dietary-preference/update/{id}")
+    suspend fun updateDietaryPreference(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body request: UpdateDietTypeRequest
+    ): UpdateDietTypeResponse
+
+    @PUT("api/v1/user/health-condition/update/{id}")
+    suspend fun updateHealthCondition(
         @Header("Authorization") token: String,
         @Path("id") id: Int,
         @Body request: UpdateDietTypeRequest

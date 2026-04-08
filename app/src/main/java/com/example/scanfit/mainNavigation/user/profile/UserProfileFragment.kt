@@ -32,6 +32,18 @@ import java.util.Locale
 
 class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
+    private enum class DietarySectionType {
+        DIET_TYPE,
+        DIETARY_PREFERENCE,
+        HEALTH_CONDITION
+    }
+
+    private data class DietarySection(
+        val title: String,
+        val items: List<DietType>,
+        val sectionType: DietarySectionType
+    )
+
     private var _binding: FragmentUserProfileBinding? = null
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
@@ -194,25 +206,67 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun fetchDietTypes() {
         val token = sessionManager.fetchAuthToken() ?: return
         lifecycleScope.launch {
+            val sections = mutableListOf<DietarySection>()
+
             try {
-                val response = NetworkClient.userApiService.getDietTypes("Bearer $token")
-                if (response.success && response.data != null) {
-                    populateDietaryUI(response.data)
+                val dietTypesResponse = NetworkClient.userApiService.getDietTypes(token)
+                if (dietTypesResponse.success && !dietTypesResponse.data.isNullOrEmpty()) {
+                    val groupedDietTypes = dietTypesResponse.data.groupBy { it.category ?: "My Diet" }
+                    groupedDietTypes.forEach { (category, items) ->
+                        sections.add(
+                            DietarySection(
+                                title = category,
+                                items = items,
+                                sectionType = DietarySectionType.DIET_TYPE
+                            )
+                        )
+                    }
                 }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Error fetching dietary: ${e.message}", Toast.LENGTH_SHORT).show()
+            } catch (_: Exception) {
+            }
+
+            try {
+                val dietaryPreferencesResponse = NetworkClient.userApiService.getDietaryPreferences(token)
+                if (dietaryPreferencesResponse.success && !dietaryPreferencesResponse.data.isNullOrEmpty()) {
+                    sections.add(
+                        DietarySection(
+                            title = "Dietary Preferences",
+                            items = dietaryPreferencesResponse.data,
+                            sectionType = DietarySectionType.DIETARY_PREFERENCE
+                        )
+                    )
+                }
+            } catch (_: Exception) {
+            }
+
+            try {
+                val healthConditionsResponse = NetworkClient.userApiService.getHealthConditions(token)
+                if (healthConditionsResponse.success && !healthConditionsResponse.data.isNullOrEmpty()) {
+                    sections.add(
+                        DietarySection(
+                            title = "Health Condition",
+                            items = healthConditionsResponse.data,
+                            sectionType = DietarySectionType.HEALTH_CONDITION
+                        )
+                    )
+                }
+            } catch (_: Exception) {
+            }
+
+            if (sections.isNotEmpty()) {
+                populateDietaryUI(sections)
+            } else {
+                Toast.makeText(context, "Error fetching dietary data", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun populateDietaryUI(dietTypes: List<DietType>) {
+    private fun populateDietaryUI(sections: List<DietarySection>) {
         binding.dietaryItemsContainer.removeAllViews()
-        
-        val categories = dietTypes.groupBy { it.category ?: "Other" }
-        
-        for ((category, items) in categories) {
+
+        for (section in sections) {
             val titleView = TextView(context).apply {
-                text = if (category == "Other") "My Diet" else category
+                text = section.title
                 textSize = 18f
                 setPadding(0, 40, 0, 8)
                 setTextColor(resources.getColor(R.color.black, null))
@@ -229,14 +283,14 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             }
             binding.dietaryItemsContainer.addView(descView)
 
-            for (item in items) {
-                val row = createDietRow(item)
+            for (item in section.items) {
+                val row = createDietRow(item, section.sectionType)
                 binding.dietaryItemsContainer.addView(row)
             }
         }
     }
 
-    private fun createDietRow(item: DietType): View {
+    private fun createDietRow(item: DietType, sectionType: DietarySectionType): View {
         val layout = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
@@ -256,7 +310,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val switch = SwitchMaterial(requireContext()).apply {
             isChecked = item.isActive
             setOnCheckedChangeListener { _, isChecked ->
-                updateDietary(item.id, isChecked)
+                updateDietary(item.id, isChecked, sectionType)
             }
         }
 
@@ -266,13 +320,17 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         return layout
     }
 
-    private fun updateDietary(id: Int, isActive: Boolean) {
+    private fun updateDietary(id: Int, isActive: Boolean, sectionType: DietarySectionType) {
         val token = sessionManager.fetchAuthToken() ?: return
         lifecycleScope.launch {
             try {
-                val response = NetworkClient.userApiService.updateDietType("Bearer $token", id, UpdateDietTypeRequest(isActive))
+                val response = when (sectionType) {
+                    DietarySectionType.DIET_TYPE -> NetworkClient.userApiService.updateDietType(token, id, UpdateDietTypeRequest(isActive))
+                    DietarySectionType.DIETARY_PREFERENCE -> NetworkClient.userApiService.updateDietaryPreference(token, id, UpdateDietTypeRequest(isActive))
+                    DietarySectionType.HEALTH_CONDITION -> NetworkClient.userApiService.updateHealthCondition(token, id, UpdateDietTypeRequest(isActive))
+                }
                 if (response.success) {
-                    Toast.makeText(context, "Dietary preference updated", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Updated successfully", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
                 }
