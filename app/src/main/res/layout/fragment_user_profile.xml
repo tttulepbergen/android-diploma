@@ -44,7 +44,8 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="MY ACCOUNT"
+            android:minWidth="0dp"
+            android:text="ACCOUNT"
             android:textSize="11sp" />
 
         <com.google.android.material.button.MaterialButton
@@ -53,7 +54,8 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="MEASUREMENTS"
+            android:minWidth="0dp"
+            android:text="BODY"
             android:textSize="11sp" />
 
         <com.google.android.material.button.MaterialButton
@@ -62,7 +64,18 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="DIETARY"
+            android:minWidth="0dp"
+            android:text="DIET"
+            android:textSize="11sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_diseases"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:text="DISEASE"
             android:textSize="11sp" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -432,6 +445,19 @@
             android:visibility="gone">
             <LinearLayout
                 android:id="@+id/dietary_items_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/layout_diseases"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/disease_items_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
