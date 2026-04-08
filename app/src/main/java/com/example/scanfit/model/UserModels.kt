@@ -111,3 +111,66 @@ data class UpdateDietTypeResponse(
     val message: String?,
     val success: Boolean
 )
+
+data class DiseaseListResponse(
+    val data: List<Disease>?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class Disease(
+    val id: Int,
+    val code: String?,
+    val name: String,
+    val description: String?,
+    @SerializedName("disease_level")
+    val diseaseLevel: DiseaseLevel?,
+    @SerializedName("is_active")
+    val isActive: Boolean
+)
+
+data class DiseaseLevelListResponse(
+    val data: List<DiseaseLevel>?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class DiseaseLevel(
+    val id: Int,
+    val code: String?,
+    val name: String
+)
+
+data class UpdateDiseaseRequest(
+    @SerializedName("disease_level_id")
+    val diseaseLevelId: Int,
+    @SerializedName("is_active")
+    val isActive: Boolean
+)
+
+data class WeightManagementResponse(
+    val data: WeightManagementData?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class WeightManagementData(
+    val id: Int,
+    val goal: String?,
+    @SerializedName("target_date")
+    val targetDate: String?,
+    @SerializedName("target_weight")
+    val targetWeight: Int?,
+    @SerializedName("weekly_weight_change")
+    val weeklyWeightChange: Int?
+)
+
+data class UpdateWeightManagementRequest(
+    val goal: String?,
+    @SerializedName("target_date")
+    val targetDate: String?,
+    @SerializedName("target_weight")
+    val targetWeight: Int?,
+    @SerializedName("weekly_weight_change")
+    val weeklyWeightChange: Int?
+)
