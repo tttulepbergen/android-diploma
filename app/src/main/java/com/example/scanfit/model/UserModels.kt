@@ -111,3 +111,39 @@ data class UpdateDietTypeResponse(
     val message: String?,
     val success: Boolean
 )
+
+data class DiseaseListResponse(
+    val data: List<Disease>?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class Disease(
+    val id: Int,
+    val code: String?,
+    val name: String,
+    val description: String?,
+    @SerializedName("disease_level")
+    val diseaseLevel: DiseaseLevel?,
+    @SerializedName("is_active")
+    val isActive: Boolean
+)
+
+data class DiseaseLevelListResponse(
+    val data: List<DiseaseLevel>?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class DiseaseLevel(
+    val id: Int,
+    val code: String?,
+    val name: String
+)
+
+data class UpdateDiseaseRequest(
+    @SerializedName("disease_level_id")
+    val diseaseLevelId: Int,
+    @SerializedName("is_active")
+    val isActive: Boolean
+)

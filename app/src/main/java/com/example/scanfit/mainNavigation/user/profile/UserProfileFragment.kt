@@ -1,8 +1,10 @@
 package com.example.scanfit.mainNavigation.user.profile
 
 import android.content.Context
+import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.widget.DatePicker
@@ -16,8 +18,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentUserProfileBinding
+import com.example.scanfit.model.Disease
+import com.example.scanfit.model.DiseaseLevel
 import com.example.scanfit.model.DietType
 import com.example.scanfit.model.UpdateDietTypeRequest
+import com.example.scanfit.model.UpdateDiseaseRequest
 import com.example.scanfit.model.UpdateUserMeasureRequest
 import com.example.scanfit.model.UserAccountData
 import com.example.scanfit.model.UserMeasureData
@@ -48,6 +53,8 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
     private var currentMeasureData: UserMeasureData? = null
+    private var diseaseLevels: List<DiseaseLevel> = emptyList()
+    private var diseases: List<Disease> = emptyList()
     private var isUpdatingUI = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -67,6 +74,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                     R.id.btn_my_account -> showAccountInfo()
                     R.id.btn_measurements -> showMeasurements()
                     R.id.btn_dietary -> showDietary()
+                    R.id.btn_diseases -> showDiseases()
                 }
             }
         }
@@ -77,6 +85,8 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             showAccountInfo()
         } else if (binding.toggleGroup.checkedButtonId == R.id.btn_measurements) {
             showMeasurements()
+        } else if (binding.toggleGroup.checkedButtonId == R.id.btn_diseases) {
+            showDiseases()
         } else {
             showDietary()
         }
@@ -86,6 +96,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         binding.layoutAccountInfo.visibility = View.VISIBLE
         binding.layoutMeasurements.visibility = View.GONE
         binding.layoutDietary.visibility = View.GONE
+        binding.layoutDiseases.visibility = View.GONE
         binding.btnLogout.visibility = View.VISIBLE
         binding.btnDeleteAccount.visibility = View.VISIBLE
         fetchUserAccount()
@@ -95,6 +106,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         binding.layoutAccountInfo.visibility = View.GONE
         binding.layoutMeasurements.visibility = View.VISIBLE
         binding.layoutDietary.visibility = View.GONE
+        binding.layoutDiseases.visibility = View.GONE
         binding.btnLogout.visibility = View.GONE
         binding.btnDeleteAccount.visibility = View.GONE
         fetchUserMeasurements()
@@ -104,9 +116,20 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         binding.layoutAccountInfo.visibility = View.GONE
         binding.layoutMeasurements.visibility = View.GONE
         binding.layoutDietary.visibility = View.VISIBLE
+        binding.layoutDiseases.visibility = View.GONE
         binding.btnLogout.visibility = View.GONE
         binding.btnDeleteAccount.visibility = View.GONE
         fetchDietTypes()
+    }
+
+    private fun showDiseases() {
+        binding.layoutAccountInfo.visibility = View.GONE
+        binding.layoutMeasurements.visibility = View.GONE
+        binding.layoutDietary.visibility = View.GONE
+        binding.layoutDiseases.visibility = View.VISIBLE
+        binding.btnLogout.visibility = View.GONE
+        binding.btnDeleteAccount.visibility = View.GONE
+        fetchDiseases()
     }
 
     private fun setupMeasurementClickListeners() {
@@ -261,27 +284,41 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
     }
 
+    private fun fetchDiseases() {
+        val token = sessionManager.fetchAuthToken() ?: return
+        lifecycleScope.launch {
+            diseases = emptyList()
+            diseaseLevels = emptyList()
+
+            try {
+                val diseaseLevelsResponse = NetworkClient.userApiService.getDiseaseLevels(token)
+                if (diseaseLevelsResponse.success && !diseaseLevelsResponse.data.isNullOrEmpty()) {
+                    diseaseLevels = diseaseLevelsResponse.data
+                }
+            } catch (_: Exception) {
+            }
+
+            try {
+                val diseasesResponse = NetworkClient.userApiService.getDiseases(token)
+                if (diseasesResponse.success && !diseasesResponse.data.isNullOrEmpty()) {
+                    diseases = diseasesResponse.data
+                }
+            } catch (_: Exception) {
+            }
+
+            if (diseases.isNotEmpty()) {
+                populateDiseasesUI(diseases)
+            } else {
+                Toast.makeText(context, "Error fetching diseases", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun populateDietaryUI(sections: List<DietarySection>) {
         binding.dietaryItemsContainer.removeAllViews()
 
         for (section in sections) {
-            val titleView = TextView(context).apply {
-                text = section.title
-                textSize = 18f
-                setPadding(0, 40, 0, 8)
-                setTextColor(resources.getColor(R.color.black, null))
-                typeface = android.graphics.Typeface.DEFAULT_BOLD
-            }
-            binding.dietaryItemsContainer.addView(titleView)
-            
-            val descView = TextView(context).apply {
-                text = "(Premium feature - Scan&Fit Pro)"
-                textSize = 12f
-                setPadding(0, 0, 0, 16)
-                setTextColor(resources.getColor(R.color.black, null))
-                alpha = 0.5f
-            }
-            binding.dietaryItemsContainer.addView(descView)
+            addSectionHeader(binding.dietaryItemsContainer, section.title, "Personalized picks")
 
             for (item in section.items) {
                 val row = createDietRow(item, section.sectionType)
@@ -290,21 +327,75 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
     }
 
+    private fun populateDiseasesUI(items: List<Disease>) {
+        binding.diseaseItemsContainer.removeAllViews()
+        addSectionHeader(binding.diseaseItemsContainer, "Diseases", "Tap a card to set level")
+
+        items.forEach { disease ->
+            binding.diseaseItemsContainer.addView(createDiseaseRow(disease))
+        }
+    }
+
+    private fun addSectionHeader(container: LinearLayout, title: String, description: String) {
+        val titleView = TextView(context).apply {
+            text = title
+            textSize = 18f
+            setPadding(0, dp(24), 0, dp(8))
+            setTextColor(resources.getColor(R.color.black, null))
+            typeface = Typeface.DEFAULT_BOLD
+        }
+        container.addView(titleView)
+
+        val descView = TextView(context).apply {
+            text = description
+            textSize = 12f
+            setPadding(0, 0, 0, dp(16))
+            setTextColor(resources.getColor(R.color.black, null))
+            alpha = 0.5f
+        }
+        container.addView(descView)
+    }
+
     private fun createDietRow(item: DietType, sectionType: DietarySectionType): View {
         val layout = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                110 // height in pixels approx 55dp
-            )
-            gravity = android.view.Gravity.CENTER_VERTICAL
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dp(10)
+            }
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(14), dp(16), dp(14))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = dp(18).toFloat()
+                setColor(android.graphics.Color.parseColor("#F7F9FC"))
+                setStroke(dp(1), android.graphics.Color.parseColor("#E7EDF7"))
+            }
+        }
+
+        val textColumn = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
         val nameView = TextView(context).apply {
             text = item.name
             textSize = 16f
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            typeface = Typeface.DEFAULT_BOLD
             setTextColor(resources.getColor(R.color.black, null))
+        }
+
+        val subtitleView = TextView(context).apply {
+            text = when (sectionType) {
+                DietarySectionType.DIET_TYPE -> "Diet"
+                DietarySectionType.DIETARY_PREFERENCE -> "Preference"
+                DietarySectionType.HEALTH_CONDITION -> "Condition"
+            }
+            textSize = 12f
+            setPadding(0, dp(4), 0, 0)
+            setTextColor(android.graphics.Color.parseColor("#7B8494"))
         }
 
         val switch = SwitchMaterial(requireContext()).apply {
@@ -314,10 +405,107 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             }
         }
 
-        layout.addView(nameView)
+        textColumn.addView(nameView)
+        textColumn.addView(subtitleView)
+        layout.addView(textColumn)
         layout.addView(switch)
-        
+
         return layout
+    }
+
+    private fun createDiseaseRow(disease: Disease): View {
+        val card = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = dp(12)
+            }
+            setPadding(dp(16), dp(15), dp(16), dp(15))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = dp(18).toFloat()
+                setColor(android.graphics.Color.parseColor("#F8FAFD"))
+                setStroke(dp(1), android.graphics.Color.parseColor("#DDE7F5"))
+            }
+            isClickable = true
+            isFocusable = true
+            foreground = requireContext().getDrawable(android.R.drawable.list_selector_background)
+            setOnClickListener {
+                showDiseaseLevelSheet(disease)
+            }
+        }
+
+        val titleRow = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val titleView = TextView(context).apply {
+            text = disease.name
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(resources.getColor(R.color.black, null))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val levelBadge = TextView(context).apply {
+            text = disease.diseaseLevel?.name ?: "Not Selected"
+            textSize = 12f
+            setTextColor(android.graphics.Color.parseColor("#2F6BFF"))
+            setPadding(dp(12), dp(6), dp(12), dp(6))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = dp(50).toFloat()
+                setColor(android.graphics.Color.parseColor("#E8F0FF"))
+            }
+        }
+
+        val descriptionView = TextView(context).apply {
+            text = disease.description ?: "Set activity and level"
+            textSize = 13f
+            maxLines = 2
+            setPadding(0, dp(10), 0, 0)
+            setTextColor(android.graphics.Color.parseColor("#6B7280"))
+        }
+
+        val footerRow = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dp(10), 0, 0)
+        }
+
+        val statusView = TextView(context).apply {
+            text = buildDiseaseStatusText(disease)
+            textSize = 12f
+            setTextColor(android.graphics.Color.parseColor("#6B7280"))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val actionView = TextView(context).apply {
+            text = "Manage"
+            textSize = 13f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(resources.getColor(R.color.blue, null))
+        }
+
+        titleRow.addView(titleView)
+        titleRow.addView(levelBadge)
+        footerRow.addView(statusView)
+        footerRow.addView(actionView)
+
+        card.addView(titleRow)
+        card.addView(descriptionView)
+        card.addView(footerRow)
+
+        return card
+    }
+
+    private fun buildDiseaseStatusText(disease: Disease): String {
+        val codeText = disease.code?.takeIf { it.isNotBlank() }?.let { "Code $it" } ?: "Condition"
+        val state = if (disease.isActive) "Active" else "Inactive"
+        return "$codeText • $state"
     }
 
     private fun updateDietary(id: Int, isActive: Boolean, sectionType: DietarySectionType) {
@@ -331,6 +519,99 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 }
                 if (response.success) {
                     Toast.makeText(context, "Updated successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showDiseaseLevelSheet(disease: Disease) {
+        if (diseaseLevels.isEmpty()) {
+            Toast.makeText(context, "Disease levels are not available", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val dialog = BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.layout_picker_bottom_sheet, null)
+        val root = view as LinearLayout
+        val numberPicker = view.findViewById<NumberPicker>(R.id.number_picker)
+        val btnDone = view.findViewById<TextView>(R.id.tv_done)
+        val btnCancel = view.findViewById<TextView>(R.id.tv_cancel)
+
+        val contentContainer = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(18), dp(20), dp(4))
+        }
+
+        val titleView = TextView(context).apply {
+            text = disease.name
+            textSize = 20f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(resources.getColor(R.color.black, null))
+        }
+
+        val descriptionView = TextView(context).apply {
+            text = disease.code?.takeIf { it.isNotBlank() }?.let { "Code $it" } ?: "Set activity and level"
+            textSize = 13f
+            setTextColor(android.graphics.Color.parseColor("#6B7280"))
+            setPadding(0, dp(8), 0, dp(16))
+        }
+
+        val activeSwitch = SwitchMaterial(requireContext()).apply {
+            text = "This condition is active"
+            isChecked = disease.isActive
+            textSize = 14f
+            setTextColor(resources.getColor(R.color.black, null))
+        }
+
+        val helperView = TextView(context).apply {
+            text = "Severity level"
+            textSize = 13f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(android.graphics.Color.parseColor("#6B7280"))
+            setPadding(0, dp(18), 0, dp(8))
+        }
+
+        val pickerValues = diseaseLevels.map { it.name }.toTypedArray()
+        numberPicker.minValue = 0
+        numberPicker.maxValue = pickerValues.size - 1
+        numberPicker.displayedValues = pickerValues
+        numberPicker.wrapSelectorWheel = false
+        numberPicker.value = diseaseLevels.indexOfFirst { it.id == disease.diseaseLevel?.id }.takeIf { it >= 0 } ?: 0
+
+        contentContainer.addView(titleView)
+        contentContainer.addView(descriptionView)
+        contentContainer.addView(activeSwitch)
+        contentContainer.addView(helperView)
+        root.addView(contentContainer, 2)
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+        btnDone.text = "Save"
+        btnDone.setOnClickListener {
+            val selectedLevel = diseaseLevels[numberPicker.value]
+            updateDisease(disease.id, activeSwitch.isChecked, selectedLevel.id, dialog)
+        }
+
+        dialog.setContentView(view)
+        dialog.show()
+    }
+
+    private fun updateDisease(diseaseId: Int, isActive: Boolean, diseaseLevelId: Int, dialog: BottomSheetDialog) {
+        val token = sessionManager.fetchAuthToken() ?: return
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.updateDisease(
+                    token,
+                    diseaseId,
+                    UpdateDiseaseRequest(diseaseLevelId = diseaseLevelId, isActive = isActive)
+                )
+                if (response.success) {
+                    dialog.dismiss()
+                    fetchDietTypes()
+                    Toast.makeText(context, "Disease updated", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
                 }
@@ -488,6 +769,14 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         dialog.setContentView(view)
         dialog.show()
+    }
+
+    private fun dp(value: Int): Int {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            value.toFloat(),
+            resources.displayMetrics
+        ).toInt()
     }
 
     override fun onDestroyView() {
