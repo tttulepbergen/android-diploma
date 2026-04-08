@@ -145,12 +145,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     private fun fetchUserAccount() {
         val token = sessionManager.fetchAuthToken() ?: return
-        val userId = sessionManager.fetchUserId()
-        if (userId == -1) return
 
         lifecycleScope.launch {
             try {
-                val response = NetworkClient.userApiService.getUserAccount("Bearer $token", userId)
+                val response = NetworkClient.userApiService.getUserAccount(token)
                 if (response.success && response.data != null) {
                     displayAccountData(response.data)
                 }

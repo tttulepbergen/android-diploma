@@ -33,10 +33,9 @@ interface UserApiService {
         @Body request: UpdateUserMeasureRequest
     ): UserMeasureResponse
 
-    @GET("api/v1/user/get/{id}")
+    @GET("api/v1/user/me")
     suspend fun getUserAccount(
-        @Header("Authorization") token: String,
-        @Path("id") id: Int
+        @Header("Authorization") token: String
     ): UserAccountResponse
 
     @GET("api/v1/user/diet-type/list")
