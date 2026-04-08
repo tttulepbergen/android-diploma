@@ -52,7 +52,9 @@ data class AnalysisResponse(
     val is_food: Boolean? = true,
     val product_type: String? = "unknown",
     val verdict: String? = "Нет данных",
-    val macros: AnalysisMacros? = null
+    val macros: AnalysisMacros? = null,
+    val sources: List<ResearchSource>? = emptyList(),
+    val verified_research_links: List<String>? = emptyList()
 ) : java.io.Serializable
 
 data class AnalysisMacros(
@@ -60,4 +62,9 @@ data class AnalysisMacros(
     val proteins: Double? = 0.0,
     val carbs: Double? = 0.0,
     val fats: Double? = 0.0
+) : java.io.Serializable
+
+data class ResearchSource(
+    val title: String,
+    val url: String
 ) : java.io.Serializable
