@@ -6,9 +6,11 @@ import com.example.scanfit.model.DiseaseListResponse
 import com.example.scanfit.model.UpdateDietTypeRequest
 import com.example.scanfit.model.UpdateDietTypeResponse
 import com.example.scanfit.model.UpdateDiseaseRequest
+import com.example.scanfit.model.UpdateUserCaloriesRequest
 import com.example.scanfit.model.UpdateUserMeasureRequest
 import com.example.scanfit.model.UpdateWeightManagementRequest
 import com.example.scanfit.model.UserAccountResponse
+import com.example.scanfit.model.UserCaloriesResponse
 import com.example.scanfit.model.UserMeasureRequest
 import com.example.scanfit.model.UserMeasureResponse
 import com.example.scanfit.model.WeightManagementResponse
@@ -18,6 +20,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface UserApiService {
 
@@ -72,6 +75,24 @@ interface UserApiService {
     suspend fun getWeightManagement(
         @Header("Authorization") token: String
     ): WeightManagementResponse
+
+    @GET("api/v1/user/user-calories/today")
+    suspend fun getTodayUserCalories(
+        @Header("Authorization") token: String
+    ): UserCaloriesResponse
+
+    @GET("api/v1/user/user-calories")
+    suspend fun getUserCaloriesByDay(
+        @Header("Authorization") token: String,
+        @Query("day") day: String
+    ): UserCaloriesResponse
+
+    @PUT("api/v1/user/user-calories/update")
+    suspend fun updateUserCalories(
+        @Header("Authorization") token: String,
+        @Query("day") day: String,
+        @Body request: UpdateUserCaloriesRequest
+    ): UserCaloriesResponse
 
     @PUT("api/v1/user/diet-type/update/{id}")
     suspend fun updateDietType(

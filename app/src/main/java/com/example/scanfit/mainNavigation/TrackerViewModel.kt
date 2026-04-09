@@ -19,6 +19,42 @@ class TrackerViewModel : ViewModel() {
     private val _totalCarbs = MutableLiveData(0f)
     val totalCarbs: LiveData<Float> = _totalCarbs
 
+    private val _goalCalories = MutableLiveData(2150)
+    val goalCalories: LiveData<Int> = _goalCalories
+
+    private val _goalProteins = MutableLiveData(150f)
+    val goalProteins: LiveData<Float> = _goalProteins
+
+    private val _goalFat = MutableLiveData(70f)
+    val goalFat: LiveData<Float> = _goalFat
+
+    private val _goalCarbs = MutableLiveData(300f)
+    val goalCarbs: LiveData<Float> = _goalCarbs
+
+    fun setNutritionTotals(
+        calories: Int,
+        proteins: Float,
+        fat: Float,
+        carbs: Float
+    ) {
+        _totalCalories.value = calories
+        _totalProteins.value = proteins
+        _totalFat.value = fat
+        _totalCarbs.value = carbs
+    }
+
+    fun setNutritionGoals(
+        calories: Int?,
+        proteins: Float?,
+        fat: Float?,
+        carbs: Float?
+    ) {
+        _goalCalories.value = calories ?: 0
+        _goalProteins.value = proteins ?: 0f
+        _goalFat.value = fat ?: 0f
+        _goalCarbs.value = carbs ?: 0f
+    }
+
     fun addFoodData(item: FoodItem) {
         val cal = item.calories?.filter { it.isDigit() }?.toIntOrNull() ?: 0
         _totalCalories.value = (_totalCalories.value ?: 0) + cal

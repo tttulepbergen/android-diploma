@@ -25,9 +25,15 @@ import com.example.scanfit.data.FoodItem
 import com.example.scanfit.data.RecentProduct
 import com.example.scanfit.databinding.FragmentProductDetailBinding
 import com.example.scanfit.mainNavigation.TrackerViewModel
+import com.example.scanfit.model.UpdateUserCaloriesRequest
+import com.example.scanfit.model.UserCaloriesData
 import com.example.scanfit.network.AnalysisResponse
+import com.example.scanfit.network.NetworkClient
+import com.example.scanfit.utils.SessionManager
 import kotlinx.coroutines.launch
 import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
@@ -35,11 +41,13 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private val database by lazy { AppDatabase.getDatabase(requireContext()) }
     private var _binding: FragmentProductDetailBinding? = null
     private val binding get() = _binding!!
+    private lateinit var sessionManager: SessionManager
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProductDetailBinding.bind(view)
+        sessionManager = SessionManager(requireContext())
 
         val aiResponse = arguments?.getSerializable("ai_analysis") as? AnalysisResponse
 
@@ -147,10 +155,63 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         setupNutrientsList(item)
 
         binding.btnAddFood.setOnClickListener {
-            trackerViewModel.addFoodData(item)
-            Toast.makeText(requireContext(), "${item.title} added!", Toast.LENGTH_SHORT).show()
-            findNavController().navigateUp()
+            updateUserCalories(item)
         }
+    }
+
+    private fun updateUserCalories(item: FoodItem) {
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val selectedDate = trackerViewModel.selectedDate.value ?: java.util.Calendar.getInstance()
+        val day = API_DATE_FORMAT.format(selectedDate.time)
+        val request = UpdateUserCaloriesRequest(
+            calories = item.calories.toIntValue(),
+            carbs = item.carbs.toIntValue(),
+            fat = item.fat.toIntValue(),
+            proteins = item.proteins.toIntValue()
+        )
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.updateUserCalories(token, day, request)
+                if (response.success && response.data != null) {
+                    applyUpdatedCalories(response.data)
+                    Toast.makeText(requireContext(), "${item.title} added!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "Failed to update calories",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    e.message ?: "Failed to update calories",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun applyUpdatedCalories(data: UserCaloriesData) {
+        trackerViewModel.setNutritionGoals(
+            calories = data.calories,
+            proteins = data.proteins?.toFloat(),
+            fat = data.fat?.toFloat(),
+            carbs = data.carbs?.toFloat()
+        )
+        trackerViewModel.setNutritionTotals(
+            calories = data.daily?.calories ?: 0,
+            proteins = (data.daily?.proteins ?: 0).toFloat(),
+            fat = (data.daily?.fat ?: 0).toFloat(),
+            carbs = (data.daily?.carbs ?: 0).toFloat()
+        )
     }
 
     private fun setupGradeColor(grade: String?) {
@@ -252,6 +313,15 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         }
     }
 
+    private fun String?.toIntValue(): Int {
+        if (this.isNullOrBlank()) return 0
+        return this.replace(',', '.')
+            .filter { it.isDigit() || it == '.' }
+            .toFloatOrNull()
+            ?.toInt()
+            ?: 0
+    }
+
     private fun setupAiUI(response: AnalysisResponse) {
         binding.tvProductName.text = "AI Analysis"
         binding.tvCategoryLabel.text = "SCANNER"
@@ -347,5 +417,9 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                 Toast.makeText(requireContext(), "Removed from favourites", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    companion object {
+        private val API_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     }
 }

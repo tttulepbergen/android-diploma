@@ -174,3 +174,45 @@ data class UpdateWeightManagementRequest(
     @SerializedName("weekly_weight_change")
     val weeklyWeightChange: Int?
 )
+
+data class UserCaloriesResponse(
+    val data: UserCaloriesData?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class UpdateUserCaloriesRequest(
+    val calories: Int,
+    val carbs: Int,
+    val fat: Int,
+    val proteins: Int
+)
+
+data class UserCaloriesData(
+    val id: Int?,
+    @SerializedName("user_id")
+    val userId: Int?,
+    val calories: Int?,
+    val carbs: Int?,
+    val fat: Int?,
+    val proteins: Int?,
+    val day: String?,
+    val daily: UserCaloriesDaily?,
+    @SerializedName("created_at")
+    val createdAt: String?,
+    @SerializedName("updated_at")
+    val updatedAt: String?
+)
+
+data class UserCaloriesDaily(
+    val id: Int?,
+    val day: String?,
+    val calories: Int?,
+    val carbs: Int?,
+    val fat: Int?,
+    val proteins: Int?,
+    @SerializedName("created_at")
+    val createdAt: String?,
+    @SerializedName("updated_at")
+    val updatedAt: String?
+)

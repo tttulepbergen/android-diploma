@@ -22,16 +22,20 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentHomeBinding
+import com.example.scanfit.model.UserCaloriesDaily
+import com.example.scanfit.model.UserCaloriesData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+import com.example.scanfit.network.NetworkClient
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
 import com.example.scanfit.network.AnalysisResponse
+import com.example.scanfit.utils.SessionManager
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -39,6 +43,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val binding get() = _binding!!
 
     private val trackerViewModel: TrackerViewModel by activityViewModels()
+    private lateinit var sessionManager: SessionManager
+    private var currentCalorieGoal = 2150
+    private var currentProteinGoal = 150f
+    private var currentFatGoal = 70f
+    private var currentCarbGoal = 300f
 
     private val scannerOptions = GmsDocumentScannerOptions.Builder()
         .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
@@ -60,6 +69,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
+        sessionManager = SessionManager(requireContext())
 
         val currentUser = FirebaseAuth.getInstance().currentUser
         val username = currentUser?.displayName ?: "User"
@@ -69,6 +79,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         trackerViewModel.selectedDate.observe(viewLifecycleOwner) { date ->
             updateCalendarUI(date)
+            fetchCaloriesForDate(date)
         }
 
         binding.cvProfileIcon.setOnClickListener {
@@ -164,40 +175,112 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun setupTrackerObserver() {
         trackerViewModel.totalCalories.observe(viewLifecycleOwner) { total ->
             binding.tvCaloriesCount.text = "$total Cal"
-            val limit = 2150
-            val left = limit - total
+            val left = (currentCalorieGoal - total).coerceAtLeast(0)
             binding.tvCaloriesLeft.text = "$left Cal left"
-            binding.calorieProgressBar.progress = (total.toFloat() / limit * 100).toInt()
+            binding.calorieProgressBar.progress = calculateProgress(total.toFloat(), currentCalorieGoal.toFloat())
         }
 
         trackerViewModel.totalProteins.observe(viewLifecycleOwner) { total ->
-            val limit = 150
             binding.tvProteinsMain.text = "${total.toInt()} g"
-            val left = limit - total.toInt()
+            val left = currentProteinGoal.toInt() - total.toInt()
             binding.tvProteinsLeft.text = "${if (left > 0) left else 0} g left"
-            binding.progressProteins.progress = (total.toFloat() / limit * 100).toInt()
+            binding.progressProteins.progress = calculateProgress(total.toFloat(), currentProteinGoal)
         }
 
         trackerViewModel.totalFat.observe(viewLifecycleOwner) { total ->
-            val limit = 70
             binding.tvFatMain.text = "${total.toInt()} g"
-            val left = limit - total.toInt()
+            val left = currentFatGoal.toInt() - total.toInt()
             binding.tvFatLeft.text = "${if (left > 0) left else 0} g left"
-            binding.progressFat.progress = (total.toFloat() / limit * 100).toInt()
+            binding.progressFat.progress = calculateProgress(total.toFloat(), currentFatGoal)
         }
 
         trackerViewModel.totalCarbs.observe(viewLifecycleOwner) { total ->
-            val limit = 300
             binding.tvCarbsMain.text = "${total.toInt()} g"
-            val left = limit - total.toInt()
+            val left = currentCarbGoal.toInt() - total.toInt()
             binding.tvCarbsLeft.text = "${if (left > 0) left else 0} g left"
-            binding.progressCarbs.progress = (total.toFloat() / limit * 100).toInt()
+            binding.progressCarbs.progress = calculateProgress(total.toFloat(), currentCarbGoal)
+        }
+
+        trackerViewModel.goalCalories.observe(viewLifecycleOwner) {
+            currentCalorieGoal = it
+            binding.tvCaloriesLeft.text =
+                "${(it - (trackerViewModel.totalCalories.value ?: 0)).coerceAtLeast(0)} Cal left"
+            binding.calorieProgressBar.progress =
+                calculateProgress((trackerViewModel.totalCalories.value ?: 0).toFloat(), it.toFloat())
+        }
+
+        trackerViewModel.goalProteins.observe(viewLifecycleOwner) {
+            currentProteinGoal = it
+            val total = trackerViewModel.totalProteins.value ?: 0f
+            binding.tvProteinsLeft.text = "${(it.toInt() - total.toInt()).coerceAtLeast(0)} g left"
+            binding.progressProteins.progress = calculateProgress(total, it)
+        }
+
+        trackerViewModel.goalFat.observe(viewLifecycleOwner) {
+            currentFatGoal = it
+            val total = trackerViewModel.totalFat.value ?: 0f
+            binding.tvFatLeft.text = "${(it.toInt() - total.toInt()).coerceAtLeast(0)} g left"
+            binding.progressFat.progress = calculateProgress(total, it)
+        }
+
+        trackerViewModel.goalCarbs.observe(viewLifecycleOwner) {
+            currentCarbGoal = it
+            val total = trackerViewModel.totalCarbs.value ?: 0f
+            binding.tvCarbsLeft.text = "${(it.toInt() - total.toInt()).coerceAtLeast(0)} g left"
+            binding.progressCarbs.progress = calculateProgress(total, it)
         }
 
         trackerViewModel.waterGlasses.observe(viewLifecycleOwner) { count ->
             renderWaterGlasses(count)
             binding.tvWaterCount.text = String.format("%.2f L", (count * 0.25))
         }
+    }
+
+    private fun fetchCaloriesForDate(selectedDate: Calendar) {
+        val token = sessionManager.fetchAuthToken() ?: return
+        val day = API_DATE_FORMAT.format(selectedDate.time)
+
+        lifecycleScope.launch {
+            try {
+                val response = if (isSameDay(selectedDate, Calendar.getInstance())) {
+                    NetworkClient.userApiService.getTodayUserCalories(token)
+                } else {
+                    NetworkClient.userApiService.getUserCaloriesByDay(token, day)
+                }
+
+                if (response.success) {
+                    applyCaloriesData(response.data)
+                } else {
+                    applyCaloriesData(null)
+                }
+            } catch (_: Exception) {
+                applyCaloriesData(null)
+            }
+        }
+    }
+
+    private fun applyCaloriesData(data: UserCaloriesData?) {
+        applyDailyGoals(data)
+        trackerViewModel.setNutritionTotals(
+            calories = data?.daily?.calories ?: 0,
+            proteins = (data?.daily?.proteins ?: 0).toFloat(),
+            fat = (data?.daily?.fat ?: 0).toFloat(),
+            carbs = (data?.daily?.carbs ?: 0).toFloat()
+        )
+    }
+
+    private fun applyDailyGoals(data: UserCaloriesData?) {
+        trackerViewModel.setNutritionGoals(
+            calories = data?.calories,
+            proteins = data?.proteins?.toFloat(),
+            fat = data?.fat?.toFloat(),
+            carbs = data?.carbs?.toFloat()
+        )
+    }
+
+    private fun calculateProgress(value: Float, limit: Float): Int {
+        if (limit <= 0f) return 0
+        return ((value / limit) * 100).toInt().coerceIn(0, 100)
     }
 
 
@@ -284,5 +367,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private val API_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     }
 }
