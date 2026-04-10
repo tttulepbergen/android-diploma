@@ -1,5 +1,6 @@
 package com.example.scanfit.network
 
+import android.util.Log
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -11,6 +12,13 @@ object NetworkClient {
     private const val AUTH_BASE_URL = "http://46.101.137.109:3000/"
 
     val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor { chain ->
+            val request = chain.request()
+            if (request.url.host.contains("openfoodfacts.org")) {
+                Log.d("OPENFOODFACTS_API", "${request.method} ${request.url}")
+            }
+            chain.proceed(request)
+        }
         .connectTimeout(2, TimeUnit.MINUTES)
         .readTimeout(3, TimeUnit.MINUTES)
         .writeTimeout(2, TimeUnit.MINUTES)

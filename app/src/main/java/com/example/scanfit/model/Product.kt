@@ -10,6 +10,7 @@ data class Product(
     @SerializedName("nutriscore_grade") val nutriscoreGrade: String?,
 
     @SerializedName("nutriments") val nutriments: NutrimentsData?,
+    @SerializedName("nutriments_estimated") val nutrimentsEstimated: NutrimentsData?,
 
     @SerializedName("energy-kcal_100g") val energyKcal100g: Double?,
     @SerializedName("serving_size") val servingSize: String?,
@@ -36,5 +37,21 @@ data class NutrimentsData(
     @SerializedName("sodium_100g") val sodium100g: Double?,
     @SerializedName("sodium_serving") val sodiumServing: Double?,
     @SerializedName("cholesterol_100g") val cholesterol100g: Double?,
-    @SerializedName("cholesterol_serving") val cholesterolServing: Double?
+    @SerializedName("cholesterol_serving") val cholesterolServing: Double?,
+    @SerializedName("vitamin-d_100g") val vitaminD100g: Double?,
+    @SerializedName("vitamin-d_serving") val vitaminDServing: Double?,
+    @SerializedName("vitamin-b12_100g") val vitaminB12100g: Double?,
+    @SerializedName("vitamin-b12_serving") val vitaminB12Serving: Double?,
+    @SerializedName("vitamin-c_100g") val vitaminC100g: Double?,
+    @SerializedName("vitamin-c_serving") val vitaminCServing: Double?,
+    @SerializedName("vitamin-a_100g") val vitaminA100g: Double?,
+    @SerializedName("vitamin-a_serving") val vitaminAServing: Double?,
+    @SerializedName("vitamin-b6_100g") val vitaminB6100g: Double?,
+    @SerializedName("vitamin-b6_serving") val vitaminB6Serving: Double?,
+    @SerializedName("vitamin-b9_100g") val vitaminB9100g: Double?,
+    @SerializedName("vitamin-b9_serving") val vitaminB9Serving: Double?,
+    @SerializedName("folates_100g") val folates100g: Double?,
+    @SerializedName("folates_serving") val folatesServing: Double?,
+    @SerializedName("vitamin-e_100g") val vitaminE100g: Double?,
+    @SerializedName("vitamin-e_serving") val vitaminEServing: Double?
 )

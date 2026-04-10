@@ -65,12 +65,21 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                 val response = NetworkClient.apiService.searchProducts(query)
 
                 val foodItems = response.products.map { apiProduct ->
+                    val nut = apiProduct.nutriments
+                    val estimated = apiProduct.nutrimentsEstimated
                     FoodItem(
                         title = apiProduct.productName ?: "Unknown",
                         subtitle = apiProduct.brands ?: "No brand",
-                        calories = "${apiProduct.nutriments?.energyKcal100g?.toInt() ?: 0} kcal",
+                        calories = "${nut?.energyKcal100g?.toInt() ?: 0} kcal",
                         imageUrl = apiProduct.imageUrl,
                         isFavorite = false,
+                        vitaminD = formatMicrograms(nut?.vitaminDServing ?: nut?.vitaminD100g ?: estimated?.vitaminDServing ?: estimated?.vitaminD100g),
+                        vitaminB12 = formatMicrograms(nut?.vitaminB12Serving ?: nut?.vitaminB12100g ?: estimated?.vitaminB12Serving ?: estimated?.vitaminB12100g),
+                        vitaminC = formatMilligrams(nut?.vitaminCServing ?: nut?.vitaminC100g ?: estimated?.vitaminCServing ?: estimated?.vitaminC100g),
+                        vitaminA = formatMicrograms(nut?.vitaminAServing ?: nut?.vitaminA100g ?: estimated?.vitaminAServing ?: estimated?.vitaminA100g),
+                        vitaminB6 = formatMilligrams(nut?.vitaminB6Serving ?: nut?.vitaminB6100g ?: estimated?.vitaminB6Serving ?: estimated?.vitaminB6100g),
+                        vitaminB9 = formatMicrograms(nut?.vitaminB9Serving ?: nut?.vitaminB9100g ?: nut?.folatesServing ?: nut?.folates100g ?: estimated?.vitaminB9Serving ?: estimated?.vitaminB9100g ?: estimated?.folatesServing ?: estimated?.folates100g),
+                        vitaminE = formatMilligrams(nut?.vitaminEServing ?: nut?.vitaminE100g ?: estimated?.vitaminEServing ?: estimated?.vitaminE100g),
                         ingredients = apiProduct.ingredientsText ?: apiProduct.ingredientsTextEn ?: ""
                     )
                 }
@@ -109,5 +118,21 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun formatMilligrams(valueInGrams: Double?): String {
+        return "${((valueInGrams ?: 0.0) * 1000).formatAmount()} mg"
+    }
+
+    private fun formatMicrograms(valueInGrams: Double?): String {
+        return "${((valueInGrams ?: 0.0) * 1_000_000).formatAmount()} mcg"
+    }
+
+    private fun Double.formatAmount(): String {
+        return if (this % 1.0 == 0.0) {
+            this.toInt().toString()
+        } else {
+            String.format(java.util.Locale.US, "%.2f", this).trimEnd('0').trimEnd('.')
+        }
     }
 }

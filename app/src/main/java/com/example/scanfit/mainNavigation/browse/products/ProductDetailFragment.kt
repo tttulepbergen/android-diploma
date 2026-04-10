@@ -236,7 +236,14 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             "Sugar" to item.sugars,
             "Fiber" to item.fiber,
             "Sodium" to item.sodium,
-            "Cholesterol" to item.cholesterol
+            "Cholesterol" to item.cholesterol,
+            "Vitamin D" to item.vitaminD,
+            "Vitamin B12" to item.vitaminB12,
+            "Vitamin C" to item.vitaminC,
+            "Vitamin A" to item.vitaminA,
+            "Vitamin B6" to item.vitaminB6,
+            "Vitamin B9 (Folic acid)" to item.vitaminB9,
+            "Vitamin E" to item.vitaminE
         )
 
         for ((name, value) in nutrientMap) {

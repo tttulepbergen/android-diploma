@@ -19,14 +19,14 @@ interface FoodApiService {
         @Query("tag_contains_0") tagContains: String = "contains",
         @Query("tag_0") category: String,
         @Query("page_size") pageSize: Int = 20,
-        @Query("fields") fields: String = "product_name,brands,image_url,nutriscore_grade,nutriments,ingredients_text,ingredients_text_en"
+        @Query("fields") fields: String = "product_name,brands,image_url,nutriscore_grade,nutriments,nutriments_estimated,ingredients_text,ingredients_text_en"
     ): FoodResponse
 
     @GET("cgi/search.pl?action=process&json=true")
     suspend fun searchProducts(
         @Query("search_terms") query: String,
         @Query("page_size") pageSize: Int = 50,
-        @Query("fields") fields: String = "product_name,brands,image_url,nutriscore_grade,nutriments,ingredients_text,ingredients_text_en"
+        @Query("fields") fields: String = "product_name,brands,image_url,nutriscore_grade,nutriments,nutriments_estimated,ingredients_text,ingredients_text_en"
     ): FoodResponse
 
     @Multipart
