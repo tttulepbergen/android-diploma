@@ -220,6 +220,40 @@ data class UserCaloriesResponse(
     val success: Boolean
 )
 
+data class UserWaterResponse(
+    val data: UserWaterData?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class UpdateUserWaterRequest(
+    val water: Int
+)
+
+data class UserWaterData(
+    val id: Int?,
+    @SerializedName("user_id")
+    val userId: Int?,
+    val water: Int?,
+    val day: String?,
+    val daily: UserWaterDaily?,
+    @SerializedName("created_at")
+    val createdAt: String?,
+    @SerializedName("updated_at")
+    val updatedAt: String?
+)
+
+data class UserWaterDaily(
+    val id: Int?,
+    val day: String?,
+    val water: Int?,
+    val goal: Int?,
+    @SerializedName("created_at")
+    val createdAt: String?,
+    @SerializedName("updated_at")
+    val updatedAt: String?
+)
+
 data class CreateUserDailyEatResponse(
     val message: String?,
     val success: Boolean?

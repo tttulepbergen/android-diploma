@@ -24,13 +24,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentHomeBinding
-import com.example.scanfit.model.UserCaloriesDaily
 import com.example.scanfit.model.UserCaloriesData
+import com.example.scanfit.model.UpdateUserWaterRequest
+import com.example.scanfit.model.UserWaterData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.example.scanfit.network.NetworkClient
+import android.util.Log
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -83,6 +85,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         trackerViewModel.selectedDate.observe(viewLifecycleOwner) { date ->
             updateCalendarUI(date)
             fetchCaloriesForDate(date)
+            fetchWaterForDate(date)
         }
 
         binding.cvProfileIcon.setOnClickListener {
@@ -239,7 +242,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         trackerViewModel.waterGlasses.observe(viewLifecycleOwner) { count ->
             renderWaterGlasses(count)
-            binding.tvWaterCount.text = String.format("%.2f L", (count * 0.25))
+            binding.tvWaterCount.text = formatLiters(count * WATER_GLASS_ML)
+        }
+
+        trackerViewModel.waterGoalMl.observe(viewLifecycleOwner) { goalMl ->
+            binding.tvWaterGoal.text = "Goal ${formatLiters(goalMl)}"
         }
     }
 
@@ -285,6 +292,81 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             fat = data?.fat?.toFloat(),
             carbs = data?.carbs?.toFloat()
         )
+    }
+
+    private fun fetchWaterForDate(selectedDate: Calendar) {
+        val token = sessionManager.fetchAuthToken() ?: return
+        val day = API_DATE_FORMAT.format(selectedDate.time)
+
+        lifecycleScope.launch {
+            try {
+                sessionManager.refreshUserRole()
+                val response = if (isSameDay(selectedDate, Calendar.getInstance())) {
+                    Log.d("USER_WATER", "GET api/v1/user/user-water/today")
+                    NetworkClient.userApiService.getTodayUserWater(token)
+                } else {
+                    Log.d("USER_WATER", "GET api/v1/user/user-water?day=$day")
+                    NetworkClient.userApiService.getUserWaterByDay(token, day)
+                }
+
+                if (response.success) {
+                    applyWaterData(response.data)
+                } else {
+                    Log.d("USER_WATER", "Fetch failed for $day: ${response.message}")
+                    applyWaterData(null)
+                }
+            } catch (e: Exception) {
+                Log.e("USER_WATER", "Failed to fetch water for $day", e)
+                applyWaterData(null)
+            }
+        }
+    }
+
+    private fun applyWaterData(data: UserWaterData?) {
+        val consumedMl = data?.daily?.water ?: 0
+        val goalMl = data?.daily?.goal ?: data?.water ?: 0
+        trackerViewModel.setWaterGlasses(consumedMl / WATER_GLASS_ML)
+        trackerViewModel.setWaterGoalMl(goalMl)
+    }
+
+    private fun updateWaterForSelectedDate(newGlassCount: Int) {
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
+        val day = API_DATE_FORMAT.format(selectedDate.time)
+        val waterMl = newGlassCount.coerceIn(0, MAX_WATER_GLASSES) * WATER_GLASS_ML
+
+        lifecycleScope.launch {
+            try {
+                Log.d("USER_WATER", "PUT api/v1/user/user-water/update?day=$day water=$waterMl")
+                val response = NetworkClient.userApiService.updateUserWater(
+                    token,
+                    day,
+                    UpdateUserWaterRequest(water = waterMl)
+                )
+
+                if (response.success) {
+                    applyWaterData(response.data)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "Failed to update water",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e("USER_WATER", "Failed to update water for $day", e)
+                Toast.makeText(
+                    requireContext(),
+                    e.message ?: "Failed to update water",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
     private fun showNutrientDetails() {
@@ -450,9 +532,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun renderWaterGlasses(count: Int) {
         binding.waterStack.removeAllViews()
-        val maxGlasses = 7
         val glassHeight = 75
-        for (i in 0 until maxGlasses) {
+        val safeCount = count.coerceIn(0, MAX_WATER_GLASSES)
+        for (i in 0 until MAX_WATER_GLASSES) {
             val imageView = ImageView(requireContext())
 
             val params = LinearLayout.LayoutParams(0, dpToPx(glassHeight), 1f).apply {
@@ -464,13 +546,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             imageView.scaleType = ImageView.ScaleType.FIT_CENTER
 
             when {
-                i < count -> {
+                i < safeCount -> {
                     imageView.setImageResource(R.drawable.ic_glass_full)
-                    imageView.setOnClickListener { trackerViewModel.removeWaterGlass() }
+                    imageView.setOnClickListener {
+                        updateWaterForSelectedDate(safeCount - 1)
+                    }
                 }
-                i == count -> {
+                i == safeCount -> {
                     imageView.setImageResource(R.drawable.ic_glass_add)
-                    imageView.setOnClickListener { trackerViewModel.addWaterGlass() }
+                    imageView.setOnClickListener {
+                        updateWaterForSelectedDate(safeCount + 1)
+                    }
                 }
                 else -> {
                     imageView.setImageResource(R.drawable.ic_glass_empty)
@@ -481,6 +567,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
+
+    private fun formatLiters(amountMl: Int): String {
+        return String.format(Locale.US, "%.2f L", amountMl / 1000f)
+    }
 
     private fun setupScannerTrigger() { /* Логика вызова сканера */ }
 
@@ -534,6 +624,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     companion object {
         private val API_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        private const val WATER_GLASS_ML = 250
+        private const val MAX_WATER_GLASSES = 7
     }
 
     private data class NutrientDetail(

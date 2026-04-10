@@ -73,6 +73,9 @@ class TrackerViewModel : ViewModel() {
     private val _waterGlasses = MutableLiveData(0)
     val waterGlasses: LiveData<Int> = _waterGlasses
 
+    private val _waterGoalMl = MutableLiveData(0)
+    val waterGoalMl: LiveData<Int> = _waterGoalMl
+
     fun addWaterGlass() {
         val current = _waterGlasses.value ?: 0
         if (current < 8) {
@@ -85,6 +88,14 @@ class TrackerViewModel : ViewModel() {
         if (current > 0) {
             _waterGlasses.value = current - 1
         }
+    }
+
+    fun setWaterGlasses(glasses: Int) {
+        _waterGlasses.value = glasses.coerceAtLeast(0)
+    }
+
+    fun setWaterGoalMl(goalMl: Int) {
+        _waterGoalMl.value = goalMl.coerceAtLeast(0)
     }
 
     private val _selectedDate = MutableLiveData(Calendar.getInstance())
