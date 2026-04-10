@@ -19,6 +19,9 @@ object NetworkClient {
             if (isOpenFoodFactsRequest) {
                 Log.d("OPENFOODFACTS_API", "${request.method} ${request.url}")
             }
+            if (request.url.encodedPath.contains("/api/v1/product/product-scans")) {
+                Log.d("PRODUCT_SCAN_ENDPOINT", "${request.method} ${request.url}")
+            }
 
             var response = chain.proceed(request)
             var retryCount = 0

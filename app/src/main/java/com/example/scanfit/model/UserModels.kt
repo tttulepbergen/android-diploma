@@ -1,5 +1,6 @@
 package com.example.scanfit.model
 
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 
 data class UserMeasureRequest(
@@ -222,6 +223,36 @@ data class UserCaloriesResponse(
 data class CreateUserDailyEatResponse(
     val message: String?,
     val success: Boolean?
+)
+
+data class CreateProductScanRequest(
+    @SerializedName("product_name")
+    val productName: String,
+    @SerializedName("scan_information")
+    val scanInformation: JsonElement
+)
+
+data class CreateProductScanResponse(
+    val message: String?,
+    val success: Boolean?
+)
+
+data class ProductScanResponse(
+    val data: JsonElement?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class ProductScanData(
+    val id: Int?,
+    @SerializedName("product_name")
+    val productName: String?,
+    @SerializedName("scan_information")
+    val scanInformation: JsonElement?,
+    @SerializedName("created_at")
+    val createdAt: String?,
+    @SerializedName("updated_at")
+    val updatedAt: String?
 )
 
 data class CreateUserDailyEatRequest(

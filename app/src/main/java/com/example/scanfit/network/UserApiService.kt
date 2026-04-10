@@ -3,8 +3,11 @@ package com.example.scanfit.network
 import com.example.scanfit.model.DietTypeListResponse
 import com.example.scanfit.model.DiseaseLevelListResponse
 import com.example.scanfit.model.DiseaseListResponse
+import com.example.scanfit.model.CreateProductScanRequest
+import com.example.scanfit.model.CreateProductScanResponse
 import com.example.scanfit.model.CreateUserDailyEatRequest
 import com.example.scanfit.model.CreateUserDailyEatResponse
+import com.example.scanfit.model.ProductScanResponse
 import com.example.scanfit.model.UpdateDietTypeRequest
 import com.example.scanfit.model.UpdateDietTypeResponse
 import com.example.scanfit.model.UpdateDiseaseRequest
@@ -118,6 +121,25 @@ interface UserApiService {
         @Header("Authorization") token: String,
         @Body request: CreateUserDailyEatRequest
     ): CreateUserDailyEatResponse
+
+    @POST("api/v1/product/product-scans/create")
+    suspend fun createProductScan(
+        @Header("Authorization") token: String,
+        @Body request: CreateProductScanRequest
+    ): CreateProductScanResponse
+
+    @PUT("api/v1/product/product-scans/update/{id}")
+    suspend fun updateProductScan(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body request: CreateProductScanRequest
+    ): CreateProductScanResponse
+
+    @GET("api/v1/product/product-scans/get-by-product-name")
+    suspend fun getProductScanByProductName(
+        @Header("Authorization") token: String,
+        @Query("product_name") productName: String
+    ): ProductScanResponse
 
     @PUT("api/v1/user/diet-type/update/{id}")
     suspend fun updateDietType(

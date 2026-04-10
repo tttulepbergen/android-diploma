@@ -29,6 +29,7 @@ import com.example.scanfit.data.toFavoriteProduct
 import com.example.scanfit.data.toRecentProduct
 import com.example.scanfit.databinding.FragmentProductDetailBinding
 import com.example.scanfit.mainNavigation.TrackerViewModel
+import com.example.scanfit.model.CreateProductScanRequest
 import com.example.scanfit.model.CreateUserDailyEatRequest
 import com.example.scanfit.model.UpdateUserCaloriesRequest
 import com.example.scanfit.model.UserCaloriesData
@@ -41,6 +42,7 @@ import kotlinx.coroutines.launch
 import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -55,6 +57,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private val gson = GsonBuilder().serializeNulls().create()
     private var servingMultiplier = 1.0
     private var hasProductDetails = false
+    private var currentProductScanId: Int? = null
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -76,6 +79,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         } else if (foodItem != null) {
             setupUI(foodItem)
             saveToRecent(foodItem)
+            loadSavedProductScan(foodItem.title)
         }
 
         binding.btnBack.setOnClickListener { findNavController().navigateUp() }
@@ -116,6 +120,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                 }
 
                 setupAiUI(response)
+                saveProductScan(item.title, response)
 
             } catch (e: Exception) {
                 Log.e("AI_DEBUG", "AI Analysis FAILED: ${e.message}")
@@ -128,6 +133,137 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
             }
         }
+    }
+
+    private suspend fun saveProductScan(productName: String, response: AnalysisResponse) {
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) {
+            Log.w("PRODUCT_SCAN", "Product scan not saved: missing auth token")
+            return
+        }
+
+        runCatching {
+            val request = CreateProductScanRequest(
+                productName = productName,
+                scanInformation = gson.toJsonTree(response)
+            )
+            val scanId = currentProductScanId
+            if (scanId != null) {
+                Log.d("PRODUCT_SCAN", "PUT api/v1/product/product-scans/update/$scanId (product_name=$productName)")
+                NetworkClient.userApiService.updateProductScan(token, scanId, request)
+            } else {
+                Log.d("PRODUCT_SCAN", "POST api/v1/product/product-scans/create (product_name=$productName)")
+                NetworkClient.userApiService.createProductScan(token, request).also {
+                    refreshCurrentProductScanId(token, productName)
+                }
+            }
+        }.onSuccess { saveResponse ->
+            Log.d("PRODUCT_SCAN", "saveProductScan success=${saveResponse.success}, message=${saveResponse.message}, id=$currentProductScanId")
+        }.onFailure { e ->
+            Log.e("PRODUCT_SCAN", "Failed to save product scan", e)
+        }
+    }
+
+    private suspend fun refreshCurrentProductScanId(token: String, productName: String) {
+        runCatching {
+            val response = NetworkClient.userApiService.getProductScanByProductName(token, productName)
+            currentProductScanId = extractSavedScanRecord(response.data)?.id
+            Log.d("PRODUCT_SCAN", "Refreshed current scan id=$currentProductScanId for $productName")
+        }.onFailure { e ->
+            Log.e("PRODUCT_SCAN", "Failed to refresh current scan id", e)
+        }
+    }
+
+    private fun loadSavedProductScan(productName: String) {
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) {
+            Log.w("PRODUCT_SCAN", "Saved scan not loaded: missing auth token")
+            return
+        }
+
+        val encodedName = URLEncoder.encode(productName, "UTF-8")
+        Log.d(
+            "PRODUCT_SCAN",
+            "GET api/v1/product/product-scans/get-by-product-name?product_name=$encodedName (raw product_name=$productName)"
+        )
+
+        binding.aiProgressBar.visibility = View.VISIBLE
+        binding.tvAiVerdictDescription.text = "Checking saved AI analysis..."
+        binding.btnAnalyzeAi.isEnabled = false
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            runCatching {
+                NetworkClient.userApiService.getProductScanByProductName(token, productName)
+            }.onSuccess { response ->
+                binding.aiProgressBar.visibility = View.GONE
+                binding.btnAnalyzeAi.isEnabled = true
+                Log.d(
+                    "PRODUCT_SCAN",
+                    "Lookup response success=${response.success}, message=${response.message}, data=${response.data}"
+                )
+
+                val scanRecord = extractSavedScanRecord(response.data)
+                currentProductScanId = scanRecord?.id
+                val scanInfo = scanRecord?.scanInformation
+                if (scanInfo != null && !scanInfo.isJsonNull) {
+                    val savedAnalysis = parseSavedAnalysis(scanInfo)
+                    if (savedAnalysis != null) {
+                        Log.d("PRODUCT_SCAN", "Loaded saved product scan for $productName")
+                        setupAiUI(savedAnalysis)
+                    } else {
+                        resetAiVerdictState()
+                        Log.w("PRODUCT_SCAN", "Saved product scan was not a valid AI response")
+                    }
+                } else {
+                    resetAiVerdictState()
+                    Log.d(
+                        "PRODUCT_SCAN",
+                        "No saved product scan for $productName. scanInfo=$scanInfo, data=${response.data}"
+                    )
+                }
+            }.onFailure { e ->
+                binding.aiProgressBar.visibility = View.GONE
+                binding.btnAnalyzeAi.isEnabled = true
+                resetAiVerdictState()
+                Log.e("PRODUCT_SCAN", "Failed to load saved product scan", e)
+            }
+        }
+    }
+
+    private fun extractSavedScanRecord(data: com.google.gson.JsonElement?): SavedScanRecord? {
+        if (data == null || data.isJsonNull) return null
+
+        return runCatching {
+            val obj = when {
+                data.isJsonArray -> data.asJsonArray.firstOrNull()
+                    ?.takeIf { it.isJsonObject }
+                    ?.asJsonObject
+                data.isJsonObject -> data.asJsonObject
+                else -> null
+            }
+
+            obj?.let {
+                SavedScanRecord(
+                    id = it.get("id")?.takeIf { id -> !id.isJsonNull }?.asInt,
+                    scanInformation = it.get("scan_information")
+                )
+            }
+        }.getOrNull()
+    }
+
+    private data class SavedScanRecord(
+        val id: Int?,
+        val scanInformation: com.google.gson.JsonElement?
+    )
+
+    private fun parseSavedAnalysis(scanInfo: com.google.gson.JsonElement): AnalysisResponse? {
+        return runCatching {
+            if (scanInfo.isJsonPrimitive && scanInfo.asJsonPrimitive.isString) {
+                gson.fromJson(scanInfo.asString, AnalysisResponse::class.java)
+            } else {
+                gson.fromJson(scanInfo, AnalysisResponse::class.java)
+            }
+        }.getOrNull()
     }
 
     private fun handleProductType(type: String?) {
