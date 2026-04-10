@@ -60,6 +60,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private var diseases: List<Disease> = emptyList()
     private var isUpdatingUI = false
 
+    companion object {
+        private const val BASIC_ACTIVE_DISEASE_LIMIT = 3
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentUserProfileBinding.bind(view)
@@ -359,7 +363,12 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     private fun populateDiseasesUI(items: List<Disease>) {
         binding.diseaseItemsContainer.removeAllViews()
-        addSectionHeader(binding.diseaseItemsContainer, "Diseases", "Tap a card to set level")
+        val description = if (sessionManager.isVip()) {
+            "Tap a card to set level"
+        } else {
+            "Selected ${items.count { it.isActive }} of $BASIC_ACTIVE_DISEASE_LIMIT"
+        }
+        addSectionHeader(binding.diseaseItemsContainer, "Diseases", description)
 
         items.forEach { disease ->
             binding.diseaseItemsContainer.addView(createDiseaseRow(disease))
@@ -571,6 +580,12 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     }
 
     private fun createDiseaseRow(disease: Disease): View {
+        val isSelected = disease.isActive
+        val backgroundColor = if (isSelected) "#EAF2FF" else "#F8FAFD"
+        val strokeColor = if (isSelected) "#2F6BFF" else "#DDE7F5"
+        val titleColor = if (isSelected) "#163E9F" else "#1A1C1E"
+        val helperColor = if (isSelected) "#2F6BFF" else "#6B7280"
+
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
@@ -583,17 +598,13 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             background = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
                 cornerRadius = dp(18).toFloat()
-                setColor(android.graphics.Color.parseColor("#F8FAFD"))
-                setStroke(dp(1), android.graphics.Color.parseColor("#DDE7F5"))
+                setColor(android.graphics.Color.parseColor(backgroundColor))
+                setStroke(dp(if (isSelected) 2 else 1), android.graphics.Color.parseColor(strokeColor))
             }
             
-            val isVip = sessionManager.isVip()
-            isEnabled = isVip
-            alpha = if (isVip) 1.0f else 0.6f
-            
-            isClickable = isVip
-            isFocusable = isVip
-            foreground = if (isVip) requireContext().getDrawable(android.R.drawable.list_selector_background) else null
+            isClickable = true
+            isFocusable = true
+            foreground = requireContext().getDrawable(android.R.drawable.list_selector_background)
             setOnClickListener {
                 showDiseaseLevelSheet(disease)
             }
@@ -608,19 +619,23 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             text = disease.name
             textSize = 16f
             typeface = Typeface.DEFAULT_BOLD
-            setTextColor(resources.getColor(R.color.black, null))
+            setTextColor(android.graphics.Color.parseColor(titleColor))
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
         val levelBadge = TextView(context).apply {
-            text = disease.diseaseLevel?.name ?: "Not Selected"
+            text = if (isSelected) {
+                disease.diseaseLevel?.name ?: "Selected"
+            } else {
+                "Not selected"
+            }
             textSize = 12f
-            setTextColor(android.graphics.Color.parseColor("#2F6BFF"))
+            setTextColor(android.graphics.Color.parseColor(if (isSelected) "#FFFFFF" else "#2F6BFF"))
             setPadding(dp(12), dp(6), dp(12), dp(6))
             background = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
                 cornerRadius = dp(50).toFloat()
-                setColor(android.graphics.Color.parseColor("#E8F0FF"))
+                setColor(android.graphics.Color.parseColor(if (isSelected) "#2F6BFF" else "#E8F0FF"))
             }
         }
 
@@ -629,7 +644,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             textSize = 13f
             maxLines = 2
             setPadding(0, dp(10), 0, 0)
-            setTextColor(android.graphics.Color.parseColor("#6B7280"))
+            setTextColor(android.graphics.Color.parseColor(helperColor))
         }
 
         val footerRow = LinearLayout(requireContext()).apply {
@@ -641,15 +656,15 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val statusView = TextView(context).apply {
             text = buildDiseaseStatusText(disease)
             textSize = 12f
-            setTextColor(android.graphics.Color.parseColor("#6B7280"))
+            setTextColor(android.graphics.Color.parseColor(helperColor))
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
 
         val actionView = TextView(context).apply {
-            text = if (sessionManager.isVip()) "Manage" else "Locked"
+            text = if (isSelected) "Selected" else if (sessionManager.isVip()) "Manage" else "Choose"
             textSize = 13f
             typeface = Typeface.DEFAULT_BOLD
-            setTextColor(resources.getColor(if (sessionManager.isVip()) R.color.blue else R.color.black, null))
+            setTextColor(resources.getColor(R.color.blue, null))
         }
 
         titleRow.addView(titleView)
@@ -831,6 +846,15 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         lifecycleScope.launch {
             try {
                 sessionManager.refreshUserRole()
+                if (exceedsBasicDiseaseLimit(diseaseId, isActive)) {
+                    Toast.makeText(
+                        context,
+                        "Basic users can activate up to $BASIC_ACTIVE_DISEASE_LIMIT diseases",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@launch
+                }
+
                 val response = NetworkClient.userApiService.updateDisease(
                     token,
                     diseaseId,
@@ -847,6 +871,16 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun exceedsBasicDiseaseLimit(diseaseId: Int, isActive: Boolean): Boolean {
+        if (sessionManager.isVip() || !isActive) return false
+
+        val alreadyActive = diseases.any { it.id == diseaseId && it.isActive }
+        if (alreadyActive) return false
+
+        val activeCount = diseases.count { it.isActive }
+        return activeCount >= BASIC_ACTIVE_DISEASE_LIMIT
     }
 
     private fun updateSingleField(updateBlock: (UpdateUserMeasureRequest) -> UpdateUserMeasureRequest) {

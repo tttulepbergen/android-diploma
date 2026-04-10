@@ -201,7 +201,11 @@ data class UserCaloriesData(
     val calories: Int?,
     val carbs: Int?,
     val fat: Int?,
+    val fiber: Int?,
     val proteins: Int?,
+    val sodium: Int?,
+    val sugar: Int?,
+    val cholesterol: Int?,
     val day: String?,
     val daily: UserCaloriesDaily?,
     @SerializedName("created_at")
@@ -216,7 +220,11 @@ data class UserCaloriesDaily(
     val calories: Int?,
     val carbs: Int?,
     val fat: Int?,
+    val fiber: Int?,
     val proteins: Int?,
+    val sodium: Int?,
+    val sugar: Int?,
+    val cholesterol: Int?,
     @SerializedName("created_at")
     val createdAt: String?,
     @SerializedName("updated_at")

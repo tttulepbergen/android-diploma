@@ -3,8 +3,10 @@ package com.example.scanfit.mainNavigation
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -36,6 +38,7 @@ import java.util.Locale
 import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
 import com.example.scanfit.network.AnalysisResponse
 import com.example.scanfit.utils.SessionManager
+import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -87,6 +90,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         setupScannerTrigger()
+
+        binding.cardCalories.setOnClickListener {
+            showNutrientDetails()
+        }
 
         binding.tvGreeting.setOnClickListener {
             showDatePicker()
@@ -280,6 +287,145 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         )
     }
 
+    private fun showNutrientDetails() {
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
+        val day = API_DATE_FORMAT.format(selectedDate.time)
+
+        lifecycleScope.launch {
+            try {
+                sessionManager.refreshUserRole()
+                val response = NetworkClient.userApiService.getUserCaloriesByDay(token, day)
+                if (response.success) {
+                    showNutrientDetailsSheet(day, response.data)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "Failed to load nutrients",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    e.message ?: "Failed to load nutrients",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun showNutrientDetailsSheet(day: String, data: UserCaloriesData?) {
+        val dialog = BottomSheetDialog(requireContext())
+        val content = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dpToPx(24), dpToPx(20), dpToPx(24), dpToPx(28))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadii = floatArrayOf(
+                    dpToPx(24).toFloat(), dpToPx(24).toFloat(),
+                    dpToPx(24).toFloat(), dpToPx(24).toFloat(),
+                    0f, 0f,
+                    0f, 0f
+                )
+                setColor(Color.WHITE)
+            }
+        }
+
+        content.addView(TextView(requireContext()).apply {
+            text = "Nutrients"
+            textSize = 24f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.parseColor("#1A1C1E"))
+        })
+
+        content.addView(TextView(requireContext()).apply {
+            text = day
+            textSize = 14f
+            setTextColor(Color.parseColor("#808080"))
+            setPadding(0, dpToPx(4), 0, dpToPx(18))
+        })
+
+        val daily = data?.daily
+        val nutrients = listOf(
+            NutrientDetail("Calories", daily?.calories, data?.calories, "kcal"),
+            NutrientDetail("Carbs", daily?.carbs, data?.carbs, "g"),
+            NutrientDetail("Protein", daily?.proteins, data?.proteins, "g"),
+            NutrientDetail("Fats", daily?.fat, data?.fat, "g"),
+            NutrientDetail("Sodium", daily?.sodium, data?.sodium, "mg", isPremium = true),
+            NutrientDetail("Fiber", daily?.fiber, data?.fiber, "g", isPremium = true),
+            NutrientDetail("Sugar", daily?.sugar, data?.sugar, "g", isPremium = true),
+            NutrientDetail("Cholesterol", daily?.cholesterol, data?.cholesterol, "mg", isPremium = true)
+        )
+
+        nutrients.forEachIndexed { index, item ->
+            content.addView(createNutrientDetailRow(item))
+            if (index != nutrients.lastIndex) {
+                content.addView(createNutrientDivider())
+            }
+        }
+
+        dialog.setContentView(content)
+        dialog.show()
+    }
+
+    private fun createNutrientDetailRow(item: NutrientDetail): View {
+        val isLocked = item.isPremium && !sessionManager.isVip()
+        return LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(14), 0, dpToPx(14))
+            alpha = if (isLocked) 0.72f else 1.0f
+
+            val labelView = TextView(context).apply {
+                text = item.name
+                textSize = 16f
+                typeface = Typeface.DEFAULT_BOLD
+                setTextColor(Color.parseColor(if (isLocked) "#6B7280" else "#1A1C1E"))
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+
+            val valueView = TextView(context).apply {
+                text = if (isLocked) "ScanFit Pro" else formatNutrientValue(item)
+                textSize = if (isLocked) 13f else 15f
+                typeface = if (isLocked) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+                setTextColor(Color.parseColor(if (isLocked) "#2F6BFF" else "#4B5563"))
+                if (isLocked) {
+                    setPadding(dpToPx(10), dpToPx(5), dpToPx(10), dpToPx(5))
+                    background = android.graphics.drawable.GradientDrawable().apply {
+                        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                        cornerRadius = dpToPx(50).toFloat()
+                        setColor(Color.parseColor("#E8F0FF"))
+                    }
+                }
+            }
+
+            addView(labelView)
+            addView(valueView)
+        }
+    }
+
+    private fun createNutrientDivider(): View {
+        return View(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(1)
+            )
+            setBackgroundColor(Color.parseColor("#EDF2F7"))
+        }
+    }
+
+    private fun formatNutrientValue(item: NutrientDetail): String {
+        val consumed = item.consumed ?: 0
+        val goal = item.goal ?: 0
+        return "$consumed / $goal ${item.unit}"
+    }
+
     private fun calculateProgress(value: Float, limit: Float): Int {
         if (limit <= 0f) return 0
         return ((value / limit) * 100).toInt().coerceIn(0, 100)
@@ -374,4 +520,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     companion object {
         private val API_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     }
+
+    private data class NutrientDetail(
+        val name: String,
+        val consumed: Int?,
+        val goal: Int?,
+        val unit: String,
+        val isPremium: Boolean = false
+    )
 }
