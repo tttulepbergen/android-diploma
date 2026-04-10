@@ -191,7 +191,25 @@ data class UpdateUserCaloriesRequest(
     val calories: Int,
     val carbs: Int,
     val fat: Int,
-    val proteins: Int
+    val proteins: Int,
+    val fiber: Int? = null,
+    val sodium: Int? = null,
+    val sugar: Int? = null,
+    val cholesterol: Int? = null,
+    @SerializedName("vitamin_a")
+    val vitaminA: Double? = null,
+    @SerializedName("vitamin_b12")
+    val vitaminB12: Double? = null,
+    @SerializedName("vitamin_b6")
+    val vitaminB6: Double? = null,
+    @SerializedName("vitamin_b9")
+    val vitaminB9: Double? = null,
+    @SerializedName("vitamin_c")
+    val vitaminC: Double? = null,
+    @SerializedName("vitamin_d")
+    val vitaminD: Double? = null,
+    @SerializedName("vitamin_e")
+    val vitaminE: Double? = null
 )
 
 data class UserCaloriesData(
@@ -206,6 +224,20 @@ data class UserCaloriesData(
     val sodium: Int?,
     val sugar: Int?,
     val cholesterol: Int?,
+    @SerializedName("vitamin_a")
+    val vitaminA: Double?,
+    @SerializedName("vitamin_b12")
+    val vitaminB12: Double?,
+    @SerializedName("vitamin_b6")
+    val vitaminB6: Double?,
+    @SerializedName("vitamin_b9")
+    val vitaminB9: Double?,
+    @SerializedName("vitamin_c")
+    val vitaminC: Double?,
+    @SerializedName("vitamin_d")
+    val vitaminD: Double?,
+    @SerializedName("vitamin_e")
+    val vitaminE: Double?,
     val day: String?,
     val daily: UserCaloriesDaily?,
     @SerializedName("created_at")
@@ -225,6 +257,20 @@ data class UserCaloriesDaily(
     val sodium: Int?,
     val sugar: Int?,
     val cholesterol: Int?,
+    @SerializedName("vitamin_a")
+    val vitaminA: Double?,
+    @SerializedName("vitamin_b12")
+    val vitaminB12: Double?,
+    @SerializedName("vitamin_b6")
+    val vitaminB6: Double?,
+    @SerializedName("vitamin_b9")
+    val vitaminB9: Double?,
+    @SerializedName("vitamin_c")
+    val vitaminC: Double?,
+    @SerializedName("vitamin_d")
+    val vitaminD: Double?,
+    @SerializedName("vitamin_e")
+    val vitaminE: Double?,
     @SerializedName("created_at")
     val createdAt: String?,
     @SerializedName("updated_at")

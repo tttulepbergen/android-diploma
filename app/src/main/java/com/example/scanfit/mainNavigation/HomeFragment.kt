@@ -360,7 +360,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             NutrientDetail("Sodium", daily?.sodium, data?.sodium, "mg", isPremium = true),
             NutrientDetail("Fiber", daily?.fiber, data?.fiber, "g", isPremium = true),
             NutrientDetail("Sugar", daily?.sugar, data?.sugar, "g", isPremium = true),
-            NutrientDetail("Cholesterol", daily?.cholesterol, data?.cholesterol, "mg", isPremium = true)
+            NutrientDetail("Cholesterol", daily?.cholesterol, data?.cholesterol, "mg", isPremium = true),
+            NutrientDetail("Vitamin A", daily?.vitaminA, data?.vitaminA, "mcg", isPremium = true),
+            NutrientDetail("Vitamin B12", daily?.vitaminB12, data?.vitaminB12, "mcg", isPremium = true),
+            NutrientDetail("Vitamin B6", daily?.vitaminB6, data?.vitaminB6, "mg", isPremium = true),
+            NutrientDetail("Vitamin B9", daily?.vitaminB9, data?.vitaminB9, "mcg", isPremium = true),
+            NutrientDetail("Vitamin C", daily?.vitaminC, data?.vitaminC, "mg", isPremium = true),
+            NutrientDetail("Vitamin D", daily?.vitaminD, data?.vitaminD, "mcg", isPremium = true),
+            NutrientDetail("Vitamin E", daily?.vitaminE, data?.vitaminE, "mg", isPremium = true)
         )
 
         nutrients.forEachIndexed { index, item ->
@@ -421,9 +428,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun formatNutrientValue(item: NutrientDetail): String {
-        val consumed = item.consumed ?: 0
-        val goal = item.goal ?: 0
-        return "$consumed / $goal ${item.unit}"
+        val consumed = item.consumed?.toDouble() ?: 0.0
+        val goal = item.goal?.toDouble() ?: 0.0
+        return "${formatAmount(consumed)} / ${formatAmount(goal)} ${item.unit}"
+    }
+
+    private fun formatAmount(value: Double): String {
+        return if (value % 1.0 == 0.0) {
+            value.toInt().toString()
+        } else {
+            String.format(Locale.US, "%.2f", value).trimEnd('0').trimEnd('.')
+        }
     }
 
     private fun calculateProgress(value: Float, limit: Float): Int {
@@ -523,8 +538,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private data class NutrientDetail(
         val name: String,
-        val consumed: Int?,
-        val goal: Int?,
+        val consumed: Number?,
+        val goal: Number?,
         val unit: String,
         val isPremium: Boolean = false
     )

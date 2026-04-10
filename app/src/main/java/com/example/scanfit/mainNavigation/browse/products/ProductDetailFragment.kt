@@ -172,7 +172,18 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             calories = item.calories.toIntValue(),
             carbs = item.carbs.toIntValue(),
             fat = item.fat.toIntValue(),
-            proteins = item.proteins.toIntValue()
+            proteins = item.proteins.toIntValue(),
+            fiber = item.fiber.toIntValue(),
+            sodium = item.sodium.toIntValue(),
+            sugar = item.sugars.toIntValue(),
+            cholesterol = item.cholesterol.toIntValue(),
+            vitaminA = item.vitaminA.toDoubleValue(),
+            vitaminB12 = item.vitaminB12.toDoubleValue(),
+            vitaminB6 = item.vitaminB6.toDoubleValue(),
+            vitaminB9 = item.vitaminB9.toDoubleValue(),
+            vitaminC = item.vitaminC.toDoubleValue(),
+            vitaminD = item.vitaminD.toDoubleValue(),
+            vitaminE = item.vitaminE.toDoubleValue()
         )
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -328,6 +339,14 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             .toFloatOrNull()
             ?.toInt()
             ?: 0
+    }
+
+    private fun String?.toDoubleValue(): Double {
+        if (this.isNullOrBlank()) return 0.0
+        return this.replace(',', '.')
+            .filter { it.isDigit() || it == '.' }
+            .toDoubleOrNull()
+            ?: 0.0
     }
 
     private fun setupAiUI(response: AnalysisResponse) {
