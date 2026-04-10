@@ -51,7 +51,7 @@ data class AnalysisResponse(
     val risks: List<String>? = emptyList(),
     val is_food: Boolean? = true,
     val product_type: String? = "unknown",
-    val verdict: String? = "Нет данных",
+    val verdict: String? = "No data",
     val macros: AnalysisMacros? = null
 ) : java.io.Serializable
 

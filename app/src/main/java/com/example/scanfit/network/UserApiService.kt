@@ -3,6 +3,8 @@ package com.example.scanfit.network
 import com.example.scanfit.model.DietTypeListResponse
 import com.example.scanfit.model.DiseaseLevelListResponse
 import com.example.scanfit.model.DiseaseListResponse
+import com.example.scanfit.model.CreateUserDailyEatRequest
+import com.example.scanfit.model.CreateUserDailyEatResponse
 import com.example.scanfit.model.UpdateDietTypeRequest
 import com.example.scanfit.model.UpdateDietTypeResponse
 import com.example.scanfit.model.UpdateDiseaseRequest
@@ -99,6 +101,12 @@ interface UserApiService {
         @Query("day") day: String,
         @Body request: UpdateUserCaloriesRequest
     ): UserCaloriesResponse
+
+    @POST("api/v1/product/user-daily-eat/create")
+    suspend fun createUserDailyEat(
+        @Header("Authorization") token: String,
+        @Body request: CreateUserDailyEatRequest
+    ): CreateUserDailyEatResponse
 
     @PUT("api/v1/user/diet-type/update/{id}")
     suspend fun updateDietType(

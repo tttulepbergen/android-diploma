@@ -187,6 +187,39 @@ data class UserCaloriesResponse(
     val success: Boolean
 )
 
+data class CreateUserDailyEatResponse(
+    val message: String?,
+    val success: Boolean?
+)
+
+data class CreateUserDailyEatRequest(
+    val calorie: Int,
+    val carbohydrate: Int,
+    val cholesterol: Int,
+    val fats: Int,
+    val fiber: Int,
+    val portion: Double,
+    @SerializedName("product_name")
+    val productName: String,
+    val protein: Int,
+    val sodium: Int,
+    val sugar: Int,
+    @SerializedName("vitamin_a")
+    val vitaminA: Double,
+    @SerializedName("vitamin_b12")
+    val vitaminB12: Double,
+    @SerializedName("vitamin_b6")
+    val vitaminB6: Double,
+    @SerializedName("vitamin_b9")
+    val vitaminB9: Double,
+    @SerializedName("vitamin_c")
+    val vitaminC: Double,
+    @SerializedName("vitamin_d")
+    val vitaminD: Double,
+    @SerializedName("vitamin_e")
+    val vitaminE: Double
+)
+
 data class UpdateUserCaloriesRequest(
     val calories: Int,
     val carbs: Int,

@@ -28,6 +28,7 @@ import com.example.scanfit.data.FoodItem
 import com.example.scanfit.data.RecentProduct
 import com.example.scanfit.databinding.FragmentProductDetailBinding
 import com.example.scanfit.mainNavigation.TrackerViewModel
+import com.example.scanfit.model.CreateUserDailyEatRequest
 import com.example.scanfit.model.UpdateUserCaloriesRequest
 import com.example.scanfit.model.UserCaloriesData
 import com.example.scanfit.network.AnalysisResponse
@@ -113,7 +114,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private fun handleProductType(type: String?) {
         if (type == "pharmacy") {
             binding.macrosContainer.visibility = View.GONE
-            binding.tvVerdictStatus.text = "💊 Pharmacy Info"
+            binding.tvVerdictStatus.text = "Pharmacy Info"
             binding.tvVerdictStatus.setTextColor(Color.BLUE)
         } else {
             binding.macrosContainer.visibility = View.VISIBLE
@@ -175,40 +176,88 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
         val selectedDate = trackerViewModel.selectedDate.value ?: java.util.Calendar.getInstance()
         val day = API_DATE_FORMAT.format(selectedDate.time)
-        val request = UpdateUserCaloriesRequest(
-            calories = item.calories.toScaledIntValue(),
-            carbs = item.carbs.toScaledIntValue(),
-            fat = item.fat.toScaledIntValue(),
-            proteins = item.proteins.toScaledIntValue(),
-            fiber = item.fiber.toScaledIntValue(),
-            sodium = item.sodium.toScaledIntValue(),
-            sugar = item.sugars.toScaledIntValue(),
-            cholesterol = item.cholesterol.toScaledIntValue(),
-            vitaminA = item.vitaminA.toScaledDoubleValue(),
-            vitaminB12 = item.vitaminB12.toScaledDoubleValue(),
-            vitaminB6 = item.vitaminB6.toScaledDoubleValue(),
-            vitaminB9 = item.vitaminB9.toScaledDoubleValue(),
-            vitaminC = item.vitaminC.toScaledDoubleValue(),
-            vitaminD = item.vitaminD.toScaledDoubleValue(),
-            vitaminE = item.vitaminE.toScaledDoubleValue()
+        val calories = item.calories.toScaledIntValue()
+        val carbs = item.carbs.toScaledIntValue()
+        val fat = item.fat.toScaledIntValue()
+        val proteins = item.proteins.toScaledIntValue()
+        val fiber = item.fiber.toScaledIntValue()
+        val sodium = item.sodium.toScaledIntValue()
+        val sugar = item.sugars.toScaledIntValue()
+        val cholesterol = item.cholesterol.toScaledIntValue()
+        val vitaminA = item.vitaminA.toScaledDoubleValue()
+        val vitaminB12 = item.vitaminB12.toScaledDoubleValue()
+        val vitaminB6 = item.vitaminB6.toScaledDoubleValue()
+        val vitaminB9 = item.vitaminB9.toScaledDoubleValue()
+        val vitaminC = item.vitaminC.toScaledDoubleValue()
+        val vitaminD = item.vitaminD.toScaledDoubleValue()
+        val vitaminE = item.vitaminE.toScaledDoubleValue()
+
+        val dailyEatRequest = CreateUserDailyEatRequest(
+            calorie = calories,
+            carbohydrate = carbs,
+            cholesterol = cholesterol,
+            fats = fat,
+            fiber = fiber,
+            portion = servingMultiplier,
+            productName = item.title,
+            protein = proteins,
+            sodium = sodium,
+            sugar = sugar,
+            vitaminA = vitaminA,
+            vitaminB12 = vitaminB12,
+            vitaminB6 = vitaminB6,
+            vitaminB9 = vitaminB9,
+            vitaminC = vitaminC,
+            vitaminD = vitaminD,
+            vitaminE = vitaminE
+        )
+
+        val caloriesRequest = UpdateUserCaloriesRequest(
+            calories = calories,
+            carbs = carbs,
+            fat = fat,
+            proteins = proteins,
+            fiber = fiber,
+            sodium = sodium,
+            sugar = sugar,
+            cholesterol = cholesterol,
+            vitaminA = vitaminA,
+            vitaminB12 = vitaminB12,
+            vitaminB6 = vitaminB6,
+            vitaminB9 = vitaminB9,
+            vitaminC = vitaminC,
+            vitaminD = vitaminD,
+            vitaminE = vitaminE
         )
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 sessionManager.refreshUserRole()
-                val response = NetworkClient.userApiService.updateUserCalories(token, day, request)
-                if (response.success && response.data != null) {
-                    applyUpdatedCalories(response.data)
+                val createResponse = NetworkClient.userApiService.createUserDailyEat(token, dailyEatRequest)
+                Log.d("ADD_FOOD", "createUserDailyEat success=${createResponse.success}, message=${createResponse.message}")
+                if (createResponse.success == false) {
+                    Toast.makeText(
+                        requireContext(),
+                        createResponse.message ?: "Failed to add food",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@launch
+                }
+
+                val caloriesResponse = NetworkClient.userApiService.updateUserCalories(token, day, caloriesRequest)
+                Log.d("ADD_FOOD", "updateUserCalories success=${caloriesResponse.success}, message=${caloriesResponse.message}")
+                if (caloriesResponse.success && caloriesResponse.data != null) {
+                    applyUpdatedCalories(caloriesResponse.data)
                     Toast.makeText(requireContext(), "${item.title} added!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigateUp()
                 } else {
                     Toast.makeText(
                         requireContext(),
-                        response.message ?: "Failed to update calories",
+                        caloriesResponse.message ?: "Failed to update calories",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             } catch (e: Exception) {
+                Log.e("ADD_FOOD", "Add food failed", e)
                 Toast.makeText(
                     requireContext(),
                     e.message ?: "Failed to update calories",
@@ -467,7 +516,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.tvVerdictStatus.setTextColor(Color.parseColor(color))
 
         // Здесь тоже используем score
-        binding.tvVerdictStatus.text = if (score < 40) "❌ Dangerous" else "✅ Safe"
+        binding.tvVerdictStatus.text = if (score < 40) "Dangerous" else "Safe"
         binding.tvAiVerdictDescription.text = response.verdict ?: "No description"
 
         response.macros?.let { m ->
@@ -487,13 +536,29 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             binding.progressFat.progress = (fat * 2).toInt()
         }
 
+        binding.btnAddFood.setOnClickListener {
+            val macros = response.macros
+            val aiItem = FoodItem(
+                title = response.product_type?.takeUnless { it == "unknown" } ?: "AI Analysis",
+                subtitle = "AI Scan",
+                imageUrl = null,
+                calories = "${(macros?.calories ?: 0.0).roundToInt()} kcal",
+                proteins = "${macros?.proteins ?: 0.0}g",
+                carbs = "${macros?.carbs ?: 0.0}g",
+                fat = "${macros?.fats ?: 0.0}g",
+                grade = binding.tvGradeBadge.text?.toString() ?: "B",
+                ingredients = response.verdict ?: ""
+            )
+            updateUserCalories(aiItem)
+        }
+
         setupNutrientsFromAi(response.risks ?: emptyList())
     }
 
     private fun setupNutrientsFromAi(risks: List<String>) {
         binding.nutrientsContainer.removeAllViews()
         if (risks.isEmpty()) {
-            addNutrientRow("Health Risks", "None detected ✨")
+            addNutrientRow("Health Risks", "None detected")
         } else {
             risks.forEach { risk -> addNutrientRow("Risk", risk) }
         }
