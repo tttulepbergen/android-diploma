@@ -64,5 +64,12 @@ data class AuthData(
     @SerializedName("refresh_token")
     val refreshToken: String,
     @SerializedName("token_type")
-    val tokenType: String
+    val tokenType: String,
+    val role: UserRole?
+)
+
+data class UserRole(
+    val code: String,
+    val id: Int,
+    val name: String
 )

@@ -224,8 +224,15 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         binding.tvWeightValue.text = "${data.weight ?: 0} kg"
         binding.tvBmiValue.text = String.format("%.1f", data.bmi?.toDouble() ?: 0.0)
         
+        val isVip = sessionManager.isVip()
         binding.switchBloodPressure.isChecked = (data.bloodPressure ?: 0) == 1
+        binding.switchBloodPressure.isEnabled = isVip
+        binding.switchBloodPressure.alpha = if (isVip) 1.0f else 0.5f
+
         binding.switchCholesterol.isChecked = (data.cholesterol ?: 0) == 1
+        binding.switchCholesterol.isEnabled = isVip
+        binding.switchCholesterol.alpha = if (isVip) 1.0f else 0.5f
+        
         isUpdatingUI = false
     }
 
@@ -535,6 +542,13 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         val switch = SwitchMaterial(requireContext()).apply {
             isChecked = item.isActive
+            val isVip = sessionManager.isVip()
+            // Restriction for Basic users: cannot change Preference or Condition
+            if (sectionType == DietarySectionType.DIETARY_PREFERENCE || sectionType == DietarySectionType.HEALTH_CONDITION) {
+                isEnabled = isVip
+                alpha = if (isVip) 1.0f else 0.5f
+            }
+            
             setOnCheckedChangeListener { _, isChecked ->
                 updateDietary(item.id, isChecked, sectionType)
             }
@@ -564,9 +578,14 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 setColor(android.graphics.Color.parseColor("#F8FAFD"))
                 setStroke(dp(1), android.graphics.Color.parseColor("#DDE7F5"))
             }
-            isClickable = true
-            isFocusable = true
-            foreground = requireContext().getDrawable(android.R.drawable.list_selector_background)
+            
+            val isVip = sessionManager.isVip()
+            isEnabled = isVip
+            alpha = if (isVip) 1.0f else 0.6f
+            
+            isClickable = isVip
+            isFocusable = isVip
+            foreground = if (isVip) requireContext().getDrawable(android.R.drawable.list_selector_background) else null
             setOnClickListener {
                 showDiseaseLevelSheet(disease)
             }
@@ -619,10 +638,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
 
         val actionView = TextView(context).apply {
-            text = "Manage"
+            text = if (sessionManager.isVip()) "Manage" else "Locked"
             textSize = 13f
             typeface = Typeface.DEFAULT_BOLD
-            setTextColor(resources.getColor(R.color.blue, null))
+            setTextColor(resources.getColor(if (sessionManager.isVip()) R.color.blue else R.color.black, null))
         }
 
         titleRow.addView(titleView)
