@@ -3,8 +3,11 @@ package com.example.scanfit.mainNavigation.browse.products
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
@@ -34,6 +37,7 @@ import kotlinx.coroutines.launch
 import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
@@ -42,6 +46,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private var _binding: FragmentProductDetailBinding? = null
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
+    private var servingMultiplier = 1.0
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -116,6 +121,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     }
 
     private fun setupUI(item: FoodItem) {
+        binding.portionSelectorCard.visibility = View.VISIBLE
         binding.tvProductName.text = item.title
         binding.tvCategoryLabel.text = item.subtitle ?: "PRODUCT"
         binding.ivProductImage.load(item.imageUrl) {
@@ -153,6 +159,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.tvFatValue.text = item.fat
 
         setupNutrientsList(item)
+        setupServingSelector(item)
 
         binding.btnAddFood.setOnClickListener {
             updateUserCalories(item)
@@ -169,21 +176,21 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         val selectedDate = trackerViewModel.selectedDate.value ?: java.util.Calendar.getInstance()
         val day = API_DATE_FORMAT.format(selectedDate.time)
         val request = UpdateUserCaloriesRequest(
-            calories = item.calories.toIntValue(),
-            carbs = item.carbs.toIntValue(),
-            fat = item.fat.toIntValue(),
-            proteins = item.proteins.toIntValue(),
-            fiber = item.fiber.toIntValue(),
-            sodium = item.sodium.toIntValue(),
-            sugar = item.sugars.toIntValue(),
-            cholesterol = item.cholesterol.toIntValue(),
-            vitaminA = item.vitaminA.toDoubleValue(),
-            vitaminB12 = item.vitaminB12.toDoubleValue(),
-            vitaminB6 = item.vitaminB6.toDoubleValue(),
-            vitaminB9 = item.vitaminB9.toDoubleValue(),
-            vitaminC = item.vitaminC.toDoubleValue(),
-            vitaminD = item.vitaminD.toDoubleValue(),
-            vitaminE = item.vitaminE.toDoubleValue()
+            calories = item.calories.toScaledIntValue(),
+            carbs = item.carbs.toScaledIntValue(),
+            fat = item.fat.toScaledIntValue(),
+            proteins = item.proteins.toScaledIntValue(),
+            fiber = item.fiber.toScaledIntValue(),
+            sodium = item.sodium.toScaledIntValue(),
+            sugar = item.sugars.toScaledIntValue(),
+            cholesterol = item.cholesterol.toScaledIntValue(),
+            vitaminA = item.vitaminA.toScaledDoubleValue(),
+            vitaminB12 = item.vitaminB12.toScaledDoubleValue(),
+            vitaminB6 = item.vitaminB6.toScaledDoubleValue(),
+            vitaminB9 = item.vitaminB9.toScaledDoubleValue(),
+            vitaminC = item.vitaminC.toScaledDoubleValue(),
+            vitaminD = item.vitaminD.toScaledDoubleValue(),
+            vitaminE = item.vitaminE.toScaledDoubleValue()
         )
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -241,25 +248,85 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private fun setupNutrientsList(item: FoodItem) {
         binding.nutrientsContainer.removeAllViews()
         val nutrientMap = linkedMapOf(
-            "Total Fat" to item.fat,
-            "Protein" to item.proteins,
-            "Total Carbohydrate" to item.carbs,
-            "Sugar" to item.sugars,
-            "Fiber" to item.fiber,
-            "Sodium" to item.sodium,
-            "Cholesterol" to item.cholesterol,
-            "Vitamin D" to item.vitaminD,
-            "Vitamin B12" to item.vitaminB12,
-            "Vitamin C" to item.vitaminC,
-            "Vitamin A" to item.vitaminA,
-            "Vitamin B6" to item.vitaminB6,
-            "Vitamin B9 (Folic acid)" to item.vitaminB9,
-            "Vitamin E" to item.vitaminE
+            "Total Fat" to item.fat.scaledDisplayValue(),
+            "Protein" to item.proteins.scaledDisplayValue(),
+            "Total Carbohydrate" to item.carbs.scaledDisplayValue(),
+            "Sugar" to item.sugars.scaledDisplayValue(),
+            "Fiber" to item.fiber.scaledDisplayValue(),
+            "Sodium" to item.sodium.scaledDisplayValue(),
+            "Cholesterol" to item.cholesterol.scaledDisplayValue(),
+            "Vitamin D" to item.vitaminD.scaledDisplayValue(),
+            "Vitamin B12" to item.vitaminB12.scaledDisplayValue(),
+            "Vitamin C" to item.vitaminC.scaledDisplayValue(),
+            "Vitamin A" to item.vitaminA.scaledDisplayValue(),
+            "Vitamin B6" to item.vitaminB6.scaledDisplayValue(),
+            "Vitamin B9 (Folic acid)" to item.vitaminB9.scaledDisplayValue(),
+            "Vitamin E" to item.vitaminE.scaledDisplayValue()
         )
 
         for ((name, value) in nutrientMap) {
             val displayValue = if (value.isNullOrBlank()) "0g" else value
             addNutrientRow(name, displayValue)
+        }
+    }
+
+    private fun setupServingSelector(item: FoodItem) {
+        val portions = linkedMapOf(
+            binding.btnPortionQuarter to 0.25,
+            binding.btnPortionHalf to 0.5,
+            binding.btnPortionThreeQuarters to 0.75,
+            binding.btnPortionOne to 1.0,
+            binding.btnPortionOneHalf to 1.5,
+            binding.btnPortionTwo to 2.0,
+            binding.btnPortionTwoHalf to 2.5,
+            binding.btnPortionThree to 3.0
+        )
+
+        portions.forEach { (view, value) ->
+            view.setOnClickListener {
+                servingMultiplier = value
+                binding.etPortionAmount.setText(formatAmount(value))
+                binding.etPortionAmount.setSelection(binding.etPortionAmount.text?.length ?: 0)
+                refreshServingUi(item, portions)
+            }
+        }
+
+        binding.etPortionAmount.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+
+            override fun afterTextChanged(s: Editable?) {
+                servingMultiplier = s.toString().replace(',', '.').toDoubleOrNull()?.coerceAtLeast(0.0) ?: 0.0
+                refreshServingUi(item, portions)
+            }
+        })
+
+        refreshServingUi(item, portions)
+    }
+
+    private fun refreshServingUi(item: FoodItem, portions: Map<TextView, Double>) {
+        portions.forEach { (view, value) ->
+            val isSelected = kotlin.math.abs(value - servingMultiplier) < 0.001
+            view.background = createPortionBackground(isSelected)
+            view.setTypeface(null, if (isSelected) Typeface.BOLD else Typeface.NORMAL)
+        }
+
+        binding.tvCaloriesValue.text = "${item.calories.scaledDisplayValue()}\nselected amount"
+        binding.tvProteinValue.text = item.proteins.scaledDisplayValue()
+        binding.tvCarbsValue.text = item.carbs.scaledDisplayValue()
+        binding.tvFatValue.text = item.fat.scaledDisplayValue()
+
+        binding.progressProtein.progress = (item.proteins.toScaledDoubleValue() * 2).toInt().coerceIn(0, 100)
+        binding.progressCarbs.progress = (item.carbs.toScaledDoubleValue() * 2).toInt().coerceIn(0, 100)
+        binding.progressFat.progress = (item.fat.toScaledDoubleValue() * 2).toInt().coerceIn(0, 100)
+        setupNutrientsList(item)
+    }
+
+    private fun createPortionBackground(isSelected: Boolean): GradientDrawable {
+        return GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(Color.parseColor(if (isSelected) "#EEEBDD" else "#FFFFFF"))
+            setStroke(dpToPx(1), Color.parseColor("#DADADA"))
         }
     }
 
@@ -341,6 +408,10 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             ?: 0
     }
 
+    private fun String?.toScaledIntValue(): Int {
+        return (this.toDoubleValue() * servingMultiplier).roundToInt()
+    }
+
     private fun String?.toDoubleValue(): Double {
         if (this.isNullOrBlank()) return 0.0
         return this.replace(',', '.')
@@ -349,7 +420,35 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             ?: 0.0
     }
 
+    private fun String?.toScaledDoubleValue(): Double {
+        return this.toDoubleValue() * servingMultiplier
+    }
+
+    private fun String?.scaledDisplayValue(): String {
+        val original = this.orEmpty()
+        val unit = original.replace(Regex("[0-9.,\\s]"), "").ifBlank { "" }
+        val value = original.toScaledDoubleValue()
+        return if (unit.isBlank()) {
+            formatAmount(value)
+        } else {
+            "${formatAmount(value)} $unit"
+        }
+    }
+
+    private fun formatAmount(value: Double): String {
+        return if (value % 1.0 == 0.0) {
+            value.toInt().toString()
+        } else {
+            String.format(Locale.US, "%.2f", value).trimEnd('0').trimEnd('.')
+        }
+    }
+
+    private fun dpToPx(dp: Int): Int {
+        return (dp * resources.displayMetrics.density).toInt()
+    }
+
     private fun setupAiUI(response: AnalysisResponse) {
+        binding.portionSelectorCard.visibility = View.GONE
         binding.tvProductName.text = "AI Analysis"
         binding.tvCategoryLabel.text = "SCANNER"
 
