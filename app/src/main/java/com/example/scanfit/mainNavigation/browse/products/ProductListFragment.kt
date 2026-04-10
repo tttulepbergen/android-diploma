@@ -13,6 +13,8 @@ import com.example.scanfit.adapters.FoodAdapter
 import com.example.scanfit.data.AppDatabase
 import com.example.scanfit.data.FavoriteProduct
 import com.example.scanfit.data.FoodItem
+import com.example.scanfit.data.toFavoriteProduct
+import com.example.scanfit.data.toRecentProduct
 import com.example.scanfit.data.RecentProduct // Твой импорт
 import com.example.scanfit.databinding.FragmentProductListBinding
 import com.example.scanfit.network.NetworkClient // Пакет от Sunbekova
@@ -48,17 +50,7 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
             items = emptyList(),
             onItemClick = { selectedProduct ->
                 viewLifecycleOwner.lifecycleScope.launch {
-                    val recentEntity = RecentProduct(
-                        id = selectedProduct.title,
-                        title = selectedProduct.title,
-                        subtitle = selectedProduct.subtitle,
-                        imageUrl = selectedProduct.imageUrl,
-                        calories = selectedProduct.calories,
-                        grade = selectedProduct.grade,
-                        timestamp = System.currentTimeMillis(),
-                        ingredients = selectedProduct.ingredients
-                    )
-                    database.productDao().insertRecent(recentEntity)
+                    database.productDao().insertRecent(selectedProduct.toRecentProduct())
                 }
 
                 val bundle = bundleOf("foodItem" to selectedProduct)
@@ -134,16 +126,7 @@ class ProductListFragment : Fragment(R.layout.fragment_product_list) {
         viewLifecycleOwner.lifecycleScope.launch {
             val id = item.title
             if (item.isFavorite) {
-                val entity = FavoriteProduct(
-                    id = id,
-                    productName = item.title,
-                    name = item.title,
-                    imageUrl = item.imageUrl,
-                    calories = item.calories,
-                    grade = item.grade,
-                    ingredients = item.ingredients
-                )
-                database.productDao().insertFavorite(entity)
+                database.productDao().insertFavorite(item.toFavoriteProduct())
                 Toast.makeText(context, "Saved to favourites", Toast.LENGTH_SHORT).show()
             } else {
                 database.productDao().deleteFavoriteById(id)

@@ -11,9 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.scanfit.R
 import com.example.scanfit.adapters.FoodAdapter
 import com.example.scanfit.data.AppDatabase
-import com.example.scanfit.data.FavoriteProduct
 import com.example.scanfit.data.FoodItem
 import com.example.scanfit.databinding.FragmentRecentBinding
+import com.example.scanfit.data.toFavoriteProduct
+import com.example.scanfit.data.toFoodItem
 import kotlinx.coroutines.launch
 
 class RecentFragment : Fragment(R.layout.fragment_recent) {
@@ -63,15 +64,7 @@ class RecentFragment : Fragment(R.layout.fragment_recent) {
                     binding.rvRecent.visibility = View.VISIBLE
 
                     val items = recentList.map { recent ->
-                        FoodItem(
-                            title = recent.title,
-                            subtitle = recent.subtitle ?: "",
-                            imageUrl = recent.imageUrl ?: "",
-                            calories = recent.calories ?: "0 cal",
-                            grade = recent.grade ?: "B",
-                            isFavorite = favoritesIds.contains(recent.title),
-                            ingredients = recent.ingredients
-                        )
+                        recent.toFoodItem(isFavorite = favoritesIds.contains(recent.title))
                     }
                     foodAdapter.updateList(items)
                 }
@@ -83,16 +76,7 @@ class RecentFragment : Fragment(R.layout.fragment_recent) {
         viewLifecycleOwner.lifecycleScope.launch {
             val id = item.title
             if (item.isFavorite) {
-                val entity = FavoriteProduct(
-                    id = id,
-                    productName = item.title,
-                    name = item.title,
-                    imageUrl = item.imageUrl,
-                    calories = item.calories,
-                    grade = item.grade,
-                    ingredients = item.ingredients
-                )
-                database.productDao().insertFavorite(entity)
+                database.productDao().insertFavorite(item.toFavoriteProduct())
                 Toast.makeText(context, "Saved to favourites", Toast.LENGTH_SHORT).show()
             } else {
                 database.productDao().deleteFavoriteById(id)

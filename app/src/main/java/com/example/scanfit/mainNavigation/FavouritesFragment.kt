@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.scanfit.R
 import com.example.scanfit.adapters.FoodAdapter
 import com.example.scanfit.data.AppDatabase
-import com.example.scanfit.data.FoodItem
 import com.example.scanfit.databinding.FragmentFavouritesBinding
+import com.example.scanfit.data.toFoodItem
 import kotlinx.coroutines.launch
 
 class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
@@ -35,17 +35,7 @@ class FavoritesFragment : Fragment(R.layout.fragment_favourites) {
                     binding.layoutEmptyState.visibility = View.GONE
                     binding.rvFavorites.visibility = View.VISIBLE
 
-                    val foodItems = favoriteList.map { favorite ->
-                        FoodItem(
-                            title = favorite.productName,
-                            subtitle = favorite.name ?: "Unknown Brand",
-                            imageUrl = favorite.imageUrl,
-                            calories = favorite.calories,
-                            grade = favorite.grade,
-                            isFavorite = true,
-                            ingredients = favorite.ingredients
-                        )
-                    }
+                    val foodItems = favoriteList.map { favorite -> favorite.toFoodItem() }
 
                     binding.rvFavorites.adapter = FoodAdapter(
                         items = foodItems,

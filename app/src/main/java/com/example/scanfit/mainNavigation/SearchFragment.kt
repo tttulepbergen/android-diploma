@@ -11,7 +11,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.scanfit.adapters.FoodAdapter
 import com.example.scanfit.network.NetworkClient
 import com.example.scanfit.R
+import com.example.scanfit.data.AppDatabase
 import com.example.scanfit.data.FoodItem
+import com.example.scanfit.data.toFavoriteProduct
 import com.example.scanfit.databinding.FragmentSearchBinding
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -27,6 +29,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
+    private val database by lazy { AppDatabase.getDatabase(requireContext()) }
     private lateinit var foodAdapter: FoodAdapter
     private var searchJob: Job? = null
 
@@ -69,6 +72,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                 Log.d("SEARCH_CHECK", "Отправляю запрос в API...")
 
                 val response = NetworkClient.apiService.searchProducts(query)
+                val favoritesIds = database.productDao().getAllFavoritesOnce().map { it.id }.toSet()
 
                 val foodItems = response.products.map { apiProduct ->
                     val nut = apiProduct.nutriments
@@ -78,7 +82,15 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                         subtitle = apiProduct.brands ?: "No brand",
                         calories = "${nut?.energyKcal100g?.toInt() ?: 0} kcal",
                         imageUrl = apiProduct.imageUrl,
-                        isFavorite = false,
+                        isFavorite = favoritesIds.contains(apiProduct.productName ?: "Unknown"),
+                        grade = apiProduct.nutriscoreGrade?.uppercase() ?: "B",
+                        proteins = "${nut?.proteins100g ?: nut?.proteinsServing ?: 0.0}g",
+                        fat = "${nut?.fat100g ?: nut?.fatServing ?: 0.0}g",
+                        carbs = "${nut?.carbohydrates100g ?: nut?.carbohydratesServing ?: 0.0}g",
+                        sugars = "${nut?.sugars100g ?: nut?.sugarsServing ?: 0.0}g",
+                        fiber = "${nut?.fiber100g ?: nut?.fiberServing ?: 0.0}g",
+                        sodium = "${((nut?.sodium100g ?: nut?.sodiumServing ?: 0.0) * 1000).toInt()}mg",
+                        cholesterol = "${nut?.cholesterol100g ?: nut?.cholesterolServing ?: 0.0}mg",
                         vitaminD = formatMicrograms(nut?.vitaminDServing ?: nut?.vitaminD100g ?: estimated?.vitaminDServing ?: estimated?.vitaminD100g),
                         vitaminB12 = formatMicrograms(nut?.vitaminB12Serving ?: nut?.vitaminB12100g ?: estimated?.vitaminB12Serving ?: estimated?.vitaminB12100g),
                         vitaminC = formatMilligrams(nut?.vitaminCServing ?: nut?.vitaminC100g ?: estimated?.vitaminCServing ?: estimated?.vitaminC100g),
@@ -121,6 +133,15 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                     R.id.action_searchFragment_to_productDetailFragment,
                     bundle
                 ) },
+            onFavoriteClick = { item ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    if (item.isFavorite) {
+                        database.productDao().insertFavorite(item.toFavoriteProduct())
+                    } else {
+                        database.productDao().deleteFavoriteById(item.title)
+                    }
+                }
+            },
             showFavoriteIcon = true,
             showDetails = true
         )
