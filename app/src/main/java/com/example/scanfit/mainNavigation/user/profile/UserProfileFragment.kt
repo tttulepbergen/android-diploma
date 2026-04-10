@@ -799,7 +799,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                         goal = null,
                         targetDate = null,
                         targetWeight = null,
-                        weeklyWeightChange = 1
+                        weeklyWeightChange = 1,
+                        userId = null,
+                        createdAt = null,
+                        updatedAt = null
                     )).copy(
                         goal = normalizedGoal,
                         targetDate = normalizedTargetDate,

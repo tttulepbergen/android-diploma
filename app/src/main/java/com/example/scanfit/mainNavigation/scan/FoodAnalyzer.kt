@@ -2,6 +2,7 @@ package com.example.scanfit.mainNavigation.scan
 
 import android.graphics.Bitmap
 import android.util.Log
+import com.google.gson.JsonParser
 import com.example.scanfit.network.AnalysisResponse
 import com.example.scanfit.network.NetworkClient
 import kotlinx.coroutines.Dispatchers
@@ -34,11 +35,24 @@ object FoodAnalyzer {
     }
 
 
-    suspend fun analyzeTextIngredientsFull(ingredients: String, healthInfo: String): AnalysisResponse {
-        val requestData = mapOf(
+    suspend fun analyzeTextIngredientsFull(
+        ingredients: String,
+        healthInfo: String,
+        productJson: String? = null,
+        userProfileJson: String? = null
+    ): AnalysisResponse {
+        val requestData = mutableMapOf<String, Any>(
             "ingredients" to ingredients,
             "health_info" to healthInfo
         )
+        productJson?.let {
+            requestData["product_json"] = it
+            requestData["product"] = JsonParser().parse(it)
+        }
+        userProfileJson?.let {
+            requestData["user_profile_json"] = it
+            requestData["user"] = JsonParser().parse(it)
+        }
 
         return NetworkClient.aiApiService.analyzeIngredients(requestData)
     }

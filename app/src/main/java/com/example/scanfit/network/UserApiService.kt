@@ -13,6 +13,7 @@ import com.example.scanfit.model.UpdateUserMeasureRequest
 import com.example.scanfit.model.UpdateWeightManagementRequest
 import com.example.scanfit.model.UserAccountResponse
 import com.example.scanfit.model.UserCaloriesResponse
+import com.example.scanfit.model.UserDetailsResponse
 import com.example.scanfit.model.UserMeasureRequest
 import com.example.scanfit.model.UserMeasureResponse
 import com.example.scanfit.model.UserRoleResponse
@@ -53,6 +54,11 @@ interface UserApiService {
     suspend fun getUserAccount(
         @Header("Authorization") token: String
     ): UserAccountResponse
+
+    @GET("api/v1/user/me/details")
+    suspend fun getUserDetails(
+        @Header("Authorization") token: String
+    ): UserDetailsResponse
 
     @GET("api/v1/user/diet-type/list")
     suspend fun getDietTypes(

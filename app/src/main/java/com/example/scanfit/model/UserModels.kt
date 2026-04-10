@@ -80,6 +80,27 @@ data class UserRoleResponse(
     val success: Boolean
 )
 
+data class UserDetailsResponse(
+    val data: UserDetailsData?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class UserDetailsData(
+    @SerializedName("active_diet_types")
+    val activeDietTypes: List<DietType>?,
+    @SerializedName("active_dietary_preferences")
+    val activeDietaryPreferences: List<DietType>?,
+    @SerializedName("active_diseases")
+    val activeDiseases: List<Disease>?,
+    @SerializedName("active_health_conditions")
+    val activeHealthConditions: List<DietType>?,
+    val measure: UserMeasureData?,
+    val user: UserAccountData?,
+    @SerializedName("weight_management")
+    val weightManagement: WeightManagementData?
+)
+
 data class UserAccountData(
     val id: Int,
     val email: String,
@@ -88,6 +109,9 @@ data class UserAccountData(
     val birthDate: String?,
     val mygoal: String?,
     val photo: String?,
+    val role: UserRole?,
+    @SerializedName("role_id")
+    val roleId: Int?,
     @SerializedName("created_at")
     val createdAt: String?,
     @SerializedName("updated_at")
@@ -103,6 +127,8 @@ data class DietTypeListResponse(
 data class DietType(
     val id: Int,
     val name: String,
+    val code: String?,
+    val description: String?,
     @SerializedName("is_active")
     val isActive: Boolean,
     val category: String?
@@ -168,7 +194,13 @@ data class WeightManagementData(
     @SerializedName("target_weight")
     val targetWeight: Int?,
     @SerializedName("weekly_weight_change")
-    val weeklyWeightChange: Int?
+    val weeklyWeightChange: Int?,
+    @SerializedName("user_id")
+    val userId: Int?,
+    @SerializedName("created_at")
+    val createdAt: String?,
+    @SerializedName("updated_at")
+    val updatedAt: String?
 )
 
 data class UpdateWeightManagementRequest(

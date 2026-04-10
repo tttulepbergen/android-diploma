@@ -9,7 +9,6 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Query
-import java.io.Serializable
 
 interface FoodApiService {
 
@@ -38,7 +37,7 @@ interface FoodApiService {
 
     @POST("ingredient")
     suspend fun analyzeIngredients(
-        @retrofit2.http.Body data: Map<String, String>
+        @retrofit2.http.Body data: Map<String, @JvmSuppressWildcards Any>
     ): AnalysisResponse
 }
 
@@ -47,8 +46,12 @@ data class FoodResponse(
 )
 
 data class AnalysisResponse(
+    val product_name: String? = null,
     val health_score: Int? = 0,
-    val risks: List<String>? = emptyList(),
+    val risk_level: String? = null,
+    val risks: List<AnalysisRisk>? = emptyList(),
+    val diet_conflicts: List<AnalysisDietConflict>? = emptyList(),
+    val sources: List<AnalysisSource>? = emptyList(),
     val is_food: Boolean? = true,
     val product_type: String? = "unknown",
     val verdict: String? = "No data",
@@ -59,5 +62,28 @@ data class AnalysisMacros(
     val calories: Double? = 0.0,
     val proteins: Double? = 0.0,
     val carbs: Double? = 0.0,
-    val fats: Double? = 0.0
+    val fats: Double? = 0.0,
+    val sugar: Double? = 0.0,
+    val fiber: Double? = 0.0,
+    val sodium: Double? = 0.0,
+    val cholesterol: Double? = 0.0
+) : java.io.Serializable
+
+data class AnalysisRisk(
+    val ingredient: String? = null,
+    val reason: String? = null,
+    val severity: String? = null,
+    val source_indexes: List<Int>? = emptyList()
+) : java.io.Serializable
+
+data class AnalysisDietConflict(
+    val diet_code: String? = null,
+    val reason: String? = null,
+    val severity: String? = null
+) : java.io.Serializable
+
+data class AnalysisSource(
+    val title: String? = null,
+    val url: String? = null,
+    val source_type: String? = null
 ) : java.io.Serializable

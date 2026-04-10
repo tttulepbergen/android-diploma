@@ -182,7 +182,7 @@
                         android:layout_marginTop="12dp"
                         android:drawablePadding="12dp"
                         android:gravity="center_vertical"
-                        android:text="✅ AI Analysis"
+                        android:text="Not analyzed yet"
                         android:textColor="#4CAF50"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -193,9 +193,31 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:lineSpacingExtra="4dp"
-                        android:text="Analyzing..."
+                        android:text="Tap Analyze with AI to check this product against your profile."
                         android:textColor="@color/black"
                         android:textSize="15sp" />
+
+                    <LinearLayout
+                        android:id="@+id/ai_sections_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_analyze_ai"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="16dp"
+                        android:backgroundTint="#1A1C1E"
+                        android:text="Analyze with AI"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="26dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

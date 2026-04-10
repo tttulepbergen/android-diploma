@@ -7,6 +7,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
+import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.Log
 import android.util.TypedValue
@@ -23,19 +24,23 @@ import androidx.navigation.fragment.findNavController
 import coil.load
 import com.example.scanfit.R
 import com.example.scanfit.data.AppDatabase
-import com.example.scanfit.data.FavoriteProduct
 import com.example.scanfit.data.FoodItem
-import com.example.scanfit.data.RecentProduct
+import com.example.scanfit.data.toFavoriteProduct
+import com.example.scanfit.data.toRecentProduct
 import com.example.scanfit.databinding.FragmentProductDetailBinding
 import com.example.scanfit.mainNavigation.TrackerViewModel
 import com.example.scanfit.model.CreateUserDailyEatRequest
 import com.example.scanfit.model.UpdateUserCaloriesRequest
 import com.example.scanfit.model.UserCaloriesData
+import com.example.scanfit.network.AnalysisDietConflict
 import com.example.scanfit.network.AnalysisResponse
+import com.example.scanfit.network.AnalysisRisk
 import com.example.scanfit.network.NetworkClient
 import com.example.scanfit.utils.SessionManager
 import kotlinx.coroutines.launch
 import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
+import com.google.gson.GsonBuilder
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -47,7 +52,9 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private var _binding: FragmentProductDetailBinding? = null
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
+    private val gson = GsonBuilder().serializeNulls().create()
     private var servingMultiplier = 1.0
+    private var hasProductDetails = false
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -69,7 +76,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         } else if (foodItem != null) {
             setupUI(foodItem)
             saveToRecent(foodItem)
-            startAiAnalysis(foodItem)
         }
 
         binding.btnBack.setOnClickListener { findNavController().navigateUp() }
@@ -87,16 +93,27 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
         binding.aiProgressBar.visibility = View.VISIBLE
         binding.tvAiVerdictDescription.text = "AI is analyzing..."
+        binding.aiSectionsContainer.visibility = View.GONE
+        binding.aiSectionsContainer.removeAllViews()
+        binding.btnAnalyzeAi.isEnabled = false
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response = FoodAnalyzer.analyzeTextIngredientsFull(queryText, "General Analysis")
+                val userProfileJson = buildUserProfileJson()
+                val response = FoodAnalyzer.analyzeTextIngredientsFull(
+                    ingredients = queryText,
+                    healthInfo = buildHealthProfileText(userProfileJson),
+                    productJson = buildProductJson(item),
+                    userProfileJson = userProfileJson
+                )
 
                 Log.d("AI_DEBUG", "AI Response Success: ${response.verdict}")
 
                 binding.aiProgressBar.visibility = View.GONE
 
-                handleProductType(response.product_type)
+                if (!hasProductDetails) {
+                    handleProductType(response.product_type)
+                }
 
                 setupAiUI(response)
 
@@ -105,6 +122,8 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                 e.printStackTrace()
 
                 binding.aiProgressBar.visibility = View.GONE
+                binding.btnAnalyzeAi.isEnabled = true
+                binding.aiSectionsContainer.visibility = View.GONE
                 binding.tvAiVerdictDescription.text = "AI Analysis unavailable. Showing standard info."
 
             }
@@ -122,6 +141,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     }
 
     private fun setupUI(item: FoodItem) {
+        hasProductDetails = true
         binding.portionSelectorCard.visibility = View.VISIBLE
         binding.tvProductName.text = item.title
         binding.tvCategoryLabel.text = item.subtitle ?: "PRODUCT"
@@ -161,9 +181,13 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
         setupNutrientsList(item)
         setupServingSelector(item)
+        resetAiVerdictState()
 
         binding.btnAddFood.setOnClickListener {
             updateUserCalories(item)
+        }
+        binding.btnAnalyzeAi.setOnClickListener {
+            startAiAnalysis(item)
         }
     }
 
@@ -429,15 +453,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     }
 
     private fun saveToRecent(item: FoodItem) {
-        val recentProduct = RecentProduct(
-            id = item.title,
-            title = item.title,
-            subtitle = item.subtitle,
-            imageUrl = item.imageUrl,
-            calories = item.calories,
-            grade = item.grade,
-            timestamp = System.currentTimeMillis()
-        )
+        val recentProduct = item.toRecentProduct()
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
@@ -496,10 +512,142 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         return (dp * resources.displayMetrics.density).toInt()
     }
 
+    private fun resetAiVerdictState() {
+        binding.aiProgressBar.visibility = View.GONE
+        binding.btnAnalyzeAi.visibility = View.VISIBLE
+        binding.btnAnalyzeAi.isEnabled = true
+        binding.btnAnalyzeAi.text = "Analyze with AI"
+        binding.tvVerdictStatus.text = "Not analyzed yet"
+        binding.tvVerdictStatus.setTextColor(Color.parseColor("#6B7280"))
+        binding.tvAiVerdictDescription.text = "Tap Analyze with AI to check this product against your profile."
+        binding.aiSectionsContainer.visibility = View.GONE
+        binding.aiSectionsContainer.removeAllViews()
+    }
+
+    private fun buildProductJson(item: FoodItem): String {
+        val nutriments = JSONObject().apply {
+            putParsed("energy-kcal", item.calories)
+            putParsed("energy-kcal_100g", item.calories)
+            putParsed("energy-kcal_serving", item.calories)
+            put("energy-kcal_unit", "kcal")
+            putParsed("proteins", item.proteins)
+            putParsed("proteins_100g", item.proteins)
+            putParsed("proteins_serving", item.proteins)
+            put("proteins_unit", "g")
+            putParsed("carbohydrates", item.carbs)
+            putParsed("carbohydrates_100g", item.carbs)
+            putParsed("carbohydrates_serving", item.carbs)
+            put("carbohydrates_unit", "g")
+            putParsed("fat", item.fat)
+            putParsed("fat_100g", item.fat)
+            putParsed("fat_serving", item.fat)
+            put("fat_unit", "g")
+            putParsed("sugars", item.sugars)
+            putParsed("sugars_100g", item.sugars)
+            putParsed("sugars_serving", item.sugars)
+            put("sugars_unit", "g")
+            putParsed("fiber", item.fiber)
+            putParsed("fiber_100g", item.fiber)
+            putParsed("fiber_serving", item.fiber)
+            put("fiber_unit", "g")
+            putParsed("sodium", item.sodium)
+            putParsed("sodium_100g", item.sodium)
+            putParsed("sodium_serving", item.sodium)
+            put("sodium_unit", "mg")
+            putParsed("cholesterol", item.cholesterol)
+            putParsed("cholesterol_100g", item.cholesterol)
+            putParsed("cholesterol_serving", item.cholesterol)
+            put("cholesterol_unit", "mg")
+        }
+
+        val estimated = JSONObject().apply {
+            putParsed("vitamin-a_100g", item.vitaminA)
+            putParsed("vitamin-b12_100g", item.vitaminB12)
+            putParsed("vitamin-b6_100g", item.vitaminB6)
+            putParsed("vitamin-b9_100g", item.vitaminB9)
+            putParsed("vitamin-c_100g", item.vitaminC)
+            putParsed("vitamin-d_100g", item.vitaminD)
+            putParsed("vitamin-e_100g", item.vitaminE)
+        }
+
+        return JSONObject().apply {
+            putNullable("brands", item.subtitle)
+            putNullable("image_url", item.imageUrl)
+            put("product_name", item.title)
+            putNullable("ingredients_text", item.ingredients)
+            putNullable("ingredients_text_en", item.ingredients)
+            put("nutriments", nutriments)
+            put("nutriments_estimated", estimated)
+            putNullable("nutriscore_grade", item.grade)
+            put("nutrition_data", "on")
+            put("nutrition_data_per", "100g")
+            put("nutrition_data_prepared_per", "100g")
+        }.toString()
+    }
+
+    private suspend fun buildUserProfileJson(): String {
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) {
+            return JSONObject().apply {
+                put("active_diet_types", org.json.JSONArray())
+                put("active_dietary_preferences", org.json.JSONArray())
+                put("active_diseases", org.json.JSONArray())
+                put("active_health_conditions", org.json.JSONArray())
+                put("measure", JSONObject.NULL)
+                put("user", JSONObject().apply {
+                    put("role", JSONObject().apply {
+                        putNullable("code", sessionManager.fetchUserRole() ?: "basic")
+                    })
+                })
+                put("weight_management", JSONObject.NULL)
+            }.toString()
+        }
+
+        val details = runCatching { NetworkClient.userApiService.getUserDetails(token).data }.getOrNull()
+        return details?.let { gson.toJson(it) } ?: emptyUserDetailsJson().toString()
+    }
+
+    private fun buildHealthProfileText(userProfileJson: String): String {
+        return "User health profile JSON:\n$userProfileJson"
+    }
+
+    private fun JSONObject.putNullable(name: String, value: Any?): JSONObject {
+        put(name, value ?: JSONObject.NULL)
+        return this
+    }
+
+    private fun JSONObject.putParsed(name: String, value: String?): JSONObject {
+        put(name, value.toDoubleValue())
+        return this
+    }
+
+    private fun emptyUserDetailsJson(): JSONObject {
+        return JSONObject().apply {
+            put("active_diet_types", org.json.JSONArray())
+            put("active_dietary_preferences", org.json.JSONArray())
+            put("active_diseases", org.json.JSONArray())
+            put("active_health_conditions", org.json.JSONArray())
+            put("measure", JSONObject.NULL)
+            put("user", JSONObject().apply {
+                put("role", JSONObject().apply {
+                    putNullable("code", sessionManager.fetchUserRole() ?: "basic")
+                })
+            })
+            put("weight_management", JSONObject.NULL)
+        }
+    }
+
     private fun setupAiUI(response: AnalysisResponse) {
-        binding.portionSelectorCard.visibility = View.GONE
-        binding.tvProductName.text = "AI Analysis"
-        binding.tvCategoryLabel.text = "SCANNER"
+        binding.aiProgressBar.visibility = View.GONE
+        binding.btnAnalyzeAi.visibility = if (hasProductDetails) View.VISIBLE else View.GONE
+        binding.btnAnalyzeAi.isEnabled = true
+        binding.btnAnalyzeAi.text = "Analyze again"
+
+        if (!hasProductDetails) {
+            binding.portionSelectorCard.visibility = View.GONE
+            binding.tvProductName.text = response.product_name ?: "AI Analysis"
+            binding.tvCategoryLabel.text = "SCANNER"
+        }
 
         // Добавляем ?: 0, чтобы безопасно сравнивать
         val score = response.health_score ?: 0
@@ -511,15 +659,21 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             else -> "#F44336" to "E"
         }
 
-        binding.tvGradeBadge.text = grade
-        binding.tvGradeBadge.background?.setTint(Color.parseColor(color))
+        if (!hasProductDetails) {
+            binding.tvGradeBadge.text = grade
+            binding.tvGradeBadge.background?.setTint(Color.parseColor(color))
+        }
         binding.tvVerdictStatus.setTextColor(Color.parseColor(color))
 
         // Здесь тоже используем score
-        binding.tvVerdictStatus.text = if (score < 40) "Dangerous" else "Safe"
+        val riskLabel = response.risk_level?.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
+        }
+        binding.tvVerdictStatus.text = riskLabel ?: if (score < 40) "Dangerous" else "Safe"
         binding.tvAiVerdictDescription.text = response.verdict ?: "No description"
+        renderAiSections(response)
 
-        response.macros?.let { m ->
+        if (!hasProductDetails) response.macros?.let { m ->
             // Добавляем ?: 0.0 для макросов, так как они теперь Double?
             val cal = m.calories ?: 0.0
             val prot = m.proteins ?: 0.0
@@ -536,31 +690,231 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             binding.progressFat.progress = (fat * 2).toInt()
         }
 
-        binding.btnAddFood.setOnClickListener {
-            val macros = response.macros
-            val aiItem = FoodItem(
-                title = response.product_type?.takeUnless { it == "unknown" } ?: "AI Analysis",
-                subtitle = "AI Scan",
-                imageUrl = null,
-                calories = "${(macros?.calories ?: 0.0).roundToInt()} kcal",
-                proteins = "${macros?.proteins ?: 0.0}g",
-                carbs = "${macros?.carbs ?: 0.0}g",
-                fat = "${macros?.fats ?: 0.0}g",
-                grade = binding.tvGradeBadge.text?.toString() ?: "B",
-                ingredients = response.verdict ?: ""
-            )
-            updateUserCalories(aiItem)
+        if (!hasProductDetails) {
+            binding.btnAddFood.setOnClickListener {
+                val macros = response.macros
+                val aiItem = FoodItem(
+                    title = response.product_name
+                        ?: response.product_type?.takeUnless { it == "unknown" }
+                        ?: "AI Analysis",
+                    subtitle = "AI Scan",
+                    imageUrl = null,
+                    calories = "${(macros?.calories ?: 0.0).roundToInt()} kcal",
+                    proteins = "${macros?.proteins ?: 0.0}g",
+                    carbs = "${macros?.carbs ?: 0.0}g",
+                    fat = "${macros?.fats ?: 0.0}g",
+                    grade = binding.tvGradeBadge.text?.toString() ?: "B",
+                    sugars = "${macros?.sugar ?: 0.0}g",
+                    fiber = "${macros?.fiber ?: 0.0}g",
+                    sodium = "${macros?.sodium ?: 0.0}mg",
+                    cholesterol = "${macros?.cholesterol ?: 0.0}mg",
+                    ingredients = response.verdict ?: ""
+                )
+                updateUserCalories(aiItem)
+            }
         }
 
-        setupNutrientsFromAi(response.risks ?: emptyList())
+        if (!hasProductDetails) {
+            setupNutrientsFromAi(response.risks ?: emptyList())
+        }
     }
 
-    private fun setupNutrientsFromAi(risks: List<String>) {
+    private fun formatRiskLines(items: List<AnalysisRisk>?): List<String> {
+        return items.orEmpty().map { item ->
+            val name = item.ingredient?.takeIf { it.isNotBlank() } ?: "Issue"
+            val reason = item.reason?.takeIf { it.isNotBlank() } ?: item.severity
+            if (reason.isNullOrBlank()) "- $name" else "- $name: $reason"
+        }
+    }
+
+    private fun formatDietConflictLines(items: List<AnalysisDietConflict>?): List<String> {
+        return items.orEmpty().map { item ->
+            val name = item.diet_code?.takeIf { it.isNotBlank() } ?: "Diet conflict"
+            val reason = item.reason?.takeIf { it.isNotBlank() } ?: item.severity
+            if (reason.isNullOrBlank()) "- $name" else "- $name: $reason"
+        }
+    }
+
+    private fun renderAiSections(response: AnalysisResponse) {
+        binding.aiSectionsContainer.removeAllViews()
+
+        val risks = response.risks.orEmpty()
+        val conflicts = response.diet_conflicts.orEmpty()
+        val sources = response.sources.orEmpty()
+
+        if (risks.isNotEmpty()) {
+            addAiSection("Risks", "What may be a problem", "#FFF3E8") {
+                risks.forEach { risk ->
+                    addAiIssueRow(
+                        title = risk.ingredient?.takeIf { it.isNotBlank() } ?: "Issue",
+                        body = risk.reason ?: "Needs attention for this profile.",
+                        severity = risk.severity
+                    )
+                }
+            }
+        }
+
+        if (conflicts.isNotEmpty()) {
+            addAiSection("Diet conflicts", "Compared with active diets", "#F0F7FF") {
+                conflicts.forEach { conflict ->
+                    addAiIssueRow(
+                        title = conflict.diet_code?.takeIf { it.isNotBlank() } ?: "Diet conflict",
+                        body = conflict.reason ?: "This may not match one of the selected diets.",
+                        severity = conflict.severity
+                    )
+                }
+            }
+        }
+
+        if (sources.isNotEmpty()) {
+            addAiSection("Sources", "Evidence used by AI", "#F5F5F5") {
+                sources.take(4).forEachIndexed { index, source ->
+                    val title = source.title?.takeIf { it.isNotBlank() } ?: "Source ${index + 1}"
+                    addAiTextRow(
+                        title = title,
+                        body = source.url ?: source.source_type ?: "No link provided"
+                    )
+                }
+            }
+        }
+
+        binding.aiSectionsContainer.visibility =
+            if (binding.aiSectionsContainer.childCount == 0) View.GONE else View.VISIBLE
+    }
+
+    private fun addAiSection(
+        title: String,
+        subtitle: String,
+        backgroundColor: String,
+        content: LinearLayout.() -> Unit
+    ) {
+        val section = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dpToPx(14), dpToPx(12), dpToPx(14), dpToPx(12))
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dpToPx(8).toFloat()
+                setColor(Color.parseColor(backgroundColor))
+                setStroke(dpToPx(1), Color.parseColor("#E5E7EB"))
+            }
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 0, 0, dpToPx(10))
+            }
+        }
+
+        section.addView(TextView(requireContext()).apply {
+            text = title
+            setTextColor(Color.parseColor("#111827"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            typeface = Typeface.DEFAULT_BOLD
+        })
+
+        section.addView(TextView(requireContext()).apply {
+            text = subtitle
+            setTextColor(Color.parseColor("#6B7280"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setPadding(0, dpToPx(2), 0, dpToPx(8))
+        })
+
+        section.content()
+        binding.aiSectionsContainer.addView(section)
+    }
+
+    private fun LinearLayout.addAiIssueRow(title: String, body: String, severity: String?) {
+        val severityText = severity?.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
+        } ?: "Note"
+
+        val severityColor = when (severity?.lowercase(Locale.US)) {
+            "high" -> "#DC2626"
+            "medium" -> "#D97706"
+            "low" -> "#2563EB"
+            else -> "#4B5563"
+        }
+
+        val row = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dpToPx(8), 0, dpToPx(8))
+        }
+
+        val header = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        header.addView(TextView(requireContext()).apply {
+            text = title
+            setTextColor(Color.parseColor("#111827"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            typeface = Typeface.DEFAULT_BOLD
+            maxLines = 2
+            ellipsize = TextUtils.TruncateAt.END
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        })
+
+        header.addView(TextView(requireContext()).apply {
+            text = severityText
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(dpToPx(8), dpToPx(4), dpToPx(8), dpToPx(4))
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dpToPx(6).toFloat()
+                setColor(Color.parseColor(severityColor))
+            }
+        })
+
+        row.addView(header)
+        row.addView(TextView(requireContext()).apply {
+            text = body
+            setTextColor(Color.parseColor("#374151"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setLineSpacing(dpToPx(2).toFloat(), 1f)
+            setPadding(0, dpToPx(5), 0, 0)
+        })
+
+        addView(row)
+        addAiDivider()
+    }
+
+    private fun LinearLayout.addAiTextRow(title: String, body: String) {
+        addView(TextView(requireContext()).apply {
+            text = title
+            setTextColor(Color.parseColor("#111827"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(0, dpToPx(8), 0, 0)
+        })
+        addView(TextView(requireContext()).apply {
+            text = body
+            setTextColor(Color.parseColor("#4B5563"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setLineSpacing(dpToPx(2).toFloat(), 1f)
+            setPadding(0, dpToPx(3), 0, dpToPx(8))
+        })
+        addAiDivider()
+    }
+
+    private fun LinearLayout.addAiDivider() {
+        addView(View(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(1)
+            )
+            setBackgroundColor(Color.parseColor("#E5E7EB"))
+        })
+    }
+
+    private fun setupNutrientsFromAi(risks: List<AnalysisRisk>) {
         binding.nutrientsContainer.removeAllViews()
         if (risks.isEmpty()) {
             addNutrientRow("Health Risks", "None detected")
         } else {
-            risks.forEach { risk -> addNutrientRow("Risk", risk) }
+            formatRiskLines(risks).forEach { risk -> addNutrientRow("Risk", risk.removePrefix("- ")) }
         }
         binding.progressProtein.visibility = View.INVISIBLE
         binding.progressCarbs.visibility = View.INVISIBLE
@@ -589,17 +943,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
             if (item.isFavorite) {
 
-                val entity = FavoriteProduct(
-                    id = item.title,
-                    productName = item.title,
-                    name = item.title,
-                    imageUrl = item.imageUrl,
-                    calories = item.calories,
-                    grade = item.grade,
-                    ingredients = item.ingredients
-                )
-
-                database.productDao().insertFavorite(entity)
+                database.productDao().insertFavorite(item.toFavoriteProduct())
                 Toast.makeText(requireContext(), "Saved to favourites", Toast.LENGTH_SHORT).show()
 
             } else {

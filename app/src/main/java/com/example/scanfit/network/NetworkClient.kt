@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 
 object NetworkClient {
     private const val BASE_URL = "https://world.openfoodfacts.org/"
-    private const val AI_BASE_URL = "http://192.168.0.102:8080/"
+    private const val AI_BASE_URL = "http://46.101.137.109:8001/"
     private const val AUTH_BASE_URL = "http://46.101.137.109:3000/"
     private const val OPEN_FOOD_FACTS_MAX_RETRIES = 10
 
