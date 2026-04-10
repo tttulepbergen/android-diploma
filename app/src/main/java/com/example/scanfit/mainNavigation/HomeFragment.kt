@@ -243,8 +243,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         lifecycleScope.launch {
             try {
                 val response = if (isSameDay(selectedDate, Calendar.getInstance())) {
+                    sessionManager.refreshUserRole()
                     NetworkClient.userApiService.getTodayUserCalories(token)
                 } else {
+                    sessionManager.refreshUserRole()
                     NetworkClient.userApiService.getUserCaloriesByDay(token, day)
                 }
 

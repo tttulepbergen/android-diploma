@@ -186,6 +186,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         lifecycleScope.launch {
             try {
+                sessionManager.refreshUserRole()
                 val response = NetworkClient.userApiService.getUserAccount(token)
                 if (response.success && response.data != null) {
                     displayAccountData(response.data)
@@ -205,6 +206,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val token = sessionManager.fetchAuthToken() ?: return
         lifecycleScope.launch {
             try {
+                sessionManager.refreshUserRole()
                 val response = NetworkClient.userApiService.getMeasure("Bearer $token")
                 if (response.success && response.data != null) {
                     currentMeasureData = response.data
@@ -243,6 +245,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             currentWeightManagement = null
 
             try {
+                sessionManager.refreshUserRole()
                 val weightManagementResponse = NetworkClient.userApiService.getWeightManagement(token)
                 if (weightManagementResponse.success) {
                     currentWeightManagement = weightManagementResponse.data
@@ -251,6 +254,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             }
 
             try {
+                sessionManager.refreshUserRole()
                 val dietTypesResponse = NetworkClient.userApiService.getDietTypes(token)
                 if (dietTypesResponse.success && !dietTypesResponse.data.isNullOrEmpty()) {
                     val groupedDietTypes = dietTypesResponse.data.groupBy { it.category ?: "My Diet" }
@@ -268,6 +272,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             }
 
             try {
+                sessionManager.refreshUserRole()
                 val dietaryPreferencesResponse = NetworkClient.userApiService.getDietaryPreferences(token)
                 if (dietaryPreferencesResponse.success && !dietaryPreferencesResponse.data.isNullOrEmpty()) {
                     sections.add(
@@ -282,6 +287,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             }
 
             try {
+                sessionManager.refreshUserRole()
                 val healthConditionsResponse = NetworkClient.userApiService.getHealthConditions(token)
                 if (healthConditionsResponse.success && !healthConditionsResponse.data.isNullOrEmpty()) {
                     sections.add(
@@ -310,6 +316,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             diseaseLevels = emptyList()
 
             try {
+                sessionManager.refreshUserRole()
                 val diseaseLevelsResponse = NetworkClient.userApiService.getDiseaseLevels(token)
                 if (diseaseLevelsResponse.success && !diseaseLevelsResponse.data.isNullOrEmpty()) {
                     diseaseLevels = diseaseLevelsResponse.data
@@ -318,6 +325,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             }
 
             try {
+                sessionManager.refreshUserRole()
                 val diseasesResponse = NetworkClient.userApiService.getDiseases(token)
                 if (diseasesResponse.success && !diseasesResponse.data.isNullOrEmpty()) {
                     diseases = diseasesResponse.data
@@ -666,6 +674,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val token = sessionManager.fetchAuthToken() ?: return
         lifecycleScope.launch {
             try {
+                sessionManager.refreshUserRole()
                 val response = when (sectionType) {
                     DietarySectionType.DIET_TYPE -> NetworkClient.userApiService.updateDietType(token, id, UpdateDietTypeRequest(isActive))
                     DietarySectionType.DIETARY_PREFERENCE -> NetworkClient.userApiService.updateDietaryPreference(token, id, UpdateDietTypeRequest(isActive))
@@ -720,6 +729,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         lifecycleScope.launch {
             try {
+                sessionManager.refreshUserRole()
                 val response = NetworkClient.userApiService.updateWeightManagement(token, request)
                 if (response.success) {
                     currentWeightManagement = (currentWeightManagement ?: WeightManagementData(
@@ -820,6 +830,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val token = sessionManager.fetchAuthToken() ?: return
         lifecycleScope.launch {
             try {
+                sessionManager.refreshUserRole()
                 val response = NetworkClient.userApiService.updateDisease(
                     token,
                     diseaseId,
@@ -859,6 +870,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         lifecycleScope.launch {
             try {
+                sessionManager.refreshUserRole()
                 val response = NetworkClient.userApiService.updateMeasure("Bearer $token", updatedRequest)
                 if (response.success && response.data != null) {
                     currentMeasureData = response.data

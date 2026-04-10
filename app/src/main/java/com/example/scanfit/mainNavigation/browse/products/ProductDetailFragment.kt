@@ -177,6 +177,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                sessionManager.refreshUserRole()
                 val response = NetworkClient.userApiService.updateUserCalories(token, day, request)
                 if (response.success && response.data != null) {
                     applyUpdatedCalories(response.data)

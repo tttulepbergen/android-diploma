@@ -2,6 +2,7 @@ package com.example.scanfit.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.scanfit.network.NetworkClient
 
 class SessionManager(context: Context) {
     private var prefs: SharedPreferences =
@@ -56,6 +57,14 @@ class SessionManager(context: Context) {
 
     fun isVip(): Boolean {
         return fetchUserRole() == "vip"
+    }
+
+    suspend fun refreshUserRole() {
+        val token = fetchAuthToken() ?: return
+        val response = NetworkClient.userApiService.getUserRole(token)
+        if (response.success) {
+            saveUserRole(response.data?.code ?: "basic")
+        }
     }
 
     fun clearData() {

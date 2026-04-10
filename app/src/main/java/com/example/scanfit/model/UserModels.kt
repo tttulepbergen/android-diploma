@@ -74,6 +74,12 @@ data class UserAccountResponse(
     val success: Boolean
 )
 
+data class UserRoleResponse(
+    val data: UserRole?,
+    val message: String?,
+    val success: Boolean
+)
+
 data class UserAccountData(
     val id: Int,
     val email: String,

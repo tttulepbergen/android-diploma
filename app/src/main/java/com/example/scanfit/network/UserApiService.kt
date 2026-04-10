@@ -13,6 +13,7 @@ import com.example.scanfit.model.UserAccountResponse
 import com.example.scanfit.model.UserCaloriesResponse
 import com.example.scanfit.model.UserMeasureRequest
 import com.example.scanfit.model.UserMeasureResponse
+import com.example.scanfit.model.UserRoleResponse
 import com.example.scanfit.model.WeightManagementResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -23,6 +24,11 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface UserApiService {
+
+    @GET("api/v1/user/me/role")
+    suspend fun getUserRole(
+        @Header("Authorization") token: String
+    ): UserRoleResponse
 
     @POST("api/v1/user/measure/create")
     suspend fun createMeasure(
