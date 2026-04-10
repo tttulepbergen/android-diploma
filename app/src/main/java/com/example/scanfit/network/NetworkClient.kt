@@ -10,14 +10,28 @@ object NetworkClient {
     private const val BASE_URL = "https://world.openfoodfacts.org/"
     private const val AI_BASE_URL = "http://192.168.0.102:8080/"
     private const val AUTH_BASE_URL = "http://46.101.137.109:3000/"
+    private const val OPEN_FOOD_FACTS_MAX_RETRIES = 10
 
     val okHttpClient = OkHttpClient.Builder()
         .addInterceptor { chain ->
             val request = chain.request()
-            if (request.url.host.contains("openfoodfacts.org")) {
+            val isOpenFoodFactsRequest = request.url.host.contains("openfoodfacts.org")
+            if (isOpenFoodFactsRequest) {
                 Log.d("OPENFOODFACTS_API", "${request.method} ${request.url}")
             }
-            chain.proceed(request)
+
+            var response = chain.proceed(request)
+            var retryCount = 0
+
+            while (isOpenFoodFactsRequest && response.code == 503 && retryCount < OPEN_FOOD_FACTS_MAX_RETRIES) {
+                retryCount++
+                Log.w("OPENFOODFACTS_API", "503 received, retry $retryCount/$OPEN_FOOD_FACTS_MAX_RETRIES: ${request.url}")
+                response.close()
+                Thread.sleep((retryCount * 500L).coerceAtMost(3_000L))
+                response = chain.proceed(request)
+            }
+
+            response
         }
         .connectTimeout(2, TimeUnit.MINUTES)
         .readTimeout(3, TimeUnit.MINUTES)

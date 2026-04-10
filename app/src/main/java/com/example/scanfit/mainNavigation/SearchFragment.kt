@@ -13,6 +13,7 @@ import com.example.scanfit.network.NetworkClient
 import com.example.scanfit.R
 import com.example.scanfit.data.FoodItem
 import com.example.scanfit.databinding.FragmentSearchBinding
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -45,6 +46,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             if (query.isEmpty()) {
                 binding.layoutBarcodePlaceholder.visibility = View.VISIBLE
                 binding.rvSearchResults.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
             } else {
                 binding.layoutBarcodePlaceholder.visibility = View.GONE
                 binding.rvSearchResults.visibility = View.VISIBLE
@@ -58,6 +60,10 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
     }
 
     private suspend fun fetchRealProducts(query: String) {
+        withContext(Dispatchers.Main) {
+            binding.progressBar.visibility = View.VISIBLE
+        }
+
         withContext(Dispatchers.IO) {
             try {
                 Log.d("SEARCH_CHECK", "Отправляю запрос в API...")
@@ -86,12 +92,21 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
                 withContext(Dispatchers.Main) {
                     foodAdapter.updateList(foodItems)
+                    binding.progressBar.visibility = View.GONE
                     Log.d("SEARCH_CHECK", "Успех! Найдено продуктов: ${foodItems.size}")
                 }
 
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("SEARCH_CHECK", "ОШИБКА: ${e.message}")
+                }
+            } finally {
+                withContext(Dispatchers.Main) {
+                    if (_binding != null && binding.etSearch.text.toString().trim() == query) {
+                        binding.progressBar.visibility = View.GONE
+                    }
                 }
             }
         }
