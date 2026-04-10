@@ -102,6 +102,11 @@ interface UserApiService {
         @Body request: UpdateUserCaloriesRequest
     ): UserCaloriesResponse
 
+    @PUT("api/v1/user/user-calories/today/refresh")
+    suspend fun refreshTodayUserCalories(
+        @Header("Authorization") token: String
+    ): UserCaloriesResponse
+
     @POST("api/v1/product/user-daily-eat/create")
     suspend fun createUserDailyEat(
         @Header("Authorization") token: String,

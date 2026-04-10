@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -71,6 +72,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
+        }
+
+        binding.btnRefreshCalories.setOnClickListener {
+            refreshTodayCalories()
         }
 
         setupButtons()
@@ -240,6 +245,48 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         binding.switchCholesterol.alpha = if (isVip) 1.0f else 0.5f
         
         isUpdatingUI = false
+    }
+
+    private fun refreshTodayCalories() {
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        setBlockingLoaderVisible(true)
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.refreshTodayUserCalories(token)
+                if (response.success) {
+                    Toast.makeText(requireContext(), "Calories refreshed", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "Failed to refresh calories",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e("REFRESH_CALORIES", "Refresh calories failed", e)
+                Toast.makeText(
+                    requireContext(),
+                    e.message ?: "Failed to refresh calories",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } finally {
+                setBlockingLoaderVisible(false)
+            }
+        }
+    }
+
+    private fun setBlockingLoaderVisible(isVisible: Boolean) {
+        binding.blockingLoader.visibility = if (isVisible) View.VISIBLE else View.GONE
+        binding.btnRefreshCalories.isEnabled = !isVisible
+        binding.btnBack.isEnabled = !isVisible
+        binding.toggleGroup.isEnabled = !isVisible
+        binding.btnLogout.isEnabled = !isVisible
+        binding.btnDeleteAccount.isEnabled = !isVisible
     }
 
     private fun fetchDietTypes() {
