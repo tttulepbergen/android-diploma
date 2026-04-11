@@ -1,6 +1,7 @@
 package com.example.scanfit.mainNavigation.user.profile
 
 import android.content.Context
+import android.net.Uri
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
@@ -10,13 +11,17 @@ import android.view.Gravity
 import android.view.View
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import coil.load
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentUserProfileBinding
 import com.example.scanfit.model.Disease
@@ -34,6 +39,11 @@ import com.example.scanfit.utils.SessionManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -60,6 +70,11 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private var diseaseLevels: List<DiseaseLevel> = emptyList()
     private var diseases: List<Disease> = emptyList()
     private var isUpdatingUI = false
+    private val photoPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { uploadProfilePhoto(it) }
+    }
 
     companion object {
         private const val BASIC_ACTIVE_DISEASE_LIMIT = 3
@@ -76,6 +91,9 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         binding.btnRefreshCalories.setOnClickListener {
             refreshTodayCalories()
+        }
+        binding.tvChangePhoto.setOnClickListener {
+            photoPickerLauncher.launch("image/*")
         }
 
         setupButtons()
@@ -209,6 +227,66 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun displayAccountData(data: UserAccountData) {
         binding.tvProfileEmail.text = data.email
         binding.tvProfileUsername.text = data.username ?: data.email.substringBefore("@")
+        val photoUrl = data.photo?.takeIf { it.isNotBlank() }
+        binding.ivAvatar.scaleType =
+            if (photoUrl != null) ImageView.ScaleType.CENTER_CROP else ImageView.ScaleType.FIT_CENTER
+        val placeholderPadding = if (photoUrl != null) 0 else dp(15)
+        binding.ivAvatar.updatePadding(
+            left = placeholderPadding,
+            top = placeholderPadding,
+            right = placeholderPadding,
+            bottom = placeholderPadding
+        )
+        binding.ivAvatar.load(photoUrl ?: R.drawable.img) {
+            crossfade(true)
+            placeholder(R.drawable.img)
+            error(R.drawable.img)
+        }
+    }
+
+    private fun uploadProfilePhoto(uri: Uri) {
+        val token = sessionManager.fetchAuthToken() ?: return
+
+        setBlockingLoaderVisible(true)
+        lifecycleScope.launch {
+            try {
+                val tempFile = createTempFileFromUri(uri)
+                val requestFile = tempFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                val body = MultipartBody.Part.createFormData("file", tempFile.name, requestFile)
+
+                val response = NetworkClient.userApiService.changePicture(token, body)
+                tempFile.delete()
+
+                if (response.success) {
+                    fetchUserAccount()
+                    Toast.makeText(requireContext(), "Profile picture updated", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "Failed to update profile picture",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    e.message ?: "Failed to update profile picture",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } finally {
+                setBlockingLoaderVisible(false)
+            }
+        }
+    }
+
+    private fun createTempFileFromUri(uri: Uri): File {
+        val inputStream = requireContext().contentResolver.openInputStream(uri)
+            ?: throw IllegalStateException("Unable to open selected image")
+        val file = File(requireContext().cacheDir, "profile_${System.currentTimeMillis()}.jpg")
+        FileOutputStream(file).use { output ->
+            inputStream.use { input -> input.copyTo(output) }
+        }
+        return file
     }
 
     private fun fetchUserMeasurements() {

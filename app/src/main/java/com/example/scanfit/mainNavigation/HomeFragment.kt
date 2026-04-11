@@ -18,16 +18,18 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import coil.load
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentHomeBinding
+import com.example.scanfit.model.UserAccountData
 import com.example.scanfit.model.UserCaloriesData
 import com.example.scanfit.model.UpdateUserWaterRequest
 import com.example.scanfit.model.UserWaterData
-import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
@@ -78,10 +80,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
         sessionManager = SessionManager(requireContext())
-
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        val username = currentUser?.displayName ?: "User"
-        binding.tvGreeting.text = "Hi, $username"
+        fetchUserAccountHeader()
 
         setupTrackerObserver()
 
@@ -104,6 +103,56 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         binding.tvGreeting.setOnClickListener {
             showDatePicker()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            fetchUserAccountHeader()
+        }
+    }
+
+    private fun fetchUserAccountHeader() {
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) {
+            binding.tvGreeting.text = "Hi, User"
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.getUserAccount(token)
+                if (response.success && response.data != null) {
+                    applyUserHeader(response.data)
+                } else {
+                    binding.tvGreeting.text = "Hi, User"
+                }
+            } catch (e: Exception) {
+                Log.e("HOME_USER", "Failed to load user account", e)
+                binding.tvGreeting.text = "Hi, User"
+            }
+        }
+    }
+
+    private fun applyUserHeader(data: UserAccountData) {
+        val displayName = data.username?.takeIf { it.isNotBlank() }
+            ?: data.email.substringBefore("@")
+        binding.tvGreeting.text = "Hi, $displayName"
+        val photoUrl = data.photo?.takeIf { it.isNotBlank() }
+        binding.ivProfileIcon.scaleType =
+            if (photoUrl != null) ImageView.ScaleType.CENTER_CROP else ImageView.ScaleType.FIT_CENTER
+        val placeholderPadding = if (photoUrl != null) 0 else dpToPx(8)
+        binding.ivProfileIcon.updatePadding(
+            left = placeholderPadding,
+            top = placeholderPadding,
+            right = placeholderPadding,
+            bottom = placeholderPadding
+        )
+        binding.ivProfileIcon.load(photoUrl ?: R.drawable.img) {
+            crossfade(true)
+            placeholder(R.drawable.img)
+            error(R.drawable.img)
         }
     }
 

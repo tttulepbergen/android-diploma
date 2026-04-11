@@ -105,10 +105,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
                 <ImageView
+                    android:id="@+id/iv_avatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="#F1F1F1"
-                    android:padding="15dp"
+                    android:scaleType="centerCrop"
                     android:src="@drawable/img" />
             </androidx.cardview.widget.CardView>
 
