@@ -65,7 +65,12 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         _binding = FragmentProductDetailBinding.bind(view)
         sessionManager = SessionManager(requireContext())
 
-        val aiResponse = arguments?.getSerializable("ai_analysis") as? AnalysisResponse
+        val aiResponse = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable("ai_analysis", AnalysisResponse::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getSerializable("ai_analysis") as? AnalysisResponse
+        }
 
         val foodItem = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             arguments?.getSerializable("foodItem", FoodItem::class.java)

@@ -2,6 +2,11 @@ package com.example.scanfit.network
 
 
 import com.example.scanfit.model.Product
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
+import com.google.gson.annotations.JsonAdapter
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.GET
@@ -69,6 +74,7 @@ data class AnalysisMacros(
     val cholesterol: Double? = 0.0
 ) : java.io.Serializable
 
+@JsonAdapter(AnalysisRiskAdapter::class)
 data class AnalysisRisk(
     val ingredient: String? = null,
     val reason: String? = null,
@@ -87,3 +93,35 @@ data class AnalysisSource(
     val url: String? = null,
     val source_type: String? = null
 ) : java.io.Serializable
+
+class AnalysisRiskAdapter : JsonDeserializer<AnalysisRisk> {
+    override fun deserialize(
+        json: JsonElement,
+        typeOfT: java.lang.reflect.Type,
+        context: JsonDeserializationContext
+    ): AnalysisRisk {
+        return when {
+            json.isJsonNull -> AnalysisRisk()
+            json.isJsonPrimitive && json.asJsonPrimitive.isString -> {
+                AnalysisRisk(reason = json.asString)
+            }
+            json.isJsonObject -> {
+                val obj = json.asJsonObject
+                AnalysisRisk(
+                    ingredient = obj.get("ingredient")?.takeIf { !it.isJsonNull }?.asString,
+                    reason = obj.get("reason")?.takeIf { !it.isJsonNull }?.asString
+                        ?: obj.get("message")?.takeIf { !it.isJsonNull }?.asString
+                        ?: obj.get("description")?.takeIf { !it.isJsonNull }?.asString,
+                    severity = obj.get("severity")?.takeIf { !it.isJsonNull }?.asString,
+                    source_indexes = obj.get("source_indexes")
+                        ?.takeIf { it.isJsonArray }
+                        ?.asJsonArray
+                        ?.mapNotNull { element ->
+                            runCatching { element.asInt }.getOrNull()
+                        }
+                )
+            }
+            else -> throw JsonParseException("Unsupported risk format: $json")
+        }
+    }
+}

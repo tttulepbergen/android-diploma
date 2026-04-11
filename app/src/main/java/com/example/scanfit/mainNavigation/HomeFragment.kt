@@ -34,6 +34,7 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.example.scanfit.network.NetworkClient
 import android.util.Log
 import kotlinx.coroutines.launch
+import kotlin.math.ceil
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -53,6 +54,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private var currentProteinGoal = 150f
     private var currentFatGoal = 70f
     private var currentCarbGoal = 300f
+    private var isWaterEditable = true
+    private var isWaterUpdating = false
 
     private val scannerOptions = GmsDocumentScannerOptions.Builder()
         .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
@@ -84,6 +87,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         trackerViewModel.selectedDate.observe(viewLifecycleOwner) { date ->
             updateCalendarUI(date)
+            updateWaterEditState(date)
             fetchCaloriesForDate(date)
             fetchWaterForDate(date)
         }
@@ -182,6 +186,27 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
     }
 
+    private fun updateWaterEditState(selectedDate: Calendar) {
+        isWaterEditable = isSameDay(selectedDate, Calendar.getInstance())
+        updateWaterInteractivity()
+        binding.tvWaterHint.text = if (!isWaterEditable) {
+            "Past days are read-only. Water can only be changed for today"
+        } else if (isWaterUpdating) {
+            "Saving water..."
+        } else {
+            "Tap an empty cup to add water, or a filled cup to remove it"
+        }
+    }
+
+    private fun updateWaterInteractivity() {
+        binding.waterStack.alpha = when {
+            !isWaterEditable -> 0.6f
+            isWaterUpdating -> 0.45f
+            else -> 1f
+        }
+        binding.waterStack.isEnabled = isWaterEditable && !isWaterUpdating
+    }
+
     private fun setupTrackerObserver() {
         trackerViewModel.totalCalories.observe(viewLifecycleOwner) { total ->
             binding.tvCaloriesCount.text = "$total Cal"
@@ -241,12 +266,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         trackerViewModel.waterGlasses.observe(viewLifecycleOwner) { count ->
-            renderWaterGlasses(count)
+            renderWaterGlasses(
+                count = count,
+                goalMl = trackerViewModel.waterGoalMl.value ?: 0
+            )
             binding.tvWaterCount.text = formatLiters(count * WATER_GLASS_ML)
         }
 
         trackerViewModel.waterGoalMl.observe(viewLifecycleOwner) { goalMl ->
             binding.tvWaterGoal.text = "Goal ${formatLiters(goalMl)}"
+            renderWaterGlasses(
+                count = trackerViewModel.waterGlasses.value ?: 0,
+                goalMl = goalMl
+            )
         }
     }
 
@@ -330,6 +362,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun updateWaterForSelectedDate(newGlassCount: Int) {
+        if (!isWaterEditable) {
+            Toast.makeText(
+                requireContext(),
+                "Water can only be changed for today",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        if (isWaterUpdating) {
+            return
+        }
+
         val token = sessionManager.fetchAuthToken()
         if (token.isNullOrBlank()) {
             Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
@@ -338,9 +383,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
         val day = API_DATE_FORMAT.format(selectedDate.time)
-        val waterMl = newGlassCount.coerceIn(0, MAX_WATER_GLASSES) * WATER_GLASS_ML
+        val maxGlasses = getWaterGoalGlassCount(trackerViewModel.waterGoalMl.value ?: 0)
+        val waterMl = newGlassCount.coerceIn(0, maxGlasses) * WATER_GLASS_ML
 
         lifecycleScope.launch {
+            isWaterUpdating = true
+            updateWaterEditState(selectedDate)
             try {
                 Log.d("USER_WATER", "PUT api/v1/user/user-water/update?day=$day water=$waterMl")
                 val response = NetworkClient.userApiService.updateUserWater(
@@ -365,6 +413,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     e.message ?: "Failed to update water",
                     Toast.LENGTH_SHORT
                 ).show()
+            } finally {
+                isWaterUpdating = false
+                updateWaterEditState(trackerViewModel.selectedDate.value ?: Calendar.getInstance())
             }
         }
     }
@@ -530,11 +581,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
 
 
-    private fun renderWaterGlasses(count: Int) {
+    private fun renderWaterGlasses(count: Int, goalMl: Int) {
         binding.waterStack.removeAllViews()
         val glassHeight = 75
-        val safeCount = count.coerceIn(0, MAX_WATER_GLASSES)
-        for (i in 0 until MAX_WATER_GLASSES) {
+        val maxGlasses = getWaterGoalGlassCount(goalMl)
+        val safeCount = count.coerceIn(0, maxGlasses)
+        for (i in 0 until maxGlasses) {
             val imageView = ImageView(requireContext())
 
             val params = LinearLayout.LayoutParams(0, dpToPx(glassHeight), 1f).apply {
@@ -548,14 +600,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             when {
                 i < safeCount -> {
                     imageView.setImageResource(R.drawable.ic_glass_full)
-                    imageView.setOnClickListener {
-                        updateWaterForSelectedDate(safeCount - 1)
+                    if (isWaterEditable && !isWaterUpdating && i == safeCount - 1) {
+                        imageView.setOnClickListener {
+                            updateWaterForSelectedDate(safeCount - 1)
+                        }
                     }
                 }
                 i == safeCount -> {
                     imageView.setImageResource(R.drawable.ic_glass_add)
-                    imageView.setOnClickListener {
-                        updateWaterForSelectedDate(safeCount + 1)
+                    if (isWaterEditable && !isWaterUpdating) {
+                        imageView.setOnClickListener {
+                            updateWaterForSelectedDate(safeCount + 1)
+                        }
                     }
                 }
                 else -> {
@@ -570,6 +626,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun formatLiters(amountMl: Int): String {
         return String.format(Locale.US, "%.2f L", amountMl / 1000f)
+    }
+
+    private fun getWaterGoalGlassCount(goalMl: Int): Int {
+        if (goalMl <= 0) return DEFAULT_WATER_GLASSES
+        return ceil(goalMl / WATER_GLASS_ML.toDouble()).toInt().coerceAtLeast(1)
     }
 
     private fun setupScannerTrigger() { /* Логика вызова сканера */ }
@@ -625,7 +686,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     companion object {
         private val API_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         private const val WATER_GLASS_ML = 250
-        private const val MAX_WATER_GLASSES = 7
+        private const val DEFAULT_WATER_GLASSES = 8
     }
 
     private data class NutrientDetail(

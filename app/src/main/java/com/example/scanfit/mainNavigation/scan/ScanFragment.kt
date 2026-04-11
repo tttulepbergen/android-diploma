@@ -13,7 +13,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -21,7 +24,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentScanBinding
-import com.example.scanfit.network.NetworkClient // Импорт от Sunbekova
+import com.example.scanfit.network.AnalysisResponse
+import com.example.scanfit.network.NetworkClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,8 +45,8 @@ class ScanFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
+    private var isAnalyzing = false
 
-    // Регистрация выбора из галереи (от Sunbekova)
     private val galleryLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -57,13 +61,20 @@ class ScanFragment : Fragment() {
                     }
                 } catch (e: Exception) {
                     Log.e("SCAN_DEBUG", "Gallery processing failed", e)
+                    withContext(Dispatchers.Main) {
+                        setLoadingState(false)
+                        if (isAdded) {
+                            Toast.makeText(requireContext(), "Failed to open image", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
         }
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentScanBinding.inflate(inflater, container, false)
@@ -81,16 +92,16 @@ class ScanFragment : Fragment() {
             requestPermissions(arrayOf(Manifest.permission.CAMERA), 10)
         }
 
-        binding.captureButton.setOnClickListener {
-            Log.d("SCAN_DEBUG", "КНОПКА НАЖАТА!")
-            Toast.makeText(requireContext(), "Нажатие зафиксировано", Toast.LENGTH_SHORT).show()
-            takePhoto()
+        binding.captureButton.setOnClickListener { takePhoto() }
+        binding.btnBrowse.setOnClickListener {
+            if (!isAnalyzing) findNavController().navigate(R.id.action_nav_scan_to_categoriesFragment)
         }
-        binding.btnBrowse.setOnClickListener { findNavController().navigate(R.id.action_nav_scan_to_categoriesFragment) }
-        binding.btnSearch.setOnClickListener { findNavController().navigate(R.id.action_nav_scan_to_searchFragment) }
-
-        // Кнопка загрузки из галереи (от Sunbekova)
-        binding.btnUpload.setOnClickListener { openGallery() }
+        binding.btnSearch.setOnClickListener {
+            if (!isAnalyzing) findNavController().navigate(R.id.action_nav_scan_to_searchFragment)
+        }
+        binding.btnUpload.setOnClickListener {
+            if (!isAnalyzing) openGallery()
+        }
     }
 
     private fun startCamera() {
@@ -109,59 +120,56 @@ class ScanFragment : Fragment() {
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build()
 
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(viewLifecycleOwner, cameraSelector, preview, imageCapture)
+                cameraProvider.bindToLifecycle(
+                    viewLifecycleOwner,
+                    CameraSelector.DEFAULT_BACK_CAMERA,
+                    preview,
+                    imageCapture
+                )
             } catch (exc: Exception) {
                 Log.e("SCAN_DEBUG", "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(context))
     }
 
-
     private fun takePhoto() {
-        Log.d("SCAN_DEBUG", "Функция takePhoto зазвана")
-        val currentContext = context ?: return
+        if (isAnalyzing) return
 
-        // 1. Проверяем, инициализирован ли imageCapture
+        val currentContext = context ?: return
         val useCase = imageCapture
         if (useCase == null) {
-            Log.e("SCAN_DEBUG", "ОШИБКА: imageCapture равен null!")
-            Toast.makeText(currentContext, "Камера не готова", Toast.LENGTH_SHORT).show()
+            Log.e("SCAN_DEBUG", "ImageCapture is null")
+            Toast.makeText(currentContext, "Camera is not ready", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 2. Создаем файл для фото
         val photoFile = File(currentContext.cacheDir, "scan_${System.currentTimeMillis()}.jpg")
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-        Log.d("SCAN_DEBUG", "Начинаю takePicture...")
-
-        // 3. Делаем снимок
         useCase.takePicture(
             outputOptions,
-            cameraExecutor, // Используем фоновый поток, чтобы не тормозил интерфейс
+            cameraExecutor,
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    Log.d("SCAN_DEBUG", "ФОТО СОХРАНЕНО: ${photoFile.absolutePath}")
-
-                    // Переходим в главный поток для сжатия и отправки
                     lifecycleScope.launch(Dispatchers.Main) {
                         try {
                             val compressedFile = withContext(Dispatchers.IO) { getCompressedFile(photoFile) }
                             analyzeImageWithAi(compressedFile)
                         } catch (e: Exception) {
-                            Log.e("SCAN_DEBUG", "Ошибка после сохранения: ${e.message}")
+                            setLoadingState(false)
+                            Log.e("SCAN_DEBUG", "Post-save processing failed", e)
+                            Toast.makeText(currentContext, "Failed to process photo", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    Log.e("SCAN_DEBUG", "ОШИБКА КАМЕРЫ: ${exception.message}", exception)
+                    Log.e("SCAN_DEBUG", "Camera capture failed", exception)
                     viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-                        Toast.makeText(currentContext, "Ошибка при снимке", Toast.LENGTH_SHORT).show()
+                        setLoadingState(false)
+                        Toast.makeText(currentContext, "Failed to take photo", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -178,11 +186,8 @@ class ScanFragment : Fragment() {
         return compressedFile
     }
 
-
     private fun analyzeImageWithAi(file: File) {
-        // Показываем прогресс-бар, если он есть в макете, или Toast
-        binding.captureButton.isEnabled = false // Блокируем кнопку, чтобы не спамили
-        Toast.makeText(requireContext(), "Анализ пошел, подождите 30-40 сек...", Toast.LENGTH_LONG).show()
+        setLoadingState(true)
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -194,33 +199,51 @@ class ScanFragment : Fragment() {
                 val healthInfoBody = diseasesText.toRequestBody("text/plain".toMediaTypeOrNull())
 
                 val response = NetworkClient.aiApiService.analyzeScan(body, healthInfoBody)
-
-                Log.d("SCAN_DEBUG", "Ответ получен!")
+                Log.d("SCAN_DEBUG", "AI response received: $response")
 
                 withContext(Dispatchers.Main) {
-                    // Проверяем, жив ли еще фрагмент перед навигацией
                     if (isAdded && _binding != null) {
-                        val bundle = Bundle().apply {
-                            putSerializable("ai_analysis", response)
-                        }
-
-                        // БЕЗОПАСНАЯ НАВИГАЦИЯ
-                        val navController = findNavController()
-                        if (navController.currentDestination?.id == R.id.nav_scan) {
-                            navController.navigate(R.id.action_nav_scan_to_productDetailFragment, bundle)
-                        }
+                        navigateToAnalysis(response)
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    binding.captureButton.isEnabled = true
-                    Log.e("SCAN_DEBUG", "Ошибка: ${e.message}")
-                    Toast.makeText(requireContext(), "Ошибка сети: ${e.message}", Toast.LENGTH_SHORT).show()
+                    setLoadingState(false)
+                    Log.e("SCAN_DEBUG", "AI analyze failed", e)
+                    if (isAdded) {
+                        Toast.makeText(requireContext(), "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             } finally {
-                file.delete() // Чистим кеш в любом случае
+                file.delete()
             }
         }
+    }
+
+    private fun navigateToAnalysis(response: AnalysisResponse) {
+        setLoadingState(false)
+
+        val bundle = Bundle().apply {
+            putSerializable("ai_analysis", response)
+        }
+
+        runCatching {
+            findNavController().navigate(R.id.productDetailFragment, bundle)
+        }.onFailure { error ->
+            Log.e("SCAN_DEBUG", "Navigation to product detail failed", error)
+            Toast.makeText(requireContext(), "Failed to open analysis result", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun setLoadingState(loading: Boolean) {
+        isAnalyzing = loading
+        val currentBinding = _binding ?: return
+
+        currentBinding.loadingOverlay.visibility = if (loading) View.VISIBLE else View.GONE
+        currentBinding.captureButton.isEnabled = !loading
+        currentBinding.btnUpload.isEnabled = !loading
+        currentBinding.btnBrowse.isEnabled = !loading
+        currentBinding.btnSearch.isEnabled = !loading
     }
 
     private fun openGallery() {
