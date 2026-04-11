@@ -45,7 +45,9 @@ import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
 import java.net.URLEncoder
+import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -344,7 +346,18 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             return
         }
 
-        val selectedDate = trackerViewModel.selectedDate.value ?: java.util.Calendar.getInstance()
+        val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
+        val firstAvailableDate = trackerViewModel.firstAvailableDate.value
+            ?: parseApiDate(sessionManager.fetchUserFirstDay())
+        if (firstAvailableDate != null && selectedDate.normalizedCopy().before(firstAvailableDate.normalizedCopy())) {
+            Toast.makeText(
+                requireContext(),
+                "No information. Tracking starts from ${API_DATE_FORMAT.format(firstAvailableDate.time)}",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
         val day = API_DATE_FORMAT.format(selectedDate.time)
         val calories = item.calories.toScaledIntValue()
         val carbs = item.carbs.toScaledIntValue()
@@ -1362,5 +1375,29 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
     companion object {
         private val API_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+    }
+
+    private fun parseApiDate(rawDate: String?): Calendar? {
+        if (rawDate.isNullOrBlank()) return null
+        return try {
+            Calendar.getInstance().apply {
+                time = API_DATE_FORMAT.parse(rawDate) ?: return null
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+        } catch (_: ParseException) {
+            null
+        }
+    }
+
+    private fun Calendar.normalizedCopy(): Calendar {
+        return (clone() as Calendar).apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
     }
 }

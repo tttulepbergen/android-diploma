@@ -37,6 +37,7 @@ import com.example.scanfit.network.NetworkClient
 import android.util.Log
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -58,6 +59,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private var currentCarbGoal = 300f
     private var isWaterEditable = true
     private var isWaterUpdating = false
+    private var registrationFirstDay: Calendar? = null
 
     private val scannerOptions = GmsDocumentScannerOptions.Builder()
         .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
@@ -80,7 +82,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
         sessionManager = SessionManager(requireContext())
+        restoreFirstAvailableDay()
         fetchUserAccountHeader()
+        fetchFirstAvailableDay()
 
         setupTrackerObserver()
 
@@ -89,6 +93,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             updateWaterEditState(date)
             fetchCaloriesForDate(date)
             fetchWaterForDate(date)
+        }
+
+        trackerViewModel.firstAvailableDate.observe(viewLifecycleOwner) { firstDay ->
+            registrationFirstDay = firstDay?.normalizedCopy()
+            updateCalendarUI(trackerViewModel.selectedDate.value ?: Calendar.getInstance())
+            updateWaterEditState(trackerViewModel.selectedDate.value ?: Calendar.getInstance())
         }
 
         binding.cvProfileIcon.setOnClickListener {
@@ -158,17 +168,23 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun showDatePicker() {
         val calendar = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
-        DatePickerDialog(
+        val datePicker = DatePickerDialog(
             requireContext(),
             { _, year, month, dayOfMonth ->
                 val newDate = Calendar.getInstance()
                 newDate.set(year, month, dayOfMonth)
-                trackerViewModel.setSelectedDate(newDate)
+                if (trackerViewModel.canSelectDate(newDate)) {
+                    trackerViewModel.setSelectedDate(newDate)
+                } else {
+                    showNoInformationMessage()
+                }
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
+        )
+        registrationFirstDay?.timeInMillis?.let { datePicker.datePicker.minDate = it }
+        datePicker.show()
     }
 
     private fun updateCalendarUI(selectedCalendar: Calendar) {
@@ -182,29 +198,43 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         for (i in 0 until 7) {
             val dateForView = calendar.clone() as Calendar
             val isSelected = isSameDay(dateForView, selectedCalendar)
+            val isEnabled = trackerViewModel.canSelectDate(dateForView)
 
             val dayView = createDayView(
                 dayName = sdfDay.format(dateForView.time),
                 dayNum = sdfNum.format(dateForView.time),
-                isSelected = isSelected
+                isSelected = isSelected,
+                isEnabled = isEnabled
             )
 
             dayView.setOnClickListener {
-                trackerViewModel.setSelectedDate(dateForView)
+                if (trackerViewModel.canSelectDate(dateForView)) {
+                    trackerViewModel.setSelectedDate(dateForView)
+                } else {
+                    showNoInformationMessage()
+                }
             }
             binding.layoutCalendar.addView(dayView)
             calendar.add(Calendar.DAY_OF_YEAR, 1)
         }
     }
 
-    private fun createDayView(dayName: String, dayNum: String, isSelected: Boolean): View {
+    private fun createDayView(
+        dayName: String,
+        dayNum: String,
+        isSelected: Boolean,
+        isEnabled: Boolean
+    ): View {
         val layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(0, dpToPx(65), 1f).apply {
                 setMargins(dpToPx(2), 0, dpToPx(2), 0)
             }
-            if (isSelected) {
+            alpha = if (isEnabled) 1f else 0.35f
+            isClickable = isEnabled
+            isFocusable = isEnabled
+            if (isSelected && isEnabled) {
                 setBackgroundResource(R.drawable.bg_selected_day)
                 elevation = dpToPx(2).toFloat()
             }
@@ -214,7 +244,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             text = dayName
             textSize = 12f
             gravity = Gravity.CENTER
-            setTextColor(if (isSelected) android.graphics.Color.BLACK else android.graphics.Color.GRAY)
+            setTextColor(
+                when {
+                    !isEnabled -> Color.parseColor("#BDBDBD")
+                    isSelected -> android.graphics.Color.BLACK
+                    else -> android.graphics.Color.GRAY
+                }
+            )
         }
 
         val tvNum = TextView(requireContext()).apply {
@@ -222,7 +258,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             textSize = 14f
             setTypeface(null, android.graphics.Typeface.BOLD)
             gravity = Gravity.CENTER
-            setTextColor(if (isSelected) android.graphics.Color.BLACK else android.graphics.Color.GRAY)
+            setTextColor(
+                when {
+                    !isEnabled -> Color.parseColor("#BDBDBD")
+                    isSelected -> android.graphics.Color.BLACK
+                    else -> android.graphics.Color.GRAY
+                }
+            )
         }
 
         layout.addView(tvName)
@@ -236,9 +278,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun updateWaterEditState(selectedDate: Calendar) {
-        isWaterEditable = isSameDay(selectedDate, Calendar.getInstance())
+        val isBeforeRegistration = !trackerViewModel.canSelectDate(selectedDate)
+        isWaterEditable = !isBeforeRegistration && isSameDay(selectedDate, Calendar.getInstance())
         updateWaterInteractivity()
-        binding.tvWaterHint.text = if (!isWaterEditable) {
+        binding.tvWaterHint.text = if (isBeforeRegistration) {
+            buildNoInformationText()
+        } else if (!isWaterEditable) {
             "Past days are read-only. Water can only be changed for today"
         } else if (isWaterUpdating) {
             "Saving water..."
@@ -332,6 +377,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun fetchCaloriesForDate(selectedDate: Calendar) {
+        if (!trackerViewModel.canSelectDate(selectedDate)) {
+            applyCaloriesData(null)
+            return
+        }
+
         val token = sessionManager.fetchAuthToken() ?: return
         val day = API_DATE_FORMAT.format(selectedDate.time)
 
@@ -376,6 +426,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun fetchWaterForDate(selectedDate: Calendar) {
+        if (!trackerViewModel.canSelectDate(selectedDate)) {
+            applyWaterData(null)
+            return
+        }
+
         val token = sessionManager.fetchAuthToken() ?: return
         val day = API_DATE_FORMAT.format(selectedDate.time)
 
@@ -470,13 +525,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun showNutrientDetails() {
+        val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
+        if (!trackerViewModel.canSelectDate(selectedDate)) {
+            showNutrientDetailsSheet(
+                API_DATE_FORMAT.format(selectedDate.time),
+                null
+            )
+            return
+        }
+
         val token = sessionManager.fetchAuthToken()
         if (token.isNullOrBlank()) {
             Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
         val day = API_DATE_FORMAT.format(selectedDate.time)
 
         lifecycleScope.launch {
@@ -613,6 +676,61 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val consumed = item.consumed?.toDouble() ?: 0.0
         val goal = item.goal?.toDouble() ?: 0.0
         return "${formatAmount(consumed)} / ${formatAmount(goal)} ${item.unit}"
+    }
+
+    private fun restoreFirstAvailableDay() {
+        trackerViewModel.setFirstAvailableDate(
+            parseApiDate(sessionManager.fetchUserFirstDay())
+        )
+    }
+
+    private fun fetchFirstAvailableDay() {
+        val token = sessionManager.fetchAuthToken() ?: return
+        lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.getUserCaloriesFirstDay(token)
+                val firstDay = response.data?.firstDay
+                if (response.success && !firstDay.isNullOrBlank()) {
+                    sessionManager.saveUserFirstDay(firstDay)
+                    trackerViewModel.setFirstAvailableDate(parseApiDate(firstDay))
+                }
+            } catch (e: Exception) {
+                Log.e("HOME_FIRST_DAY", "Failed to load first available day", e)
+            }
+        }
+    }
+
+    private fun parseApiDate(rawDate: String?): Calendar? {
+        if (rawDate.isNullOrBlank()) return null
+        return try {
+            Calendar.getInstance().apply {
+                time = API_DATE_FORMAT.parse(rawDate) ?: return null
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+        } catch (_: ParseException) {
+            null
+        }
+    }
+
+    private fun Calendar.normalizedCopy(): Calendar {
+        return (clone() as Calendar).apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+    }
+
+    private fun buildNoInformationText(): String {
+        val firstDay = registrationFirstDay ?: return "No information for this date"
+        return "No information. Tracking starts from ${API_DATE_FORMAT.format(firstDay.time)}"
+    }
+
+    private fun showNoInformationMessage() {
+        Toast.makeText(requireContext(), buildNoInformationText(), Toast.LENGTH_SHORT).show()
     }
 
     private fun formatAmount(value: Double): String {

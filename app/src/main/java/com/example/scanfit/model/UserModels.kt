@@ -220,6 +220,17 @@ data class UserCaloriesResponse(
     val success: Boolean
 )
 
+data class UserFirstDayResponse(
+    val data: UserFirstDayData?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class UserFirstDayData(
+    @SerializedName("first_day")
+    val firstDay: String?
+)
+
 data class UserWaterResponse(
     val data: UserWaterData?,
     val message: String?,

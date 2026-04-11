@@ -18,6 +18,7 @@ import com.example.scanfit.model.UpdateUserMeasureRequest
 import com.example.scanfit.model.UpdateWeightManagementRequest
 import com.example.scanfit.model.UserAccountResponse
 import com.example.scanfit.model.UserCaloriesResponse
+import com.example.scanfit.model.UserFirstDayResponse
 import com.example.scanfit.model.UserDetailsResponse
 import com.example.scanfit.model.UserMeasureRequest
 import com.example.scanfit.model.UserMeasureResponse
@@ -116,6 +117,11 @@ interface UserApiService {
         @Header("Authorization") token: String,
         @Query("day") day: String
     ): UserCaloriesResponse
+
+    @GET("api/v1/user/user-calories/first-day")
+    suspend fun getUserCaloriesFirstDay(
+        @Header("Authorization") token: String
+    ): UserFirstDayResponse
 
     @PUT("api/v1/user/user-calories/update")
     suspend fun updateUserCalories(

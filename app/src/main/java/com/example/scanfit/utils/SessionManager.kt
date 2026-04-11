@@ -13,6 +13,7 @@ class SessionManager(context: Context) {
         const val REFRESH_TOKEN = "refresh_token"
         const val USER_ID = "user_id"
         const val USER_ROLE = "user_role"
+        const val USER_FIRST_DAY = "user_first_day"
     }
 
     fun saveAuthToken(token: String) {
@@ -57,6 +58,14 @@ class SessionManager(context: Context) {
 
     fun isVip(): Boolean {
         return fetchUserRole() == "vip"
+    }
+
+    fun saveUserFirstDay(day: String) {
+        prefs.edit().putString(USER_FIRST_DAY, day).apply()
+    }
+
+    fun fetchUserFirstDay(): String? {
+        return prefs.getString(USER_FIRST_DAY, null)
     }
 
     suspend fun refreshUserRole() {

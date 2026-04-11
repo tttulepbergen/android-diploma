@@ -101,7 +101,33 @@ class TrackerViewModel : ViewModel() {
     private val _selectedDate = MutableLiveData(Calendar.getInstance())
     val selectedDate: LiveData<Calendar> = _selectedDate
 
+    private val _firstAvailableDate = MutableLiveData<Calendar?>()
+    val firstAvailableDate: LiveData<Calendar?> = _firstAvailableDate
+
     fun setSelectedDate(calendar: Calendar) {
         _selectedDate.value = calendar
+    }
+
+    fun setFirstAvailableDate(calendar: Calendar?) {
+        _firstAvailableDate.value = calendar?.normalizedCopy()
+        val selected = _selectedDate.value ?: return
+        if (!canSelectDate(selected)) {
+            _selectedDate.value = _firstAvailableDate.value?.normalizedCopy()
+                ?: selected.normalizedCopy()
+        }
+    }
+
+    fun canSelectDate(calendar: Calendar): Boolean {
+        val firstDate = _firstAvailableDate.value ?: return true
+        return !calendar.normalizedCopy().before(firstDate)
+    }
+
+    private fun Calendar.normalizedCopy(): Calendar {
+        return (clone() as Calendar).apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
     }
 }
