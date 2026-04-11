@@ -64,6 +64,14 @@ data class AnalysisResponse(
     val verdict: String? = "No data",
     val macros: AnalysisMacros? = null,
     val alternatives: List<AnalysisAlternative>? = emptyList(),
+    @SerializedName("scan_image")
+    val scanImage: AnalysisScanImage? = null,
+    @SerializedName("product_photo")
+    val productPhoto: AnalysisProductPhoto? = null,
+    @SerializedName("scan_image_url")
+    val scanImageUrl: String? = null,
+    @SerializedName("image_path")
+    val imagePath: String? = null,
     @SerializedName("daily_impact")
     val dailyImpact: AnalysisDailyImpact? = null,
     @SerializedName("user_context_used")
@@ -121,6 +129,23 @@ data class AnalysisAlternative(
     val reason: String? = null,
     @SerializedName("kaspi_link")
     val kaspiLink: String? = null
+) : java.io.Serializable
+
+data class AnalysisScanImage(
+    val bucket: String? = null,
+    val key: String? = null,
+    @SerializedName("content_type")
+    val contentType: String? = null,
+    val url: String? = null
+) : java.io.Serializable
+
+data class AnalysisProductPhoto(
+    val name: String? = null,
+    @SerializedName("image_url")
+    val imageUrl: String? = null,
+    val barcode: String? = null,
+    val brand: String? = null,
+    val source: String? = null
 ) : java.io.Serializable
 
 data class AnalysisDailyImpact(

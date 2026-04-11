@@ -60,6 +60,9 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private var servingMultiplier = 1.0
     private var hasProductDetails = false
     private var currentProductScanId: Int? = null
+    private var currentAiResponse: AnalysisResponse? = null
+    private val isVipUser: Boolean
+        get() = sessionManager.isVip()
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -487,6 +490,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     }
 
     private fun setupServingSelector(item: FoodItem) {
+        currentAiResponse = null
         val portions = linkedMapOf(
             binding.btnPortionQuarter to 0.25,
             binding.btnPortionHalf to 0.5,
@@ -520,6 +524,49 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         refreshServingUi(item, portions)
     }
 
+    private fun setupAiServingSelector(response: AnalysisResponse) {
+        currentAiResponse = response
+        servingMultiplier = 1.0
+        binding.portionSelectorCard.visibility = View.VISIBLE
+        binding.tvPortionTitle.text = "Amount"
+        binding.tvServingUnit.text = "portion"
+
+        val portions = linkedMapOf(
+            binding.btnPortionQuarter to 0.25,
+            binding.btnPortionHalf to 0.5,
+            binding.btnPortionThreeQuarters to 0.75,
+            binding.btnPortionOne to 1.0,
+            binding.btnPortionOneHalf to 1.5,
+            binding.btnPortionTwo to 2.0,
+            binding.btnPortionTwoHalf to 2.5,
+            binding.btnPortionThree to 3.0
+        )
+
+        portions.forEach { (view, value) ->
+            view.setOnClickListener {
+                servingMultiplier = value
+                binding.etPortionAmount.setText(formatAmount(value))
+                binding.etPortionAmount.setSelection(binding.etPortionAmount.text?.length ?: 0)
+                refreshAiServingUi(response, portions)
+            }
+        }
+
+        binding.etPortionAmount.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+
+            override fun afterTextChanged(s: Editable?) {
+                if (currentAiResponse !== response) return
+                servingMultiplier = s.toString().replace(',', '.').toDoubleOrNull()?.coerceAtLeast(0.0) ?: 0.0
+                refreshAiServingUi(response, portions)
+            }
+        })
+
+        binding.etPortionAmount.setText(formatAmount(servingMultiplier))
+        binding.etPortionAmount.setSelection(binding.etPortionAmount.text?.length ?: 0)
+        refreshAiServingUi(response, portions)
+    }
+
     private fun refreshServingUi(item: FoodItem, portions: Map<TextView, Double>) {
         portions.forEach { (view, value) ->
             val isSelected = kotlin.math.abs(value - servingMultiplier) < 0.001
@@ -536,6 +583,29 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.progressCarbs.progress = (item.carbs.toScaledDoubleValue() * 2).toInt().coerceIn(0, 100)
         binding.progressFat.progress = (item.fat.toScaledDoubleValue() * 2).toInt().coerceIn(0, 100)
         setupNutrientsList(item)
+    }
+
+    private fun refreshAiServingUi(response: AnalysisResponse, portions: Map<TextView, Double>) {
+        portions.forEach { (view, value) ->
+            val isSelected = kotlin.math.abs(value - servingMultiplier) < 0.001
+            view.background = createPortionBackground(isSelected)
+            view.setTypeface(null, if (isSelected) Typeface.BOLD else Typeface.NORMAL)
+        }
+
+        val macros = response.macros
+        val calories = (macros?.calories ?: 0.0) * servingMultiplier
+        val protein = (macros?.proteins ?: 0.0) * servingMultiplier
+        val carbs = (macros?.carbs ?: 0.0) * servingMultiplier
+        val fat = (macros?.fats ?: macros?.fat ?: 0.0) * servingMultiplier
+
+        binding.tvCaloriesValue.text = "${formatAmount(calories)} kcal\nselected amount"
+        binding.tvProteinValue.text = "${formatAmount(protein)}g"
+        binding.tvCarbsValue.text = "${formatAmount(carbs)}g"
+        binding.tvFatValue.text = "${formatAmount(fat)}g"
+
+        binding.progressProtein.progress = (protein * 2).toInt().coerceIn(0, 100)
+        binding.progressCarbs.progress = (carbs * 2).toInt().coerceIn(0, 100)
+        binding.progressFat.progress = (fat * 2).toInt().coerceIn(0, 100)
     }
 
     private fun createPortionBackground(isSelected: Boolean): GradientDrawable {
@@ -656,6 +726,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     }
 
     private fun resetAiVerdictState() {
+        currentAiResponse = null
         binding.aiProgressBar.visibility = View.GONE
         binding.btnAnalyzeAi.visibility = View.VISIBLE
         binding.btnAnalyzeAi.isEnabled = true
@@ -665,6 +736,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.tvAiVerdictDescription.text = "Tap Analyze with AI to check this product against your profile."
         binding.aiSectionsContainer.visibility = View.GONE
         binding.aiSectionsContainer.removeAllViews()
+        binding.portionSelectorCard.visibility = if (hasProductDetails) View.VISIBLE else View.GONE
     }
 
     private fun buildProductJson(item: FoodItem): String {
@@ -781,15 +853,26 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     }
 
     private fun setupAiUI(response: AnalysisResponse) {
+        currentAiResponse = response
         binding.aiProgressBar.visibility = View.GONE
         binding.btnAnalyzeAi.visibility = if (hasProductDetails) View.VISIBLE else View.GONE
         binding.btnAnalyzeAi.isEnabled = true
         binding.btnAnalyzeAi.text = "Analyze again"
 
         if (!hasProductDetails) {
-            binding.portionSelectorCard.visibility = View.GONE
             binding.tvProductName.text = response.product_name ?: "AI Analysis"
             binding.tvCategoryLabel.text = response.product_type?.uppercase(Locale.US) ?: "SCANNER"
+            binding.ivProductImage.load(
+                response.scanImage?.url
+                    ?: response.scanImageUrl
+                    ?: response.imagePath
+                    ?: response.productPhoto?.imageUrl
+            ) {
+                crossfade(true)
+                placeholder(R.drawable.ic_launcher_foreground)
+                error(R.drawable.ic_launcher_foreground)
+            }
+            setupAiServingSelector(response)
         }
 
         // Добавляем ?: 0, чтобы безопасно сравнивать
@@ -885,7 +968,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         val conflicts = response.diet_conflicts.orEmpty()
         val sources = response.sources.orEmpty()
         val alternatives = response.alternatives.orEmpty()
-        val dailyImpactItems = extractDailyImpactItems(response.dailyImpact)
+        val dailyImpactItems = extractDailyImpactItems(response.dailyImpact, isVipUser)
 
         if (risks.isNotEmpty()) {
             addAiSection("Risks", "What may be a problem", "#FFF3E8") {
@@ -1094,6 +1177,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     }
 
     private fun LinearLayout.addAiMetricRow(title: String, value: String, status: String? = null) {
+        val isProLocked = status.equals("pro", ignoreCase = true)
         val row = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -1109,7 +1193,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         })
 
         row.addView(TextView(requireContext()).apply {
-            text = value
+            text = if (isProLocked) "" else value
             setTextColor(Color.parseColor("#4B5563"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             gravity = Gravity.END
@@ -1117,12 +1201,16 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         })
 
         status?.takeIf { it.isNotBlank() }?.let { rawStatus ->
-            val statusText = rawStatus.replace('_', ' ').replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
+            val statusText = if (isProLocked) {
+                "ScanFit Pro"
+            } else {
+                rawStatus.replace('_', ' ').replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
+                }
             }
             row.addView(TextView(requireContext()).apply {
                 text = statusText
-                setTextColor(Color.WHITE)
+                setTextColor(if (isProLocked) Color.parseColor("#5B8DEF") else Color.WHITE)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
                 typeface = Typeface.DEFAULT_BOLD
                 setPadding(dpToPx(8), dpToPx(4), dpToPx(8), dpToPx(4))
@@ -1135,7 +1223,10 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                 background = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
                     cornerRadius = dpToPx(12).toFloat()
-                    setColor(colorForImpactStatus(rawStatus))
+                    setColor(
+                        if (isProLocked) Color.parseColor("#EAF2FF")
+                        else colorForImpactStatus(rawStatus)
+                    )
                 }
             })
         }
@@ -1154,18 +1245,25 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         })
     }
 
-    private fun extractDailyImpactItems(dailyImpact: AnalysisDailyImpact?): List<Pair<String, AnalysisDailyImpactItem>> {
+    private fun extractDailyImpactItems(
+        dailyImpact: AnalysisDailyImpact?,
+        includePremium: Boolean
+    ): List<Pair<String, AnalysisDailyImpactItem>> {
         if (dailyImpact == null) return emptyList()
 
-        return listOfNotNull(
+        val baseItems = listOfNotNull(
             "Calories" to dailyImpact.calories,
             "Carbs" to dailyImpact.carbs,
             "Protein" to dailyImpact.proteins,
             "Fat" to dailyImpact.fat,
+            "Water" to dailyImpact.water
+        )
+
+        val premiumItems = listOfNotNull(
             "Sugar" to dailyImpact.sugar,
             "Fiber" to dailyImpact.fiber,
             "Sodium" to dailyImpact.sodium,
-            "Water" to dailyImpact.water,
+            "Cholesterol" to null,
             "Vitamin A" to dailyImpact.vitaminA,
             "Vitamin B12" to dailyImpact.vitaminB12,
             "Vitamin B6" to dailyImpact.vitaminB6,
@@ -1173,8 +1271,23 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             "Vitamin C" to dailyImpact.vitaminC,
             "Vitamin D" to dailyImpact.vitaminD,
             "Vitamin E" to dailyImpact.vitaminE
-        ).filter { (_, item) -> item != null }
+        )
+
+        val items = if (includePremium) {
+            baseItems + premiumItems.filter { (_, item) -> item != null }
+        } else {
+            baseItems + premiumItems.map { (label, _) -> label to premiumLockedImpactItem() }
+        }
+
+        return items.filter { (_, item) -> item != null }
             .map { (label, item) -> label to item!! }
+    }
+
+    private fun premiumLockedImpactItem(): AnalysisDailyImpactItem {
+        return AnalysisDailyImpactItem(
+            status = "pro",
+            message = "ScanFit Pro unlocks sugar, fiber, sodium, water, vitamins, and the rest of your daily comparison."
+        )
     }
 
     private fun formatDailyImpactFallback(item: AnalysisDailyImpactItem): String {
@@ -1196,6 +1309,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             "goal_exceeded" -> Color.parseColor("#C62828")
             "goal_unavailable" -> Color.parseColor("#6B7280")
             "not_provided" -> Color.parseColor("#B7791F")
+            "pro" -> Color.parseColor("#111827")
             else -> Color.parseColor("#4B5563")
         }
     }
@@ -1212,6 +1326,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.progressFat.visibility = View.INVISIBLE
         binding.tvCaloriesValue.text = "AI Scan\nComplete"
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
