@@ -34,6 +34,8 @@ import com.example.scanfit.model.CreateUserDailyEatRequest
 import com.example.scanfit.model.UpdateUserCaloriesRequest
 import com.example.scanfit.model.UserCaloriesData
 import com.example.scanfit.network.AnalysisDietConflict
+import com.example.scanfit.network.AnalysisDailyImpact
+import com.example.scanfit.network.AnalysisDailyImpactItem
 import com.example.scanfit.network.AnalysisResponse
 import com.example.scanfit.network.AnalysisRisk
 import com.example.scanfit.network.NetworkClient
@@ -787,7 +789,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         if (!hasProductDetails) {
             binding.portionSelectorCard.visibility = View.GONE
             binding.tvProductName.text = response.product_name ?: "AI Analysis"
-            binding.tvCategoryLabel.text = "SCANNER"
+            binding.tvCategoryLabel.text = response.product_type?.uppercase(Locale.US) ?: "SCANNER"
         }
 
         // Добавляем ?: 0, чтобы безопасно сравнивать
@@ -819,7 +821,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             val cal = m.calories ?: 0.0
             val prot = m.proteins ?: 0.0
             val carb = m.carbs ?: 0.0
-            val fat = m.fats ?: 0.0
+            val fat = m.fats ?: m.fat ?: 0.0
 
             binding.tvCaloriesValue.text = "${cal} kcal\nper portion"
             binding.tvProteinValue.text = "${prot}g"
@@ -843,7 +845,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                     calories = "${(macros?.calories ?: 0.0).roundToInt()} kcal",
                     proteins = "${macros?.proteins ?: 0.0}g",
                     carbs = "${macros?.carbs ?: 0.0}g",
-                    fat = "${macros?.fats ?: 0.0}g",
+                    fat = "${(macros?.fats ?: macros?.fat ?: 0.0)}g",
                     grade = binding.tvGradeBadge.text?.toString() ?: "B",
                     sugars = "${macros?.sugar ?: 0.0}g",
                     fiber = "${macros?.fiber ?: 0.0}g",
@@ -882,6 +884,8 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         val risks = response.risks.orEmpty()
         val conflicts = response.diet_conflicts.orEmpty()
         val sources = response.sources.orEmpty()
+        val alternatives = response.alternatives.orEmpty()
+        val dailyImpactItems = extractDailyImpactItems(response.dailyImpact)
 
         if (risks.isNotEmpty()) {
             addAiSection("Risks", "What may be a problem", "#FFF3E8") {
@@ -907,15 +911,64 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             }
         }
 
+        if (alternatives.isNotEmpty()) {
+            addAiSection("Better choices", "Safer options for your profile", "#EEF8F1") {
+                alternatives.take(4).forEach { alternative ->
+                    addAiTextRow(
+                        title = alternative.name?.takeIf { it.isNotBlank() } ?: "Alternative",
+                        body = buildString {
+                            append(alternative.reason ?: "This option may be a better fit for your profile.")
+                            alternative.kaspiLink?.takeIf { it.isNotBlank() }?.let { link ->
+                                append("\n")
+                                append(link)
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+        if (dailyImpactItems.isNotEmpty()) {
+            addAiSection("Daily impact", "How this fits into today's totals", "#FFF9E8") {
+                dailyImpactItems.forEach { (label, item) ->
+                    addAiMetricRow(
+                        title = label,
+                        value = item.message ?: formatDailyImpactFallback(item),
+                        status = item.status
+                    )
+                }
+            }
+        }
+
         if (sources.isNotEmpty()) {
             addAiSection("Sources", "Evidence used by AI", "#F5F5F5") {
                 sources.take(4).forEachIndexed { index, source ->
                     val title = source.title?.takeIf { it.isNotBlank() } ?: "Source ${index + 1}"
                     addAiTextRow(
                         title = title,
-                        body = source.url ?: source.source_type ?: "No link provided"
+                        body = buildString {
+                            source.source_type?.takeIf { it.isNotBlank() }?.let { type ->
+                                append(type.replace('_', ' ').replaceFirstChar { char ->
+                                    if (char.isLowerCase()) char.titlecase(Locale.US) else char.toString()
+                                })
+                            }
+                            source.url?.takeIf { it.isNotBlank() }?.let { link ->
+                                if (isNotEmpty()) append("\n")
+                                append(link)
+                            }
+                            if (isEmpty()) append("No link provided")
+                        }
                     )
                 }
+            }
+        }
+
+        if (response.userContextUsed?.hasUserInformation == true) {
+            addAiSection("Personalized", "AI used your saved profile and today's intake", "#F2F6FF") {
+                addAiMetricRow(
+                    title = "Profile context",
+                    value = "Diets, diseases, today's calories, and water intake were included in this scan."
+                )
             }
         }
 
@@ -1040,6 +1093,57 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         addAiDivider()
     }
 
+    private fun LinearLayout.addAiMetricRow(title: String, value: String, status: String? = null) {
+        val row = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(8), 0, dpToPx(8))
+        }
+
+        row.addView(TextView(requireContext()).apply {
+            text = title
+            setTextColor(Color.parseColor("#111827"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            typeface = Typeface.DEFAULT_BOLD
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.9f)
+        })
+
+        row.addView(TextView(requireContext()).apply {
+            text = value
+            setTextColor(Color.parseColor("#4B5563"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            gravity = Gravity.END
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.1f)
+        })
+
+        status?.takeIf { it.isNotBlank() }?.let { rawStatus ->
+            val statusText = rawStatus.replace('_', ' ').replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
+            }
+            row.addView(TextView(requireContext()).apply {
+                text = statusText
+                setTextColor(Color.WHITE)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+                typeface = Typeface.DEFAULT_BOLD
+                setPadding(dpToPx(8), dpToPx(4), dpToPx(8), dpToPx(4))
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    marginStart = dpToPx(8)
+                }
+                background = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadius = dpToPx(12).toFloat()
+                    setColor(colorForImpactStatus(rawStatus))
+                }
+            })
+        }
+
+        addView(row)
+        addAiDivider()
+    }
+
     private fun LinearLayout.addAiDivider() {
         addView(View(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(
@@ -1048,6 +1152,52 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             )
             setBackgroundColor(Color.parseColor("#E5E7EB"))
         })
+    }
+
+    private fun extractDailyImpactItems(dailyImpact: AnalysisDailyImpact?): List<Pair<String, AnalysisDailyImpactItem>> {
+        if (dailyImpact == null) return emptyList()
+
+        return listOfNotNull(
+            "Calories" to dailyImpact.calories,
+            "Carbs" to dailyImpact.carbs,
+            "Protein" to dailyImpact.proteins,
+            "Fat" to dailyImpact.fat,
+            "Sugar" to dailyImpact.sugar,
+            "Fiber" to dailyImpact.fiber,
+            "Sodium" to dailyImpact.sodium,
+            "Water" to dailyImpact.water,
+            "Vitamin A" to dailyImpact.vitaminA,
+            "Vitamin B12" to dailyImpact.vitaminB12,
+            "Vitamin B6" to dailyImpact.vitaminB6,
+            "Vitamin B9" to dailyImpact.vitaminB9,
+            "Vitamin C" to dailyImpact.vitaminC,
+            "Vitamin D" to dailyImpact.vitaminD,
+            "Vitamin E" to dailyImpact.vitaminE
+        ).filter { (_, item) -> item != null }
+            .map { (label, item) -> label to item!! }
+    }
+
+    private fun formatDailyImpactFallback(item: AnalysisDailyImpactItem): String {
+        val after = item.afterThisProduct?.let { formatAmount(it) }
+        val unit = item.unit.orEmpty()
+        return when {
+            after != null && unit.isNotBlank() -> "$after $unit after this product"
+            after != null -> "$after after this product"
+            !item.status.isNullOrBlank() -> item.status.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
+            }
+            else -> "No details"
+        }
+    }
+
+    private fun colorForImpactStatus(status: String): Int {
+        return when (status.lowercase(Locale.US)) {
+            "within_goal" -> Color.parseColor("#2E7D32")
+            "goal_exceeded" -> Color.parseColor("#C62828")
+            "goal_unavailable" -> Color.parseColor("#6B7280")
+            "not_provided" -> Color.parseColor("#B7791F")
+            else -> Color.parseColor("#4B5563")
+        }
     }
 
     private fun setupNutrientsFromAi(risks: List<AnalysisRisk>) {

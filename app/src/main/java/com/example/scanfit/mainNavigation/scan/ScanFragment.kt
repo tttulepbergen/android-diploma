@@ -26,7 +26,13 @@ import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentScanBinding
 import com.example.scanfit.network.AnalysisResponse
 import com.example.scanfit.network.NetworkClient
+import com.example.scanfit.utils.SessionManager
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -45,7 +51,9 @@ class ScanFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
+    private lateinit var sessionManager: SessionManager
     private var isAnalyzing = false
+    private val gson = GsonBuilder().serializeNulls().create()
 
     private val galleryLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -84,6 +92,7 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         cameraExecutor = Executors.newSingleThreadExecutor()
+        sessionManager = SessionManager(requireContext())
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -194,11 +203,19 @@ class ScanFragment : Fragment() {
                 val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
                 val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
-                val prefs = requireContext().getSharedPreferences("user_settings", Context.MODE_PRIVATE)
-                val diseasesText = prefs.getStringSet("user_diseases", emptySet())?.joinToString(", ") ?: "None"
-                val healthInfoBody = diseasesText.toRequestBody("text/plain".toMediaTypeOrNull())
+                val healthInfoBody = "".toRequestBody("text/plain".toMediaTypeOrNull())
+                val userContext = loadUserContextParts()
+                logAiRequestPayload(
+                    file = file,
+                    healthInfo = "",
+                    userContext = userContext
+                )
 
-                val response = NetworkClient.aiApiService.analyzeScan(body, healthInfoBody)
+                val response = NetworkClient.aiApiService.analyzeScan(
+                    file = body,
+                    healthInfo = healthInfoBody,
+                    userInformation = userContext.userInformation
+                )
                 Log.d("SCAN_DEBUG", "AI response received: $response")
 
                 withContext(Dispatchers.Main) {
@@ -218,6 +235,52 @@ class ScanFragment : Fragment() {
                 file.delete()
             }
         }
+    }
+
+    private suspend fun loadUserContextParts(): ScanUserContextParts = coroutineScope {
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) return@coroutineScope ScanUserContextParts()
+
+        val detailsDeferred = async {
+            runCatching { NetworkClient.userApiService.getUserDetails(token).data }
+                .onFailure { Log.e("SCAN_DEBUG", "Failed to load user details for AI scan", it) }
+                .getOrNull()
+        }
+        val caloriesDeferred = async {
+            runCatching { NetworkClient.userApiService.getTodayUserCalories(token).data }
+                .onFailure { Log.e("SCAN_DEBUG", "Failed to load user calories for AI scan", it) }
+                .getOrNull()
+        }
+        val waterDeferred = async {
+            runCatching { NetworkClient.userApiService.getTodayUserWater(token).data }
+                .onFailure { Log.e("SCAN_DEBUG", "Failed to load user water for AI scan", it) }
+                .getOrNull()
+        }
+
+        val results = awaitAll(detailsDeferred, caloriesDeferred, waterDeferred)
+        val userInformationJson = JsonObject().apply {
+            add("user", results[0]?.let { gson.toJsonTree(it) })
+            add("user_calories_today", results[1]?.let { gson.toJsonTree(it) })
+            add("user_water_today", results[2]?.let { gson.toJsonTree(it) })
+        }.toString()
+
+        ScanUserContextParts(
+            userInformation = userInformationJson.toRequestBody("application/json".toMediaTypeOrNull()),
+            userInformationJson = userInformationJson
+        )
+    }
+
+    private fun logAiRequestPayload(
+        file: File,
+        healthInfo: String,
+        userContext: ScanUserContextParts
+    ) {
+        Log.d(
+            "AI_REQUEST",
+            "Sending scan to AI: file=${file.name}, sizeBytes=${file.length()}, path=${file.absolutePath}"
+        )
+        Log.d("AI_REQUEST", "health_info=$healthInfo")
+        Log.d("AI_REQUEST", "user_information=${userContext.userInformationJson ?: "null"}")
     }
 
     private fun navigateToAnalysis(response: AnalysisResponse) {
@@ -269,4 +332,9 @@ class ScanFragment : Fragment() {
         cameraExecutor.shutdown()
         _binding = null
     }
+
+    private data class ScanUserContextParts(
+        val userInformation: okhttp3.RequestBody? = null,
+        val userInformationJson: String? = null
+    )
 }

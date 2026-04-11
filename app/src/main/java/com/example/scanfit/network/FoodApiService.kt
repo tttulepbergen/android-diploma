@@ -14,6 +14,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Query
+import com.google.gson.annotations.SerializedName
 
 interface FoodApiService {
 
@@ -37,7 +38,8 @@ interface FoodApiService {
     @POST("analyze-scan")
     suspend fun analyzeScan(
         @Part file: MultipartBody.Part,
-        @Part("health_info") healthInfo: RequestBody
+        @Part("health_info") healthInfo: RequestBody,
+        @Part("user_information") userInformation: RequestBody? = null
     ): AnalysisResponse
 
     @POST("ingredient")
@@ -60,7 +62,12 @@ data class AnalysisResponse(
     val is_food: Boolean? = true,
     val product_type: String? = "unknown",
     val verdict: String? = "No data",
-    val macros: AnalysisMacros? = null
+    val macros: AnalysisMacros? = null,
+    val alternatives: List<AnalysisAlternative>? = emptyList(),
+    @SerializedName("daily_impact")
+    val dailyImpact: AnalysisDailyImpact? = null,
+    @SerializedName("user_context_used")
+    val userContextUsed: AnalysisUserContextUsed? = null
 ) : java.io.Serializable
 
 data class AnalysisMacros(
@@ -68,10 +75,25 @@ data class AnalysisMacros(
     val proteins: Double? = 0.0,
     val carbs: Double? = 0.0,
     val fats: Double? = 0.0,
+    val fat: Double? = 0.0,
     val sugar: Double? = 0.0,
     val fiber: Double? = 0.0,
     val sodium: Double? = 0.0,
-    val cholesterol: Double? = 0.0
+    val cholesterol: Double? = 0.0,
+    @SerializedName("vitamin_a")
+    val vitaminA: Double? = 0.0,
+    @SerializedName("vitamin_b12")
+    val vitaminB12: Double? = 0.0,
+    @SerializedName("vitamin_b6")
+    val vitaminB6: Double? = 0.0,
+    @SerializedName("vitamin_b9")
+    val vitaminB9: Double? = 0.0,
+    @SerializedName("vitamin_c")
+    val vitaminC: Double? = 0.0,
+    @SerializedName("vitamin_d")
+    val vitaminD: Double? = 0.0,
+    @SerializedName("vitamin_e")
+    val vitaminE: Double? = 0.0
 ) : java.io.Serializable
 
 @JsonAdapter(AnalysisRiskAdapter::class)
@@ -92,6 +114,61 @@ data class AnalysisSource(
     val title: String? = null,
     val url: String? = null,
     val source_type: String? = null
+) : java.io.Serializable
+
+data class AnalysisAlternative(
+    val name: String? = null,
+    val reason: String? = null,
+    @SerializedName("kaspi_link")
+    val kaspiLink: String? = null
+) : java.io.Serializable
+
+data class AnalysisDailyImpact(
+    val calories: AnalysisDailyImpactItem? = null,
+    val carbs: AnalysisDailyImpactItem? = null,
+    val fat: AnalysisDailyImpactItem? = null,
+    val fiber: AnalysisDailyImpactItem? = null,
+    val proteins: AnalysisDailyImpactItem? = null,
+    val sodium: AnalysisDailyImpactItem? = null,
+    val sugar: AnalysisDailyImpactItem? = null,
+    @SerializedName("vitamin_a")
+    val vitaminA: AnalysisDailyImpactItem? = null,
+    @SerializedName("vitamin_b12")
+    val vitaminB12: AnalysisDailyImpactItem? = null,
+    @SerializedName("vitamin_b6")
+    val vitaminB6: AnalysisDailyImpactItem? = null,
+    @SerializedName("vitamin_b9")
+    val vitaminB9: AnalysisDailyImpactItem? = null,
+    @SerializedName("vitamin_c")
+    val vitaminC: AnalysisDailyImpactItem? = null,
+    @SerializedName("vitamin_d")
+    val vitaminD: AnalysisDailyImpactItem? = null,
+    @SerializedName("vitamin_e")
+    val vitaminE: AnalysisDailyImpactItem? = null,
+    val water: AnalysisDailyImpactItem? = null
+) : java.io.Serializable
+
+data class AnalysisDailyImpactItem(
+    @SerializedName("amount_in_product")
+    val amountInProduct: Double? = null,
+    @SerializedName("consumed_today")
+    val consumedToday: Double? = null,
+    @SerializedName("goal_today")
+    val goalToday: Double? = null,
+    @SerializedName("after_this_product")
+    val afterThisProduct: Double? = null,
+    @SerializedName("remaining_to_goal")
+    val remainingToGoal: Double? = null,
+    val status: String? = null,
+    val message: String? = null,
+    val unit: String? = null
+) : java.io.Serializable
+
+data class AnalysisUserContextUsed(
+    @SerializedName("has_user_information")
+    val hasUserInformation: Boolean? = null,
+    @SerializedName("has_legacy_health_info")
+    val hasLegacyHealthInfo: Boolean? = null
 ) : java.io.Serializable
 
 class AnalysisRiskAdapter : JsonDeserializer<AnalysisRisk> {
