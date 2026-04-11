@@ -200,6 +200,24 @@ class ScanFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
+                val token = sessionManager.fetchAuthToken()
+                if (token.isNullOrBlank()) {
+                    withContext(Dispatchers.Main) {
+                        setLoadingState(false)
+                        if (isAdded) {
+                            Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    return@launch
+                }
+
+                if (!hasAvailableProductScanLimit(token)) {
+                    withContext(Dispatchers.Main) {
+                        setLoadingState(false)
+                    }
+                    return@launch
+                }
+
                 val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
                 val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
@@ -223,6 +241,7 @@ class ScanFragment : Fragment() {
                         navigateToAnalysis(response)
                     }
                 }
+                decreaseProductScanLimit(token)
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     setLoadingState(false)
@@ -234,6 +253,52 @@ class ScanFragment : Fragment() {
             } finally {
                 file.delete()
             }
+        }
+    }
+
+    private suspend fun hasAvailableProductScanLimit(token: String): Boolean {
+        val limitResponse = NetworkClient.userApiService.getProductScanLimit(token)
+        if (limitResponse.success == false && limitResponse.data == null) {
+            withContext(Dispatchers.Main) {
+                if (isAdded) {
+                    Toast.makeText(
+                        requireContext(),
+                        limitResponse.message ?: "Failed to load scan limit",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            return false
+        }
+
+        val limitData = limitResponse.data
+        val isUnlimited = limitData?.isUnlimited == true
+        val isExceeded = limitData?.isExceeded == true
+        val remainingLimit = limitData?.remaining ?: 0
+
+        if (!isUnlimited && (isExceeded || remainingLimit <= 0)) {
+            withContext(Dispatchers.Main) {
+                if (isAdded) {
+                    Toast.makeText(
+                        requireContext(),
+                        limitResponse.message ?: "You have no scans left",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            return false
+        }
+
+        return true
+    }
+
+    private suspend fun decreaseProductScanLimit(token: String) {
+        val decreaseResponse = NetworkClient.userApiService.decreaseProductScanLimit(token)
+        if (decreaseResponse.success == false) {
+            Log.w(
+                "PRODUCT_SCAN_LIMIT",
+                "Failed to decrease scan limit after successful AI analysis: ${decreaseResponse.message}"
+            )
         }
     }
 

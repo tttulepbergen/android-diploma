@@ -9,6 +9,8 @@ import com.example.scanfit.model.CreateProductScanResponse
 import com.example.scanfit.model.CreateUserDailyEatRequest
 import com.example.scanfit.model.CreateUserDailyEatResponse
 import com.example.scanfit.model.ProductScanResponse
+import com.example.scanfit.model.ProductScanLimitResponse
+import com.example.scanfit.model.ProductScanLimitDecreaseResponse
 import com.example.scanfit.model.UpdateDietTypeRequest
 import com.example.scanfit.model.UpdateDietTypeResponse
 import com.example.scanfit.model.UpdateDiseaseRequest
@@ -177,6 +179,16 @@ interface UserApiService {
         @Header("Authorization") token: String,
         @Query("product_name") productName: String
     ): ProductScanResponse
+
+    @GET("api/v1/product/product-scans/limit")
+    suspend fun getProductScanLimit(
+        @Header("Authorization") token: String
+    ): ProductScanLimitResponse
+
+    @POST("api/v1/product/product-scans/limit/decrease")
+    suspend fun decreaseProductScanLimit(
+        @Header("Authorization") token: String
+    ): ProductScanLimitDecreaseResponse
 
     @PUT("api/v1/user/diet-type/update/{id}")
     suspend fun updateDietType(

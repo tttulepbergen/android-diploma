@@ -288,6 +288,37 @@ data class ProductScanResponse(
     val success: Boolean
 )
 
+data class ProductScanLimitResponse(
+    val data: ProductScanLimitData?,
+    val message: String?,
+    val success: Boolean?
+)
+
+data class ProductScanLimitDecreaseResponse(
+    val data: JsonElement? = null,
+    val message: String?,
+    val success: Boolean?
+)
+
+data class ProductScanLimitData(
+    @SerializedName("user_id")
+    val userId: Int?,
+    @SerializedName("role_code")
+    val roleCode: String?,
+    val limit: Int?,
+    val used: Int?,
+    val remaining: Int?,
+    @SerializedName("is_unlimited")
+    val isUnlimited: Boolean?,
+    @SerializedName("is_exceeded")
+    val isExceeded: Boolean?,
+    @SerializedName("usage_date")
+    val usageDate: String?,
+    @SerializedName("resets_at_utc")
+    val resetsAtUtc: String?,
+    val timezone: String?
+)
+
 data class ProductScanData(
     val id: Int?,
     @SerializedName("product_name")

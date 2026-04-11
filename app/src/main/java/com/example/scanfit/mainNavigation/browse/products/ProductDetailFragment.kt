@@ -115,6 +115,22 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                val token = sessionManager.fetchAuthToken()
+                if (token.isNullOrBlank()) {
+                    binding.aiProgressBar.visibility = View.GONE
+                    binding.btnAnalyzeAi.isEnabled = true
+                    binding.tvAiVerdictDescription.text = "User token not found"
+                    Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                if (!hasAvailableProductScanLimit(token)) {
+                    binding.aiProgressBar.visibility = View.GONE
+                    binding.btnAnalyzeAi.isEnabled = true
+                    binding.aiSectionsContainer.visibility = View.GONE
+                    return@launch
+                }
+
                 val userProfileJson = buildUserProfileJson()
                 val response = FoodAnalyzer.analyzeTextIngredientsFull(
                     ingredients = queryText,
@@ -132,6 +148,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                 }
 
                 setupAiUI(response)
+                decreaseProductScanLimit(token)
                 saveProductScan(item.title, response)
 
             } catch (e: Exception) {
@@ -144,6 +161,40 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                 binding.tvAiVerdictDescription.text = "AI Analysis unavailable. Showing standard info."
 
             }
+        }
+    }
+
+    private suspend fun hasAvailableProductScanLimit(token: String): Boolean {
+        val limitResponse = NetworkClient.userApiService.getProductScanLimit(token)
+        if (limitResponse.success == false && limitResponse.data == null) {
+            val message = limitResponse.message ?: "Failed to load scan limit"
+            binding.tvAiVerdictDescription.text = message
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        val limitData = limitResponse.data
+        val isUnlimited = limitData?.isUnlimited == true
+        val isExceeded = limitData?.isExceeded == true
+        val remainingLimit = limitData?.remaining ?: 0
+
+        if (!isUnlimited && (isExceeded || remainingLimit <= 0)) {
+            val message = limitResponse.message ?: "You have no scans left"
+            binding.tvAiVerdictDescription.text = message
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return true
+    }
+
+    private suspend fun decreaseProductScanLimit(token: String) {
+        val decreaseResponse = NetworkClient.userApiService.decreaseProductScanLimit(token)
+        if (decreaseResponse.success == false) {
+            Log.w(
+                "PRODUCT_SCAN_LIMIT",
+                "Failed to decrease scan limit after successful AI analysis: ${decreaseResponse.message}"
+            )
         }
     }
 
