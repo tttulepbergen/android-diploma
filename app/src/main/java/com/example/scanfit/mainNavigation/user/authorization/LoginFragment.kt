@@ -1,6 +1,5 @@
 package com.example.scanfit.mainNavigation.user.authorization
 
-import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -49,15 +48,26 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             try {
                 val response = NetworkClient.authApiService.login(LoginRequest(email, password))
                 if (response.success && response.data != null) {
-                    sessionManager.saveAuthToken(response.data.accessToken)
-                    sessionManager.saveRefreshToken(response.data.refreshToken)
-                    sessionManager.saveUserId(response.data.id)
-                    sessionManager.saveUserRole(response.data.role?.code ?: "basic")
+                    val authData = response.data
+                    sessionManager.saveAuthToken(authData.accessToken)
+                    sessionManager.saveRefreshToken(authData.refreshToken)
+                    sessionManager.saveUserId(authData.id)
+                    sessionManager.saveUserRole(authData.role?.code ?: "basic")
 
-                    val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-                    val isProfileCompleted = prefs.getBoolean("profile_completed", false)
+                    val registrationStatusResponse =
+                        NetworkClient.userApiService.getRegistrationStatus(authData.accessToken)
+                    val isFinishedRegister = registrationStatusResponse.data?.isFinishedRegister == true
 
-                    if (isProfileCompleted) {
+                    if (!registrationStatusResponse.success) {
+                        Toast.makeText(
+                            context,
+                            registrationStatusResponse.message ?: "Failed to check registration status",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@launch
+                    }
+
+                    if (isFinishedRegister) {
                         findNavController().navigate(R.id.action_loginFragment3_to_nav_scan)
                     } else {
                         findNavController().navigate(R.id.action_loginFragment3_to_profileFragment2)

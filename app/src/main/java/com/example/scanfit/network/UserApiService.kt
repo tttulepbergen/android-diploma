@@ -18,7 +18,9 @@ import com.example.scanfit.model.UpdateDiseaseRequest
 import com.example.scanfit.model.UpdateUserCaloriesRequest
 import com.example.scanfit.model.UpdateUserWaterRequest
 import com.example.scanfit.model.UpdateUserMeasureRequest
+import com.example.scanfit.model.UpdateRegistrationStatusRequest
 import com.example.scanfit.model.UpdateWeightManagementRequest
+import com.example.scanfit.model.RegistrationStatusResponse
 import com.example.scanfit.model.UserAccountResponse
 import com.example.scanfit.model.UserCaloriesResponse
 import com.example.scanfit.model.UserFirstDayResponse
@@ -67,6 +69,17 @@ interface UserApiService {
     suspend fun getUserAccount(
         @Header("Authorization") token: String
     ): UserAccountResponse
+
+    @GET("api/v1/user/registration-status/me")
+    suspend fun getRegistrationStatus(
+        @Header("Authorization") token: String
+    ): RegistrationStatusResponse
+
+    @PUT("api/v1/user/registration-status/me")
+    suspend fun updateRegistrationStatus(
+        @Header("Authorization") token: String,
+        @Body request: UpdateRegistrationStatusRequest
+    ): BaseResponse
 
     @Multipart
     @POST("api/v1/user/change-picture")

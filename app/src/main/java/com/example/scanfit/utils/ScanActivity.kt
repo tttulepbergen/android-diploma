@@ -31,7 +31,9 @@ class ScanActivity : AppCompatActivity() {
                 R.id.forgotPasswordFragment,
                 R.id.resetPasswordFragment,
                 R.id.signUpFragment,
-                R.id.verifyPinFragment -> {
+                R.id.verifyPinFragment,
+                R.id.profileFragment2,
+                R.id.dietSelectionFragment -> {
                     binding.bottomNavigation.visibility = android.view.View.GONE
                 }
                 else -> {

@@ -4,31 +4,35 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentProfileBinding
+import com.example.scanfit.model.UpdateUserMeasureRequest
+import com.example.scanfit.network.NetworkClient
+import com.example.scanfit.utils.SessionManager
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+    private lateinit var sessionManager: SessionManager
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProfileBinding.bind(view)
+        sessionManager = SessionManager(requireContext())
 
-        binding.etBirthdate.setOnClickListener {
-            showDatePicker()
-        }
-
-        binding.btnContinue.setOnClickListener {
-            validateAndContinue()
-        }
+        binding.etBirthdate.setOnClickListener { showDatePicker() }
+        binding.btnContinue.setOnClickListener { validateAndContinue() }
     }
 
     private fun showDatePicker() {
@@ -39,39 +43,110 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         datePicker.addOnPositiveButtonClickListener { selection ->
             val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-            val dateString = formatter.format(Date(selection))
-            binding.etBirthdate.setText(dateString)
+            binding.etBirthdate.setText(formatter.format(Date(selection)))
         }
 
         datePicker.show(parentFragmentManager, "DATE_PICKER")
     }
 
     private fun validateAndContinue() {
-        val height = binding.etHeightCm.text.toString()
-        val weight = binding.etWeight.text.toString()
-        val birthdate = binding.etBirthdate.text.toString()
+        val token = sessionManager.fetchAuthToken()
+        if (token.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        val checkedId = binding.toggleGender.checkedButtonId
-        val gender = when (checkedId) {
+        val height = binding.etHeightCm.text.toString().trim().toIntOrNull()
+        val weight = binding.etWeight.text.toString().trim().toIntOrNull()
+        val birthdateInput = binding.etBirthdate.text.toString().trim()
+        val birthdate = birthdateInput.toApiDateOrNull()
+
+        if (height == null || weight == null || birthdate == null) {
+            Toast.makeText(requireContext(), "Please fill height, weight, and birthdate", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val gender = when (binding.toggleGender.checkedButtonId) {
             R.id.btn_female -> "Gal"
             R.id.btn_male -> "Guy"
             else -> "Prefer not to say"
         }
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
+        val request = UpdateUserMeasureRequest(
+            age = calculateAge(birthdate),
+            birthDate = birthdate,
+            bloodPressure = if (binding.switchBloodPressureSetup.isChecked) 1 else 0,
+            cholesterol = if (binding.switchCholesterolSetup.isChecked) 1 else 0,
+            gender = gender,
+            height = height,
+            weight = weight
+        )
 
-        val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-        prefs.edit().apply {
-            putString("user_height_$uid", height)
-            putString("user_weight_$uid", weight)
-            putString("user_gender_$uid", gender)
-            putString("user_birthdate_$uid", birthdate)
-            putBoolean("profile_completed_$uid", true)
-            apply()
+        setLoading(true)
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val response = NetworkClient.userApiService.updateMeasure("Bearer $token", request)
+                if (response.success) {
+                    val prefs = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+                    val userId = sessionManager.fetchUserId()
+                    prefs.edit().apply {
+                        putString("user_height_$userId", height.toString())
+                        putString("user_weight_$userId", weight.toString())
+                        putString("user_gender_$userId", gender)
+                        putString("user_birthdate_$userId", birthdateInput)
+                        apply()
+                    }
+
+                    findNavController().navigate(
+                        R.id.action_profileFragment2_to_dietSelectionFragment,
+                        bundleOf("setup_weight" to weight)
+                    )
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        response.message ?: "Failed to save profile",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    e.message ?: "Failed to save profile",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } finally {
+                setLoading(false)
+            }
         }
-        // Переход к выбору диеты
-        findNavController().navigate(R.id.action_profileFragment2_to_dietSelectionFragment)
+    }
 
+    private fun setLoading(isLoading: Boolean) {
+        binding.blockingLoader.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.btnContinue.isEnabled = !isLoading
+    }
+
+    private fun String.toApiDateOrNull(): String? {
+        return runCatching {
+            val source = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+            val target = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            target.format(source.parse(this) ?: return null)
+        }.getOrNull()
+    }
+
+    private fun calculateAge(apiBirthDate: String): String {
+        return try {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val birth = sdf.parse(apiBirthDate) ?: return "0"
+            val dob = Calendar.getInstance().apply { time = birth }
+            val today = Calendar.getInstance()
+            var age = today.get(Calendar.YEAR) - dob.get(Calendar.YEAR)
+            if (today.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)) {
+                age--
+            }
+            age.toString()
+        } catch (_: Exception) {
+            "0"
+        }
     }
 
     override fun onDestroyView() {

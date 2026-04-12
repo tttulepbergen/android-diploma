@@ -23,20 +23,20 @@ data class UserMeasureRequest(
 )
 
 data class UpdateUserMeasureRequest(
-    val age: String,
+    val age: String?,
     @SerializedName("birth_date")
-    val birthDate: String,
+    val birthDate: String?,
     @SerializedName("blood_pressure")
-    val bloodPressure: Int,
-    val bmi: Int,
-    val cholesterol: Int,
+    val bloodPressure: Int?,
+    val bmi: Int? = null,
+    val cholesterol: Int?,
     @SerializedName("daily_calories_goal")
-    val dailyCaloriesGoal: Int,
+    val dailyCaloriesGoal: Int? = null,
     @SerializedName("daily_water_goal")
-    val dailyWaterGoal: Int,
-    val gender: String,
-    val height: Int,
-    val weight: Int
+    val dailyWaterGoal: Int? = null,
+    val gender: String?,
+    val height: Int?,
+    val weight: Int?
 )
 
 data class UserMeasureResponse(
@@ -73,6 +73,22 @@ data class UserAccountResponse(
     val data: UserAccountData?,
     val message: String?,
     val success: Boolean
+)
+
+data class RegistrationStatusResponse(
+    val data: RegistrationStatusData?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class RegistrationStatusData(
+    @SerializedName("is_finished_register")
+    val isFinishedRegister: Boolean?
+)
+
+data class UpdateRegistrationStatusRequest(
+    @SerializedName("is_finished_register")
+    val isFinishedRegister: Boolean
 )
 
 data class UserRoleResponse(
