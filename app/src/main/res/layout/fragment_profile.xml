@@ -164,33 +164,11 @@
         android:id="@+id/tv_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="We use physiological info like age &amp; sex at birth to calculate a more accurate calorie goal for you."
+        android:text="We use this info to personalize your ScanFit goals."
         android:textSize="12sp"
         android:textColor="#9DA0A5"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/layout_weight_container"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_blood_pressure_setup"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:text="Blood pressure"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tv_info"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_cholesterol_setup"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Cholesterol"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/switch_blood_pressure_setup"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

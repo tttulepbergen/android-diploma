@@ -179,7 +179,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             showEditInputSheet("My height is", "cm") { value ->
                 val h = value.toIntOrNull() ?: 0
                 updateSingleField { 
-                    val newBmi = calculateBmi(h, it.weight)
+                    val newBmi = calculateBmi(h, it.weight ?: 0)
                     it.copy(height = h, bmi = newBmi) 
                 }
             }
@@ -189,7 +189,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             showEditInputSheet("My current weight is", "kg") { value ->
                 val w = value.toIntOrNull() ?: 0
                 updateSingleField { 
-                    val newBmi = calculateBmi(it.height, w)
+                    val newBmi = calculateBmi(it.height ?: 0, w)
                     it.copy(weight = w, bmi = newBmi) 
                 }
             }
@@ -672,7 +672,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
 
         val subtitleView = TextView(context).apply {
-            text = when (sectionType) {
+            text = item.description?.takeIf { it.isNotBlank() } ?: when (sectionType) {
                 DietarySectionType.DIET_TYPE -> "Diet"
                 DietarySectionType.DIETARY_PREFERENCE -> "Preference"
                 DietarySectionType.HEALTH_CONDITION -> "Condition"
@@ -1175,3 +1175,4 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         _binding = null
     }
 }
+

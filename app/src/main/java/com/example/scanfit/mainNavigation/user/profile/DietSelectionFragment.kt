@@ -2,7 +2,11 @@ package com.example.scanfit.mainNavigation.user.profile
 
 import android.content.Context
 import android.os.Bundle
+import android.graphics.Typeface
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.NumberPicker
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +24,8 @@ import com.example.scanfit.model.UpdateWeightManagementRequest
 import com.example.scanfit.network.NetworkClient
 import com.example.scanfit.utils.SessionManager
 import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -32,8 +38,11 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
 
+    companion object {
+        private const val MAX_ACTIVE_DISEASES = 3
+    }
+
     private var diseases: MutableList<Disease> = mutableListOf()
-    private var dietaryPreferences: MutableList<DietType> = mutableListOf()
     private var dietTypes: MutableList<DietType> = mutableListOf()
     private var diseaseLevels: List<DiseaseLevel> = emptyList()
     private var setupWeight: Int = 0
@@ -70,11 +79,6 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
                     diseases = diseasesResponse.data.orEmpty().toMutableList()
                 }
 
-                val dietaryPreferencesResponse = NetworkClient.userApiService.getDietaryPreferences(token)
-                if (dietaryPreferencesResponse.success) {
-                    dietaryPreferences = dietaryPreferencesResponse.data.orEmpty().toMutableList()
-                }
-
                 val dietTypesResponse = NetworkClient.userApiService.getDietTypes(token)
                 if (dietTypesResponse.success) {
                     dietTypes = dietTypesResponse.data.orEmpty().toMutableList()
@@ -94,10 +98,6 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
         if (dietTypes.isNotEmpty()) {
             displayList.add("Diet Types")
             displayList.addAll(dietTypes.map { it.toDietItem("diet_type") })
-        }
-        if (dietaryPreferences.isNotEmpty()) {
-            displayList.add("Dietary Preferences")
-            displayList.addAll(dietaryPreferences.map { it.toDietItem("dietary_preference") })
         }
         if (diseases.isNotEmpty()) {
             displayList.add("Diseases")
@@ -122,18 +122,13 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
         when (type) {
             "diet_type" -> {
                 dietTypes = dietTypes.map {
-                    if (it.id.toString() == id) it.copy(isActive = !it.isActive) else it
-                }.toMutableList()
-            }
-            "dietary_preference" -> {
-                dietaryPreferences = dietaryPreferences.map {
-                    if (it.id.toString() == id) it.copy(isActive = !it.isActive) else it
+                    it.copy(isActive = it.id.toString() == id)
                 }.toMutableList()
             }
             "disease" -> {
-                diseases = diseases.map {
-                    if (it.id.toString() == id) it.copy(isActive = !it.isActive) else it
-                }.toMutableList()
+                val disease = diseases.firstOrNull { it.id.toString() == id } ?: return
+                showDiseaseLevelSheet(disease)
+                return
             }
         }
 
@@ -177,15 +172,6 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
                 UpdateDietTypeRequest(isActive = item.isActive)
             )
             if (!response.success) error(response.message ?: "Failed to save diet type")
-        }
-
-        dietaryPreferences.forEach { item ->
-            val response = NetworkClient.userApiService.updateDietaryPreference(
-                token,
-                item.id,
-                UpdateDietTypeRequest(isActive = item.isActive)
-            )
-            if (!response.success) error(response.message ?: "Failed to save dietary preference")
         }
 
         val defaultDiseaseLevelId = diseaseLevels.firstOrNull()?.id ?: 1
@@ -237,6 +223,7 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
         return DietItem(
             id = "$type:$id",
             name = name,
+            description = description?.takeIf { it.isNotBlank() },
             ui_type = "toggle",
             isSelected = isActive,
             category_name = type
@@ -244,14 +231,114 @@ class DietSelectionFragment : Fragment(R.layout.fragment_diet_selection) {
     }
 
     private fun Disease.toDietItem(): DietItem {
+        val levelName = diseaseLevel?.name?.takeIf { it.isNotBlank() } ?: "Choose level"
         return DietItem(
             id = "disease:$id",
-            name = name,
+            name = "$name - $levelName",
+            description = description?.takeIf { it.isNotBlank() } ?: "Tap to choose level and active state",
             ui_type = "toggle",
             isSelected = isActive,
             category_name = "disease"
         )
     }
+
+    private fun showDiseaseLevelSheet(disease: Disease) {
+        if (diseaseLevels.isEmpty()) {
+            showError("Disease levels are not available")
+            return
+        }
+
+        val dialog = BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.layout_picker_bottom_sheet, null)
+        val root = view as LinearLayout
+        val numberPicker = view.findViewById<NumberPicker>(R.id.number_picker)
+        val btnDone = view.findViewById<TextView>(R.id.tv_done)
+        val btnCancel = view.findViewById<TextView>(R.id.tv_cancel)
+
+        val contentContainer = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(18), dp(20), dp(4))
+        }
+
+        val titleView = TextView(context).apply {
+            text = disease.name
+            textSize = 20f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(resources.getColor(R.color.black, null))
+        }
+
+        val descriptionView = TextView(context).apply {
+            text = "Choose a level and mark this disease active if needed."
+            textSize = 13f
+            setTextColor(android.graphics.Color.parseColor("#6B7280"))
+            setPadding(0, dp(8), 0, dp(16))
+        }
+
+        val activeSwitch = SwitchMaterial(requireContext()).apply {
+            text = "Active disease"
+            isChecked = disease.isActive
+            textSize = 14f
+            setTextColor(resources.getColor(R.color.black, null))
+        }
+
+        val helperView = TextView(context).apply {
+            text = "Disease level"
+            textSize = 13f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(android.graphics.Color.parseColor("#6B7280"))
+            setPadding(0, dp(18), 0, dp(8))
+        }
+
+        val pickerValues = diseaseLevels.map { it.name }.toTypedArray()
+        numberPicker.minValue = 0
+        numberPicker.maxValue = pickerValues.size - 1
+        numberPicker.displayedValues = pickerValues
+        numberPicker.wrapSelectorWheel = false
+        numberPicker.value = diseaseLevels.indexOfFirst { it.id == disease.diseaseLevel?.id }
+            .takeIf { it >= 0 } ?: 0
+
+        contentContainer.addView(titleView)
+        contentContainer.addView(descriptionView)
+        contentContainer.addView(activeSwitch)
+        contentContainer.addView(helperView)
+        root.addView(contentContainer, 2)
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+        btnDone.text = "Save"
+        btnDone.setOnClickListener {
+            val selectedLevel = diseaseLevels[numberPicker.value]
+            applyDiseaseSelection(disease.id, activeSwitch.isChecked, selectedLevel)
+            dialog.dismiss()
+        }
+
+        dialog.setContentView(view)
+        dialog.show()
+    }
+
+    private fun applyDiseaseSelection(diseaseId: Int, isActive: Boolean, diseaseLevel: DiseaseLevel) {
+        if (isActive && exceedsDiseaseLimit(diseaseId)) {
+            showError("You can choose up to $MAX_ACTIVE_DISEASES diseases")
+            return
+        }
+
+        diseases = diseases.map { disease ->
+            if (disease.id == diseaseId) {
+                disease.copy(isActive = isActive, diseaseLevel = diseaseLevel)
+            } else {
+                disease
+            }
+        }.toMutableList()
+
+        updateRecyclerView()
+    }
+
+    private fun exceedsDiseaseLimit(diseaseId: Int): Boolean {
+        val alreadyActive = diseases.any { it.id == diseaseId && it.isActive }
+        if (alreadyActive) return false
+        return diseases.count { it.isActive } >= MAX_ACTIVE_DISEASES
+    }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun showError(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()

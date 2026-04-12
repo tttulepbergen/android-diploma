@@ -4,8 +4,10 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.view.isVisible
 import com.example.scanfit.R
 import com.example.scanfit.data.DietItem
 
@@ -44,13 +46,18 @@ class DietAdapter(
         else if (holder is DietViewHolder && item is DietItem) {
             val diet = item
             holder.nameText.text = diet.name
+            holder.descriptionText.text = diet.description
+            holder.descriptionText.isVisible = !diet.description.isNullOrBlank()
+            holder.arrowIcon.visibility = if (diet.category_name == "disease") View.VISIBLE else View.GONE
 
             if (diet.isSelected) {
                 holder.itemView.setBackgroundResource(R.drawable.bg_diet_chip_selected)
                 holder.nameText.setTextColor(Color.parseColor("#589BFF"))
+                holder.descriptionText.setTextColor(Color.parseColor("#6B84C6"))
             } else {
                 holder.itemView.setBackgroundResource(R.drawable.bg_diet_chip_normal)
                 holder.nameText.setTextColor(Color.BLACK)
+                holder.descriptionText.setTextColor(Color.parseColor("#7B8494"))
             }
 
             holder.itemView.setOnClickListener {
@@ -67,6 +74,8 @@ class DietAdapter(
 
     class DietViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val nameText: TextView = view.findViewById(R.id.dietName)
+        val descriptionText: TextView = view.findViewById(R.id.dietDescription)
+        val arrowIcon: ImageView = view.findViewById(R.id.arrowIcon)
     }
 
     fun updateData(newItems: List<Any>) {

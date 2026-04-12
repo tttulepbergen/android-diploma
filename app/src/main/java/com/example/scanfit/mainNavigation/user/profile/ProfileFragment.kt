@@ -75,8 +75,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val request = UpdateUserMeasureRequest(
             age = calculateAge(birthdate),
             birthDate = birthdate,
-            bloodPressure = if (binding.switchBloodPressureSetup.isChecked) 1 else 0,
-            cholesterol = if (binding.switchCholesterolSetup.isChecked) 1 else 0,
+            bloodPressure = null,
+            cholesterol = null,
             gender = gender,
             height = height,
             weight = weight

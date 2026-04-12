@@ -17,6 +17,7 @@ data class HealthCategory(
 data class DietItem(
     val id: String,
     val name: String,
+    val description: String? = null,
     val ui_type: String,
     var isSelected: Boolean = false,
     val max_levels: Int? = 2,
