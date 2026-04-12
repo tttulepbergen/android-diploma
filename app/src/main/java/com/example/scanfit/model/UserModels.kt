@@ -220,6 +220,71 @@ data class UserCaloriesResponse(
     val success: Boolean
 )
 
+data class ConsumptionHistoryResponse(
+    val data: List<ConsumptionHistoryItem>?,
+    val message: String?,
+    val success: Boolean
+)
+
+data class ConsumptionHistoryItem(
+    val calories: Int?,
+    @SerializedName("calories_goal")
+    val caloriesGoal: Int?,
+    val carbs: Int?,
+    @SerializedName("carbs_goal")
+    val carbsGoal: Int?,
+    val cholesterol: Int?,
+    @SerializedName("cholesterol_goal")
+    val cholesterolGoal: Int?,
+    val date: String?,
+    val fat: Int?,
+    @SerializedName("fat_goal")
+    val fatGoal: Int?,
+    val fiber: Int?,
+    @SerializedName("fiber_goal")
+    val fiberGoal: Int?,
+    @SerializedName("protein_goal")
+    val proteinGoal: Int?,
+    val proteins: Int?,
+    val sodium: Int?,
+    @SerializedName("sodium_goal")
+    val sodiumGoal: Int?,
+    val sugar: Int?,
+    @SerializedName("sugar_goal")
+    val sugarGoal: Int?,
+    @SerializedName("vitamin_a")
+    val vitaminA: Double?,
+    @SerializedName("vitamin_a_goal")
+    val vitaminAGoal: Double?,
+    @SerializedName("vitamin_b12")
+    val vitaminB12: Double?,
+    @SerializedName("vitamin_b12_goal")
+    val vitaminB12Goal: Double?,
+    @SerializedName("vitamin_b6")
+    val vitaminB6: Double?,
+    @SerializedName("vitamin_b6_goal")
+    val vitaminB6Goal: Double?,
+    @SerializedName("vitamin_b9")
+    val vitaminB9: Double?,
+    @SerializedName("vitamin_b9_goal")
+    val vitaminB9Goal: Double?,
+    @SerializedName("vitamin_c")
+    val vitaminC: Double?,
+    @SerializedName("vitamin_c_goal")
+    val vitaminCGoal: Double?,
+    @SerializedName("vitamin_d")
+    val vitaminD: Double?,
+    @SerializedName("vitamin_d_goal")
+    val vitaminDGoal: Double?,
+    @SerializedName("vitamin_e")
+    val vitaminE: Double?,
+    @SerializedName("vitamin_e_goal")
+    val vitaminEGoal: Double?,
+    val water: Int?,
+    @SerializedName("water_goal")
+    val waterGoal: Int?
+)
+
 data class UserFirstDayResponse(
     val data: UserFirstDayData?,
     val message: String?,

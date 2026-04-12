@@ -8,6 +8,7 @@ import com.example.scanfit.model.CreateProductScanRequest
 import com.example.scanfit.model.CreateProductScanResponse
 import com.example.scanfit.model.CreateUserDailyEatRequest
 import com.example.scanfit.model.CreateUserDailyEatResponse
+import com.example.scanfit.model.ConsumptionHistoryResponse
 import com.example.scanfit.model.ProductScanResponse
 import com.example.scanfit.model.ProductScanLimitResponse
 import com.example.scanfit.model.ProductScanLimitDecreaseResponse
@@ -124,6 +125,13 @@ interface UserApiService {
     suspend fun getUserCaloriesFirstDay(
         @Header("Authorization") token: String
     ): UserFirstDayResponse
+
+    @GET("api/v1/users/me/consumption/history")
+    suspend fun getConsumptionHistory(
+        @Header("Authorization") token: String,
+        @Query("from") from: String,
+        @Query("to") to: String
+    ): ConsumptionHistoryResponse
 
     @PUT("api/v1/user/user-calories/update")
     suspend fun updateUserCalories(

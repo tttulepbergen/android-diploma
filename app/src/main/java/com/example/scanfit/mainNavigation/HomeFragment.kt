@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -17,6 +18,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
@@ -115,6 +117,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         binding.cardCalories.setOnClickListener {
             showNutrientDetails()
+        }
+        binding.btnHistoryHome.setOnClickListener {
+            openConsumptionHistory()
         }
 
         binding.tvGreeting.setOnClickListener {
@@ -580,6 +585,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
+    private fun openConsumptionHistory() {
+        val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
+        val day = API_DATE_FORMAT.format(selectedDate.time)
+        findNavController().navigate(
+            R.id.consumptionHistoryFragment,
+            bundleOf("selected_date" to day)
+        )
+    }
+
     private fun showNutrientDetailsSheet(day: String, data: UserCaloriesData?) {
         val dialog = BottomSheetDialog(requireContext())
         val content = LinearLayout(requireContext()).apply {
@@ -636,6 +650,31 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 content.addView(createNutrientDivider())
             }
         }
+
+        content.addView(TextView(requireContext()).apply {
+            text = "See all history"
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setTextColor(Color.WHITE)
+            setPadding(0, dpToPx(16), 0, dpToPx(16))
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dpToPx(18).toFloat()
+                setColor(Color.parseColor("#111827"))
+            }
+            val margin = dpToPx(18)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = margin
+            }
+            setOnClickListener {
+                dialog.dismiss()
+                openConsumptionHistory()
+            }
+        })
 
         dialog.setContentView(content)
         dialog.show()
