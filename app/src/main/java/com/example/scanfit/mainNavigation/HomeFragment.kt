@@ -45,6 +45,8 @@ import com.example.scanfit.mainNavigation.scan.FoodAnalyzer
 import com.example.scanfit.network.AnalysisResponse
 import com.example.scanfit.utils.SessionManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import androidx.core.view.isVisible
+import android.content.res.ColorStateList
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -104,6 +106,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.cvProfileIcon.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_userProfileFragment)
         }
+        binding.btnGetProHome.setOnClickListener {
+            findNavController().navigate(R.id.proSubscriptionFragment)
+        }
+        configureProHomeBanner()
 
         setupScannerTrigger()
 
@@ -114,6 +120,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.tvGreeting.setOnClickListener {
             showDatePicker()
         }
+    }
+
+    private fun configureProHomeBanner() {
+        val isVip = sessionManager.isVip()
+        binding.cardProHome.isVisible = true
+        binding.btnGetProHome.text = if (isVip) "View Pro" else "Get Pro"
+        binding.btnGetProHome.backgroundTintList = ColorStateList.valueOf(
+            Color.parseColor(if (isVip) "#0F172A" else "#17A34A")
+        )
     }
 
     override fun onResume() {

@@ -176,7 +176,16 @@
     <fragment
         android:id="@+id/productDetailFragment"
         android:name="com.example.scanfit.mainNavigation.browse.products.ProductDetailFragment"
-        android:label="ProductDetailFragment" />
+        android:label="ProductDetailFragment" >
+        <action
+            android:id="@+id/action_productDetailFragment_to_proSubscriptionFragment"
+            app:destination="@id/proSubscriptionFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/proSubscriptionFragment"
+        android:name="com.example.scanfit.mainNavigation.subscription.ProSubscriptionFragment"
+        android:label="ProSubscriptionFragment" />
 
     <fragment
         android:id="@+id/favoritesFragment"

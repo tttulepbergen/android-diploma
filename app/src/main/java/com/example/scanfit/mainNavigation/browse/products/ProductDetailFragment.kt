@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.core.view.isVisible
 import coil.load
 import com.example.scanfit.R
 import com.example.scanfit.data.AppDatabase
@@ -95,6 +96,19 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         }
 
         binding.btnBack.setOnClickListener { findNavController().navigateUp() }
+        binding.btnBuyPro.setOnClickListener {
+            findNavController().navigate(R.id.action_productDetailFragment_to_proSubscriptionFragment)
+        }
+        configureProBanner()
+    }
+
+    private fun configureProBanner() {
+        val isVip = sessionManager.isVip()
+        binding.cardProBanner.isVisible = true
+        binding.btnBuyPro.text = if (isVip) "View Pro" else "Buy Pro"
+        binding.btnBuyPro.backgroundTintList = ColorStateList.valueOf(
+            Color.parseColor(if (isVip) "#0F172A" else "#17A34A")
+        )
     }
 
 
