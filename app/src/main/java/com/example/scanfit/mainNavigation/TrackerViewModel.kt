@@ -7,6 +7,7 @@ import com.example.scanfit.data.FoodItem
 import java.util.Calendar
 
 class TrackerViewModel : ViewModel() {
+    //calory
     private val _totalCalories = MutableLiveData(0)
     val totalCalories: LiveData<Int> = _totalCalories
 
@@ -18,7 +19,7 @@ class TrackerViewModel : ViewModel() {
 
     private val _totalCarbs = MutableLiveData(0f)
     val totalCarbs: LiveData<Float> = _totalCarbs
-
+//nutri
     private val _goalCalories = MutableLiveData(2150)
     val goalCalories: LiveData<Int> = _goalCalories
 
@@ -30,7 +31,7 @@ class TrackerViewModel : ViewModel() {
 
     private val _goalCarbs = MutableLiveData(300f)
     val goalCarbs: LiveData<Float> = _goalCarbs
-
+//nutriSetters
     fun setNutritionTotals(
         calories: Int,
         proteins: Float,
@@ -69,7 +70,7 @@ class TrackerViewModel : ViewModel() {
         _totalFat.value = (_totalFat.value ?: 0f) + item.fat.toCleanFloat()
         _totalCarbs.value = (_totalCarbs.value ?: 0f) + item.carbs.toCleanFloat()
     }
-
+//water
     private val _waterGlasses = MutableLiveData(0)
     val waterGlasses: LiveData<Int> = _waterGlasses
 
@@ -97,7 +98,7 @@ class TrackerViewModel : ViewModel() {
     fun setWaterGoalMl(goalMl: Int) {
         _waterGoalMl.value = goalMl.coerceAtLeast(0)
     }
-
+//date
     private val _selectedDate = MutableLiveData(Calendar.getInstance())
     val selectedDate: LiveData<Calendar> = _selectedDate
 
