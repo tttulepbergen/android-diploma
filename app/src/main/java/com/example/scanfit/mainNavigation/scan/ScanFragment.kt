@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -46,6 +47,11 @@ import java.util.concurrent.Executors
 
 class ScanFragment : Fragment() {
 
+    private enum class ScanMode {
+        FOOD,
+        COMPOUND
+    }
+
     private var _binding: FragmentScanBinding? = null
     private val binding get() = _binding!!
 
@@ -64,7 +70,7 @@ class ScanFragment : Fragment() {
                     val file = uriToFile(it)
                     val compressed = getCompressedFile(file)
                     withContext(Dispatchers.Main) {
-                        analyzeImageWithAi(compressed)
+                        promptForScanMode(compressed)
                         file.delete()
                     }
                 } catch (e: Exception) {
@@ -165,7 +171,7 @@ class ScanFragment : Fragment() {
                     lifecycleScope.launch(Dispatchers.Main) {
                         try {
                             val compressedFile = withContext(Dispatchers.IO) { getCompressedFile(photoFile) }
-                            analyzeImageWithAi(compressedFile)
+                            promptForScanMode(compressedFile)
                         } catch (e: Exception) {
                             setLoadingState(false)
                             Log.e("SCAN_DEBUG", "Post-save processing failed", e)
@@ -195,8 +201,33 @@ class ScanFragment : Fragment() {
         return compressedFile
     }
 
-    private fun analyzeImageWithAi(file: File) {
+    private fun promptForScanMode(file: File) {
+        if (!isAdded || _binding == null) {
+            file.delete()
+            return
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Choose analysis type")
+            .setMessage("How should we analyze this image?")
+            .setPositiveButton("Analyze food") { _, _ ->
+                analyzeImageWithAi(file, ScanMode.FOOD)
+            }
+            .setNegativeButton("Analyze compound") { _, _ ->
+                analyzeImageWithAi(file, ScanMode.COMPOUND)
+            }
+            .setOnCancelListener {
+                file.delete()
+            }
+            .show()
+    }
+
+    private fun analyzeImageWithAi(file: File, scanMode: ScanMode) {
         setLoadingState(true)
+        binding.tvLoadingMessage.text = when (scanMode) {
+            ScanMode.FOOD -> "Analyzing food..."
+            ScanMode.COMPOUND -> "Analyzing compound..."
+        }
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -229,11 +260,18 @@ class ScanFragment : Fragment() {
                     userContext = userContext
                 )
 
-                val response = NetworkClient.aiApiService.analyzeScan(
-                    file = body,
-                    healthInfo = healthInfoBody,
-                    userInformation = userContext.userInformation
-                )
+                val response = when (scanMode) {
+                    ScanMode.COMPOUND -> NetworkClient.aiApiService.analyzeScan(
+                        file = body,
+                        healthInfo = healthInfoBody,
+                        userInformation = userContext.userInformation
+                    )
+                    ScanMode.FOOD -> NetworkClient.aiApiService.analyzeDish(
+                        file = body,
+                        healthInfo = healthInfoBody,
+                        userInformation = userContext.userInformation
+                    )
+                }
                 Log.d("SCAN_DEBUG", "AI response received: $response")
 
                 withContext(Dispatchers.Main) {
@@ -325,6 +363,8 @@ class ScanFragment : Fragment() {
         val results = awaitAll(detailsDeferred, caloriesDeferred, waterDeferred)
         val userInformationJson = JsonObject().apply {
             add("user", results[0]?.let { gson.toJsonTree(it) })
+            add("user_calories", results[1]?.let { gson.toJsonTree(it) })
+            add("user_water", results[2]?.let { gson.toJsonTree(it) })
             add("user_calories_today", results[1]?.let { gson.toJsonTree(it) })
             add("user_water_today", results[2]?.let { gson.toJsonTree(it) })
         }.toString()
@@ -372,6 +412,9 @@ class ScanFragment : Fragment() {
         currentBinding.btnUpload.isEnabled = !loading
         currentBinding.btnBrowse.isEnabled = !loading
         currentBinding.btnSearch.isEnabled = !loading
+        if (!loading) {
+            currentBinding.tvLoadingMessage.text = "Analyzing photo..."
+        }
     }
 
     private fun openGallery() {

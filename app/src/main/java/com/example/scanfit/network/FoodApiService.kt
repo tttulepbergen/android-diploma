@@ -42,6 +42,14 @@ interface FoodApiService {
         @Part("user_information") userInformation: RequestBody? = null
     ): AnalysisResponse
 
+    @Multipart
+    @POST("analyze-dish")
+    suspend fun analyzeDish(
+        @Part file: MultipartBody.Part,
+        @Part("health_info") healthInfo: RequestBody,
+        @Part("user_information") userInformation: RequestBody? = null
+    ): AnalysisResponse
+
     @POST("ingredient")
     suspend fun analyzeIngredients(
         @retrofit2.http.Body data: Map<String, @JvmSuppressWildcards Any>
@@ -54,6 +62,8 @@ data class FoodResponse(
 
 data class AnalysisResponse(
     val product_name: String? = null,
+    @SerializedName("dish_name")
+    val dishName: String? = null,
     val health_score: Int? = 0,
     val risk_level: String? = null,
     val risks: List<AnalysisRisk>? = emptyList(),
@@ -63,6 +73,13 @@ data class AnalysisResponse(
     val product_type: String? = "unknown",
     val verdict: String? = "No data",
     val macros: AnalysisMacros? = null,
+    @SerializedName("estimated_serving")
+    val estimatedServing: AnalysisEstimatedServing? = null,
+    @SerializedName("estimation_confidence")
+    val estimationConfidence: String? = null,
+    @SerializedName("identified_ingredients")
+    val identifiedIngredients: List<AnalysisIdentifiedIngredient>? = emptyList(),
+    val compounds: AnalysisCompounds? = null,
     val alternatives: List<AnalysisAlternative>? = emptyList(),
     @SerializedName("scan_image")
     val scanImage: AnalysisScanImage? = null,
@@ -76,6 +93,37 @@ data class AnalysisResponse(
     val dailyImpact: AnalysisDailyImpact? = null,
     @SerializedName("user_context_used")
     val userContextUsed: AnalysisUserContextUsed? = null
+) : java.io.Serializable
+
+data class AnalysisEstimatedServing(
+    val amount: Double? = null,
+    val unit: String? = null,
+    val description: String? = null
+) : java.io.Serializable
+
+data class AnalysisIdentifiedIngredient(
+    val name: String? = null,
+    @SerializedName("estimated_amount")
+    val estimatedAmount: String? = null,
+    val confidence: String? = null
+) : java.io.Serializable
+
+data class AnalysisCompounds(
+    val water: Double? = null,
+    @SerializedName("saturated_fat")
+    val saturatedFat: Double? = null,
+    @SerializedName("unsaturated_fat")
+    val unsaturatedFat: Double? = null,
+    @SerializedName("added_sugar")
+    val addedSugar: Double? = null,
+    @SerializedName("natural_sugar")
+    val naturalSugar: Double? = null,
+    val starch: Double? = null,
+    val potassium: Double? = null,
+    val calcium: Double? = null,
+    val iron: Double? = null,
+    val magnesium: Double? = null,
+    val caffeine: Double? = null
 ) : java.io.Serializable
 
 data class AnalysisMacros(

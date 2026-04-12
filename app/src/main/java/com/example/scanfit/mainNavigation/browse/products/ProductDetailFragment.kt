@@ -25,9 +25,9 @@ import androidx.core.view.isVisible
 import coil.load
 import com.example.scanfit.R
 import com.example.scanfit.data.AppDatabase
+import com.example.scanfit.data.FavoriteProduct
 import com.example.scanfit.data.FoodItem
-import com.example.scanfit.data.toFavoriteProduct
-import com.example.scanfit.data.toRecentProduct
+import com.example.scanfit.data.RecentProduct
 import com.example.scanfit.databinding.FragmentProductDetailBinding
 import com.example.scanfit.mainNavigation.TrackerViewModel
 import com.example.scanfit.model.CreateProductScanRequest
@@ -744,7 +744,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     }
 
     private fun saveToRecent(item: FoodItem) {
-        val recentProduct = item.toRecentProduct()
+        val recentProduct = item.asRecentProduct()
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
@@ -938,7 +938,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.btnAnalyzeAi.text = "Analyze again"
 
         if (!hasProductDetails) {
-            binding.tvProductName.text = response.product_name ?: "AI Analysis"
+            binding.tvProductName.text = response.displayName()
             binding.tvCategoryLabel.text = response.product_type?.uppercase(Locale.US) ?: "SCANNER"
             binding.ivProductImage.load(
                 response.scanImage?.url
@@ -998,9 +998,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             binding.btnAddFood.setOnClickListener {
                 val macros = response.macros
                 val aiItem = FoodItem(
-                    title = response.product_name
-                        ?: response.product_type?.takeUnless { it == "unknown" }
-                        ?: "AI Analysis",
+                    title = response.displayName(),
                     subtitle = "AI Scan",
                     imageUrl = null,
                     calories = "${(macros?.calories ?: 0.0).roundToInt()} kcal",
@@ -1046,7 +1044,59 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         val conflicts = response.diet_conflicts.orEmpty()
         val sources = response.sources.orEmpty()
         val alternatives = response.alternatives.orEmpty()
+        val ingredients = response.identifiedIngredients.orEmpty()
+        val compounds = response.compounds.toCompoundItems()
         val dailyImpactItems = extractDailyImpactItems(response.dailyImpact, isVipUser)
+
+        response.estimatedServing?.let { serving ->
+            val value = buildString {
+                serving.amount?.let { append(formatAmount(it)) }
+                serving.unit?.takeIf { it.isNotBlank() }?.let {
+                    if (isNotEmpty()) append(" ")
+                    append(it)
+                }
+                if (isBlank()) append("Not provided")
+            }
+            addAiSection("Serving", "Estimated portion size", "#F7F7FF") {
+                addAiMetricRow("Estimated serving", value)
+                serving.description?.takeIf { it.isNotBlank() }?.let { description ->
+                    addAiTextRow("Description", description)
+                }
+                response.estimationConfidence?.takeIf { it.isNotBlank() }?.let { confidence ->
+                    addAiMetricRow(
+                        "Confidence",
+                        confidence.replace('_', ' ').replaceFirstChar { char ->
+                            if (char.isLowerCase()) char.titlecase(Locale.US) else char.toString()
+                        }
+                    )
+                }
+            }
+        }
+
+        if (ingredients.isNotEmpty()) {
+            addAiSection("Ingredients", "Detected in the dish", "#EEF6FF") {
+                ingredients.forEach { ingredient ->
+                    val body = buildString {
+                        ingredient.estimatedAmount?.takeIf { it.isNotBlank() }?.let {
+                            append("Estimated amount: ")
+                            append(it)
+                        }
+                        ingredient.confidence?.takeIf { it.isNotBlank() }?.let {
+                            if (isNotEmpty()) append("\n")
+                            append("Confidence: ")
+                            append(it.replaceFirstChar { char ->
+                                if (char.isLowerCase()) char.titlecase(Locale.US) else char.toString()
+                            })
+                        }
+                        if (isEmpty()) append("Detected by AI from the image.")
+                    }
+                    addAiTextRow(
+                        title = ingredient.name?.takeIf { it.isNotBlank() } ?: "Ingredient",
+                        body = body
+                    )
+                }
+            }
+        }
 
         if (risks.isNotEmpty()) {
             addAiSection("Risks", "What may be a problem", "#FFF3E8") {
@@ -1056,6 +1106,14 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                         body = risk.reason ?: "Needs attention for this profile.",
                         severity = risk.severity
                     )
+                }
+            }
+        }
+
+        if (compounds.isNotEmpty()) {
+            addAiSection("Compounds", "Estimated composition of this food", "#F7FBEF") {
+                compounds.forEach { (label, value) ->
+                    addAiMetricRow(label, value)
                 }
             }
         }
@@ -1121,15 +1179,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                         }
                     )
                 }
-            }
-        }
-
-        if (response.userContextUsed?.hasUserInformation == true) {
-            addAiSection("Personalized", "AI used your saved profile and today's intake", "#F2F6FF") {
-                addAiMetricRow(
-                    title = "Profile context",
-                    value = "Diets, diseases, today's calories, and water intake were included in this scan."
-                )
             }
         }
 
@@ -1368,6 +1417,31 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         )
     }
 
+    private fun AnalysisResponse.displayName(): String {
+        return dishName
+            ?: product_name
+            ?: product_type?.takeUnless { it == "unknown" }
+            ?: "AI Analysis"
+    }
+
+    private fun com.example.scanfit.network.AnalysisCompounds?.toCompoundItems(): List<Pair<String, String>> {
+        if (this == null) return emptyList()
+
+        return listOfNotNull(
+            water?.let { "Water" to "${formatAmount(it)} ml" },
+            saturatedFat?.let { "Saturated fat" to "${formatAmount(it)} g" },
+            unsaturatedFat?.let { "Unsaturated fat" to "${formatAmount(it)} g" },
+            addedSugar?.let { "Added sugar" to "${formatAmount(it)} g" },
+            naturalSugar?.let { "Natural sugar" to "${formatAmount(it)} g" },
+            starch?.let { "Starch" to "${formatAmount(it)} g" },
+            potassium?.let { "Potassium" to "${formatAmount(it)} mg" },
+            calcium?.let { "Calcium" to "${formatAmount(it)} mg" },
+            iron?.let { "Iron" to "${formatAmount(it)} mg" },
+            magnesium?.let { "Magnesium" to "${formatAmount(it)} mg" },
+            caffeine?.let { "Caffeine" to "${formatAmount(it)} mg" }
+        )
+    }
+
     private fun formatDailyImpactFallback(item: AnalysisDailyImpactItem): String {
         val after = item.afterThisProduct?.let { formatAmount(it) }
         val unit = item.unit.orEmpty()
@@ -1427,7 +1501,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
             if (item.isFavorite) {
 
-                database.productDao().insertFavorite(item.toFavoriteProduct())
+                database.productDao().insertFavorite(item.asFavoriteProduct())
                 Toast.makeText(requireContext(), "Saved to favourites", Toast.LENGTH_SHORT).show()
 
             } else {
@@ -1436,6 +1510,61 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                 Toast.makeText(requireContext(), "Removed from favourites", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun FoodItem.asFavoriteProduct(): FavoriteProduct {
+        return FavoriteProduct(
+            id = title,
+            productName = title,
+            name = subtitle ?: "",
+            imageUrl = imageUrl,
+            calories = calories,
+            grade = grade,
+            ingredients = ingredients,
+            proteins = proteins,
+            fat = fat,
+            carbs = carbs,
+            description = description,
+            cholesterol = cholesterol,
+            sodium = sodium,
+            sugars = sugars,
+            fiber = fiber,
+            vitaminD = vitaminD,
+            vitaminB12 = vitaminB12,
+            vitaminC = vitaminC,
+            vitaminA = vitaminA,
+            vitaminB6 = vitaminB6,
+            vitaminB9 = vitaminB9,
+            vitaminE = vitaminE
+        )
+    }
+
+    private fun FoodItem.asRecentProduct(timestamp: Long = System.currentTimeMillis()): RecentProduct {
+        return RecentProduct(
+            id = title,
+            title = title,
+            subtitle = subtitle,
+            imageUrl = imageUrl,
+            calories = calories,
+            grade = grade,
+            timestamp = timestamp,
+            ingredients = ingredients,
+            proteins = proteins,
+            fat = fat,
+            carbs = carbs,
+            description = description,
+            cholesterol = cholesterol,
+            sodium = sodium,
+            sugars = sugars,
+            fiber = fiber,
+            vitaminD = vitaminD,
+            vitaminB12 = vitaminB12,
+            vitaminC = vitaminC,
+            vitaminA = vitaminA,
+            vitaminB6 = vitaminB6,
+            vitaminB9 = vitaminB9,
+            vitaminE = vitaminE
+        )
     }
 
     companion object {
