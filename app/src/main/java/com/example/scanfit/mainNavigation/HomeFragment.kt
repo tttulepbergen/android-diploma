@@ -508,17 +508,26 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
         val day = API_DATE_FORMAT.format(selectedDate.time)
         val maxGlasses = getWaterGoalGlassCount(trackerViewModel.waterGoalMl.value ?: 0)
-        val waterMl = newGlassCount.coerceIn(0, maxGlasses) * WATER_GLASS_ML
+        val currentGlassCount = (trackerViewModel.waterGlasses.value ?: 0).coerceIn(0, maxGlasses)
+        val targetGlassCount = newGlassCount.coerceIn(0, maxGlasses)
+        val deltaMl = (targetGlassCount - currentGlassCount) * WATER_GLASS_ML
+
+        if (deltaMl == 0) {
+            return
+        }
 
         lifecycleScope.launch {
             isWaterUpdating = true
             updateWaterEditState(selectedDate)
             try {
-                Log.d("USER_WATER", "PUT api/v1/user/user-water/update?day=$day water=$waterMl")
+                Log.d(
+                    "USER_WATER",
+                    "PUT api/v1/user/user-water/update?day=$day delta=$deltaMl targetGlasses=$targetGlassCount currentGlasses=$currentGlassCount"
+                )
                 val response = NetworkClient.userApiService.updateUserWater(
                     token,
                     day,
-                    UpdateUserWaterRequest(water = waterMl)
+                    UpdateUserWaterRequest(water = deltaMl)
                 )
 
                 if (response.success) {
@@ -817,26 +826,32 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             imageView.layoutParams = params
 
             imageView.scaleType = ImageView.ScaleType.FIT_CENTER
+            val canEditWater = isWaterEditable && !isWaterUpdating
 
             when {
                 i < safeCount -> {
                     imageView.setImageResource(R.drawable.ic_glass_full)
-                    if (isWaterEditable && !isWaterUpdating && i == safeCount - 1) {
+                    if (canEditWater) {
                         imageView.setOnClickListener {
-                            updateWaterForSelectedDate(safeCount - 1)
+                            updateWaterForSelectedDate(i)
                         }
                     }
                 }
                 i == safeCount -> {
                     imageView.setImageResource(R.drawable.ic_glass_add)
-                    if (isWaterEditable && !isWaterUpdating) {
+                    if (canEditWater) {
                         imageView.setOnClickListener {
-                            updateWaterForSelectedDate(safeCount + 1)
+                            updateWaterForSelectedDate(i + 1)
                         }
                     }
                 }
                 else -> {
                     imageView.setImageResource(R.drawable.ic_glass_empty)
+                    if (canEditWater) {
+                        imageView.setOnClickListener {
+                            updateWaterForSelectedDate(i + 1)
+                        }
+                    }
                 }
             }
             binding.waterStack.addView(imageView)
