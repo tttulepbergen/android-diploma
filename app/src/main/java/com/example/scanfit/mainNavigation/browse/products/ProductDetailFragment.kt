@@ -103,11 +103,13 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     }
 
     private fun configureProBanner() {
-        val isVip = sessionManager.isVip()
-        binding.cardProBanner.isVisible = true
-        binding.btnBuyPro.text = if (isVip) "View Pro" else "Buy Pro"
+        val isBasicUser = sessionManager.fetchUserRole() == "basic"
+        binding.cardProBanner.isVisible = isBasicUser
+        if (!isBasicUser) return
+
+        binding.btnBuyPro.text = "Buy Pro"
         binding.btnBuyPro.backgroundTintList = ColorStateList.valueOf(
-            Color.parseColor(if (isVip) "#0F172A" else "#17A34A")
+            Color.parseColor("#17A34A")
         )
     }
 

@@ -131,11 +131,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding = null
     }
     private fun configureProHomeBanner() {
-        val isVip = sessionManager.isVip()
-        binding.cardProHome.isVisible = true
-        binding.btnGetProHome.text = if (isVip) "View Pro" else "Get Pro"
+        val isBasicUser = sessionManager.fetchUserRole() == "basic"
+        binding.cardProHome.isVisible = isBasicUser
+        if (!isBasicUser) return
+
+        binding.btnGetProHome.text = "Get Pro"
         binding.btnGetProHome.backgroundTintList = ColorStateList.valueOf(
-            Color.parseColor(if (isVip) "#0F172A" else "#17A34A")
+            Color.parseColor("#17A34A")
         )
     }
 

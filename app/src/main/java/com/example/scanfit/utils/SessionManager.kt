@@ -48,16 +48,16 @@ class SessionManager(context: Context) {
 
     fun saveUserRole(role: String) {
         val editor = prefs.edit()
-        editor.putString(USER_ROLE, role)
+        editor.putString(USER_ROLE, role.trim().lowercase())
         editor.apply()
     }
 
     fun fetchUserRole(): String? {
-        return prefs.getString(USER_ROLE, "basic")
+        return prefs.getString(USER_ROLE, "basic")?.trim()?.lowercase()
     }
 
     fun isVip(): Boolean {
-        return fetchUserRole() == "vip"
+        return fetchUserRole() != "basic"
     }
 
     fun saveUserFirstDay(day: String) {
