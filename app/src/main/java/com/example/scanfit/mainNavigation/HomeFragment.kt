@@ -73,14 +73,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val scanner = GmsDocumentScanning.getClient(scannerOptions)
 
-    private val scannerLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val scanningResult = GmsDocumentScanningResult.fromActivityResultIntent(result.data)
-            scanningResult?.pages?.get(0)?.imageUri?.let { uri ->
-                processScannedImage(uri)
+    private val scannerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val scanningResult =
+                    GmsDocumentScanningResult.fromActivityResultIntent(result.data)
+                scanningResult?.pages?.get(0)?.imageUri?.let { uri ->
+                    processScannedImage(uri)
+                }
             }
         }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -112,21 +114,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.proSubscriptionFragment)
         }
         configureProHomeBanner()
-
         setupScannerTrigger()
 
-        binding.cardCalories.setOnClickListener {
-            showNutrientDetails()
-        }
-        binding.btnHistoryHome.setOnClickListener {
-            openConsumptionHistory()
-        }
-
-        binding.tvGreeting.setOnClickListener {
-            showDatePicker()
-        }
+        binding.cardCalories.setOnClickListener { showNutrientDetails() }
+        binding.btnHistoryHome.setOnClickListener { openConsumptionHistory() }
+        binding.tvGreeting.setOnClickListener { showDatePicker() }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) fetchUserAccountHeader()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     private fun configureProHomeBanner() {
         val isVip = sessionManager.isVip()
         binding.cardProHome.isVisible = true
@@ -136,28 +139,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         )
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (_binding != null) {
-            fetchUserAccountHeader()
-        }
-    }
-
     private fun fetchUserAccountHeader() {
         val token = sessionManager.fetchAuthToken()
         if (token.isNullOrBlank()) {
             binding.tvGreeting.text = "Hi, User"
             return
         }
-
         lifecycleScope.launch {
             try {
                 val response = NetworkClient.userApiService.getUserAccount(token)
-                if (response.success && response.data != null) {
-                    applyUserHeader(response.data)
-                } else {
-                    binding.tvGreeting.text = "Hi, User"
-                }
+                if (response.success && response.data != null) applyUserHeader(response.data)
+                else binding.tvGreeting.text = "Hi, User"
             } catch (e: Exception) {
                 Log.e("HOME_USER", "Failed to load user account", e)
                 binding.tvGreeting.text = "Hi, User"
@@ -193,11 +185,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             { _, year, month, dayOfMonth ->
                 val newDate = Calendar.getInstance()
                 newDate.set(year, month, dayOfMonth)
-                if (trackerViewModel.canSelectDate(newDate)) {
-                    trackerViewModel.setSelectedDate(newDate)
-                } else {
-                    showNoInformationMessage()
-                }
+                if (trackerViewModel.canSelectDate(newDate)) trackerViewModel.setSelectedDate(newDate)
+                else showNoInformationMessage()
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -226,13 +215,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 isSelected = isSelected,
                 isEnabled = isEnabled
             )
-
             dayView.setOnClickListener {
-                if (trackerViewModel.canSelectDate(dateForView)) {
-                    trackerViewModel.setSelectedDate(dateForView)
-                } else {
-                    showNoInformationMessage()
-                }
+                if (trackerViewModel.canSelectDate(dateForView)) trackerViewModel.setSelectedDate(dateForView)
+                else showNoInformationMessage()
             }
             binding.layoutCalendar.addView(dayView)
             calendar.add(Calendar.DAY_OF_YEAR, 1)
@@ -263,14 +248,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val tvName = TextView(requireContext()).apply {
             text = dayName
             textSize = 12f
-            gravity = Gravity.CENTER
-            setTextColor(
-                when {
-                    !isEnabled -> Color.parseColor("#BDBDBD")
-                    isSelected -> android.graphics.Color.BLACK
-                    else -> android.graphics.Color.GRAY
-                }
-            )
+            gravity  = Gravity.CENTER
+            setTextColor(when {
+                !isEnabled -> Color.parseColor("#BDBDBD")
+                isSelected -> android.graphics.Color.BLACK
+                else       -> android.graphics.Color.GRAY
+            })
         }
 
         val tvNum = TextView(requireContext()).apply {
@@ -278,13 +261,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             textSize = 14f
             setTypeface(null, android.graphics.Typeface.BOLD)
             gravity = Gravity.CENTER
-            setTextColor(
-                when {
-                    !isEnabled -> Color.parseColor("#BDBDBD")
-                    isSelected -> android.graphics.Color.BLACK
-                    else -> android.graphics.Color.GRAY
-                }
-            )
+            setTextColor(when {
+                !isEnabled -> Color.parseColor("#BDBDBD")
+                isSelected -> android.graphics.Color.BLACK
+                else -> android.graphics.Color.GRAY
+            })
         }
 
         layout.addView(tvName)
@@ -292,64 +273,37 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         return layout
     }
 
-    private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
-        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+    private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean =
+        cal1.get(Calendar.YEAR)        == cal2.get(Calendar.YEAR) &&
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
-    }
 
-    private fun updateWaterEditState(selectedDate: Calendar) {
-        val isBeforeRegistration = !trackerViewModel.canSelectDate(selectedDate)
-        isWaterEditable = !isBeforeRegistration && isSameDay(selectedDate, Calendar.getInstance())
-        updateWaterInteractivity()
-        binding.tvWaterHint.text = if (isBeforeRegistration) {
-            buildNoInformationText()
-        } else if (!isWaterEditable) {
-            "Past days are read-only. Water can only be changed for today"
-        } else if (isWaterUpdating) {
-            "Saving water..."
-        } else {
-            "Tap an empty cup to add water, or a filled cup to remove it"
-        }
-    }
-
-    private fun updateWaterInteractivity() {
-        binding.waterStack.alpha = when {
-            !isWaterEditable -> 0.6f
-            isWaterUpdating -> 0.45f
-            else -> 1f
-        }
-        binding.waterStack.isEnabled = isWaterEditable && !isWaterUpdating
-    }
 
     private fun setupTrackerObserver() {
         trackerViewModel.totalCalories.observe(viewLifecycleOwner) { total ->
             binding.tvCaloriesCount.text = "$total Cal"
             val left = (currentCalorieGoal - total).coerceAtLeast(0)
             binding.tvCaloriesLeft.text = "$left Cal left"
-            binding.calorieProgressBar.progress = calculateProgress(total.toFloat(), currentCalorieGoal.toFloat())
+            binding.calorieProgressBar.progress =
+                calculateProgress(total.toFloat(), currentCalorieGoal.toFloat())
         }
-
         trackerViewModel.totalProteins.observe(viewLifecycleOwner) { total ->
             binding.tvProteinsMain.text = "${total.toInt()} g"
             val left = currentProteinGoal.toInt() - total.toInt()
             binding.tvProteinsLeft.text = "${if (left > 0) left else 0} g left"
             binding.progressProteins.progress = calculateProgress(total.toFloat(), currentProteinGoal)
         }
-
         trackerViewModel.totalFat.observe(viewLifecycleOwner) { total ->
             binding.tvFatMain.text = "${total.toInt()} g"
             val left = currentFatGoal.toInt() - total.toInt()
             binding.tvFatLeft.text = "${if (left > 0) left else 0} g left"
             binding.progressFat.progress = calculateProgress(total.toFloat(), currentFatGoal)
         }
-
         trackerViewModel.totalCarbs.observe(viewLifecycleOwner) { total ->
             binding.tvCarbsMain.text = "${total.toInt()} g"
             val left = currentCarbGoal.toInt() - total.toInt()
             binding.tvCarbsLeft.text = "${if (left > 0) left else 0} g left"
             binding.progressCarbs.progress = calculateProgress(total.toFloat(), currentCarbGoal)
         }
-
         trackerViewModel.goalCalories.observe(viewLifecycleOwner) {
             currentCalorieGoal = it
             binding.tvCaloriesLeft.text =
@@ -357,92 +311,55 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             binding.calorieProgressBar.progress =
                 calculateProgress((trackerViewModel.totalCalories.value ?: 0).toFloat(), it.toFloat())
         }
-
         trackerViewModel.goalProteins.observe(viewLifecycleOwner) {
             currentProteinGoal = it
             val total = trackerViewModel.totalProteins.value ?: 0f
             binding.tvProteinsLeft.text = "${(it.toInt() - total.toInt()).coerceAtLeast(0)} g left"
             binding.progressProteins.progress = calculateProgress(total, it)
         }
-
         trackerViewModel.goalFat.observe(viewLifecycleOwner) {
             currentFatGoal = it
             val total = trackerViewModel.totalFat.value ?: 0f
             binding.tvFatLeft.text = "${(it.toInt() - total.toInt()).coerceAtLeast(0)} g left"
             binding.progressFat.progress = calculateProgress(total, it)
         }
-
         trackerViewModel.goalCarbs.observe(viewLifecycleOwner) {
             currentCarbGoal = it
             val total = trackerViewModel.totalCarbs.value ?: 0f
             binding.tvCarbsLeft.text = "${(it.toInt() - total.toInt()).coerceAtLeast(0)} g left"
             binding.progressCarbs.progress = calculateProgress(total, it)
         }
-
         trackerViewModel.waterGlasses.observe(viewLifecycleOwner) { count ->
-            renderWaterGlasses(
-                count = count,
-                goalMl = trackerViewModel.waterGoalMl.value ?: 0
-            )
+            renderWaterGlasses(count = count, goalMl = trackerViewModel.waterGoalMl.value ?: 0)
             binding.tvWaterCount.text = formatLiters(count * WATER_GLASS_ML)
         }
-
         trackerViewModel.waterGoalMl.observe(viewLifecycleOwner) { goalMl ->
             binding.tvWaterGoal.text = "Goal ${formatLiters(goalMl)}"
-            renderWaterGlasses(
-                count = trackerViewModel.waterGlasses.value ?: 0,
-                goalMl = goalMl
-            )
+            renderWaterGlasses(count = trackerViewModel.waterGlasses.value ?: 0, goalMl = goalMl)
         }
     }
 
-    private fun fetchCaloriesForDate(selectedDate: Calendar) {
-        if (!trackerViewModel.canSelectDate(selectedDate)) {
-            applyCaloriesData(null)
-            return
-        }
+    // ── Water: edit-state ─────────────────────────────────────────────────────
 
-        val token = sessionManager.fetchAuthToken() ?: return
-        val day = API_DATE_FORMAT.format(selectedDate.time)
-
-        lifecycleScope.launch {
-            try {
-                val response = if (isSameDay(selectedDate, Calendar.getInstance())) {
-                    sessionManager.refreshUserRole()
-                    NetworkClient.userApiService.getTodayUserCalories(token)
-                } else {
-                    sessionManager.refreshUserRole()
-                    NetworkClient.userApiService.getUserCaloriesByDay(token, day)
-                }
-
-                if (response.success) {
-                    applyCaloriesData(response.data)
-                } else {
-                    applyCaloriesData(null)
-                }
-            } catch (_: Exception) {
-                applyCaloriesData(null)
-            }
+    private fun updateWaterEditState(selectedDate: Calendar) {
+        val isBeforeRegistration = !trackerViewModel.canSelectDate(selectedDate)
+        isWaterEditable = !isBeforeRegistration && isSameDay(selectedDate, Calendar.getInstance())
+        updateWaterInteractivity()
+        binding.tvWaterHint.text = when {
+            isBeforeRegistration -> buildNoInformationText()
+            !isWaterEditable     -> "Past days are read-only. Water can only be changed for today"
+            isWaterUpdating      -> "Saving water..."
+            else                 -> "Tap an empty cup to add water, or a filled cup to remove it"
         }
     }
 
-    private fun applyCaloriesData(data: UserCaloriesData?) {
-        applyDailyGoals(data)
-        trackerViewModel.setNutritionTotals(
-            calories = data?.daily?.calories ?: 0,
-            proteins = (data?.daily?.proteins ?: 0).toFloat(),
-            fat = (data?.daily?.fat ?: 0).toFloat(),
-            carbs = (data?.daily?.carbs ?: 0).toFloat()
-        )
-    }
-
-    private fun applyDailyGoals(data: UserCaloriesData?) {
-        trackerViewModel.setNutritionGoals(
-            calories = data?.calories,
-            proteins = data?.proteins?.toFloat(),
-            fat = data?.fat?.toFloat(),
-            carbs = data?.carbs?.toFloat()
-        )
+    private fun updateWaterInteractivity() {
+        binding.waterStack.alpha = when {
+            !isWaterEditable -> 0.6f
+            isWaterUpdating  -> 0.45f
+            else             -> 1f
+        }
+        binding.waterStack.isEnabled = isWaterEditable && !isWaterUpdating
     }
 
     private fun fetchWaterForDate(selectedDate: Calendar) {
@@ -450,9 +367,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             applyWaterData(null)
             return
         }
-
         val token = sessionManager.fetchAuthToken() ?: return
-        val day = API_DATE_FORMAT.format(selectedDate.time)
+        val day   = API_DATE_FORMAT.format(selectedDate.time)
 
         lifecycleScope.launch {
             try {
@@ -464,10 +380,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     Log.d("USER_WATER", "GET api/v1/user/user-water?day=$day")
                     NetworkClient.userApiService.getUserWaterByDay(token, day)
                 }
-
-                if (response.success) {
-                    applyWaterData(response.data)
-                } else {
+                if (response.success) applyWaterData(response.data)
+                else {
                     Log.d("USER_WATER", "Fetch failed for $day: ${response.message}")
                     applyWaterData(null)
                 }
@@ -487,17 +401,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun updateWaterForSelectedDate(newGlassCount: Int) {
         if (!isWaterEditable) {
-            Toast.makeText(
-                requireContext(),
-                "Water can only be changed for today",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(requireContext(), "Water can only be changed for today", Toast.LENGTH_SHORT).show()
             return
         }
-
-        if (isWaterUpdating) {
-            return
-        }
+        if (isWaterUpdating) return
 
         val token = sessionManager.fetchAuthToken()
         if (token.isNullOrBlank()) {
@@ -508,13 +415,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
         val day = API_DATE_FORMAT.format(selectedDate.time)
         val maxGlasses = getWaterGoalGlassCount(trackerViewModel.waterGoalMl.value ?: 0)
-        val currentGlassCount = (trackerViewModel.waterGlasses.value ?: 0).coerceIn(0, maxGlasses)
-        val targetGlassCount = newGlassCount.coerceIn(0, maxGlasses)
-        val deltaMl = (targetGlassCount - currentGlassCount) * WATER_GLASS_ML
+        val previousCount = (trackerViewModel.waterGlasses.value ?: 0).coerceIn(0, maxGlasses)
+        val targetCount = newGlassCount.coerceIn(0, maxGlasses)
+        val deltaMl = (targetCount - previousCount) * WATER_GLASS_ML
 
-        if (deltaMl == 0) {
-            return
-        }
+        if (deltaMl == 0) return
+
+        trackerViewModel.setWaterGlasses(targetCount)
+        binding.tvWaterCount.text = formatLiters(targetCount * WATER_GLASS_ML)
 
         lifecycleScope.launch {
             isWaterUpdating = true
@@ -522,30 +430,24 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             try {
                 Log.d(
                     "USER_WATER",
-                    "PUT api/v1/user/user-water/update?day=$day delta=$deltaMl targetGlasses=$targetGlassCount currentGlasses=$currentGlassCount"
+                    "PUT api/v1/user/user-water/update?day=$day delta=$deltaMl " +
+                            "targetGlasses=$targetCount previousGlasses=$previousCount"
                 )
                 val response = NetworkClient.userApiService.updateUserWater(
-                    token,
-                    day,
-                    UpdateUserWaterRequest(water = deltaMl)
+                    token, day, UpdateUserWaterRequest(water = deltaMl)
                 )
-
                 if (response.success) {
                     applyWaterData(response.data)
                 } else {
-                    Toast.makeText(
-                        requireContext(),
-                        response.message ?: "Failed to update water",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    trackerViewModel.setWaterGlasses(previousCount)
+                    binding.tvWaterCount.text = formatLiters(previousCount * WATER_GLASS_ML)
+                    Toast.makeText(requireContext(), response.message ?: "Failed to update water", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e("USER_WATER", "Failed to update water for $day", e)
-                Toast.makeText(
-                    requireContext(),
-                    e.message ?: "Failed to update water",
-                    Toast.LENGTH_SHORT
-                ).show()
+                trackerViewModel.setWaterGlasses(previousCount)
+                binding.tvWaterCount.text = formatLiters(previousCount * WATER_GLASS_ML)
+                Toast.makeText(requireContext(), e.message ?: "Failed to update water", Toast.LENGTH_SHORT).show()
             } finally {
                 isWaterUpdating = false
                 updateWaterEditState(trackerViewModel.selectedDate.value ?: Calendar.getInstance())
@@ -553,43 +455,107 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
+    private fun renderWaterGlasses(count: Int, goalMl: Int) {
+        binding.waterStack.removeAllViews()
+
+        val maxGlasses = getWaterGoalGlassCount(goalMl)
+        val safeCount  = count.coerceIn(0, maxGlasses)
+
+        for (i in 0 until maxGlasses) {
+            val imageView = ImageView(requireContext()).apply {
+                layoutParams = LinearLayout.LayoutParams(0, dpToPx(75), 1f).apply {
+                    setMargins(dpToPx(2), 0, dpToPx(2), 0)
+                }
+                scaleType = ImageView.ScaleType.FIT_CENTER
+            }
+            when {
+                i < safeCount -> {
+                    imageView.setImageResource(R.drawable.ic_glass_full)
+                    imageView.setOnClickListener {
+                        if (isWaterEditable && !isWaterUpdating) updateWaterForSelectedDate(i)
+                    }
+                }
+                i == safeCount -> {
+                    imageView.setImageResource(R.drawable.ic_glass_add)
+                    imageView.setOnClickListener {
+                        if (isWaterEditable && !isWaterUpdating) updateWaterForSelectedDate(i + 1)
+                    }
+                }
+                else -> {
+                    imageView.setImageResource(R.drawable.ic_glass_empty)
+                    imageView.setOnClickListener {
+                        if (isWaterEditable && !isWaterUpdating) updateWaterForSelectedDate(i + 1)
+                    }
+                }
+            }
+
+            binding.waterStack.addView(imageView)
+        }
+    }
+    private fun fetchCaloriesForDate(selectedDate: Calendar) {
+        if (!trackerViewModel.canSelectDate(selectedDate)) {
+            applyCaloriesData(null)
+            return
+        }
+        val token = sessionManager.fetchAuthToken() ?: return
+        val day   = API_DATE_FORMAT.format(selectedDate.time)
+
+        lifecycleScope.launch {
+            try {
+                val response = if (isSameDay(selectedDate, Calendar.getInstance())) {
+                    sessionManager.refreshUserRole()
+                    NetworkClient.userApiService.getTodayUserCalories(token)
+                } else {
+                    sessionManager.refreshUserRole()
+                    NetworkClient.userApiService.getUserCaloriesByDay(token, day)
+                }
+                if (response.success) applyCaloriesData(response.data)
+                else applyCaloriesData(null)
+            } catch (_: Exception) {
+                applyCaloriesData(null)
+            }
+        }
+    }
+
+    private fun applyCaloriesData(data: UserCaloriesData?) {
+        applyDailyGoals(data)
+        trackerViewModel.setNutritionTotals(
+            calories = data?.daily?.calories ?: 0,
+            proteins = (data?.daily?.proteins ?: 0).toFloat(),
+            fat      = (data?.daily?.fat      ?: 0).toFloat(),
+            carbs    = (data?.daily?.carbs    ?: 0).toFloat()
+        )
+    }
+
+    private fun applyDailyGoals(data: UserCaloriesData?) {
+        trackerViewModel.setNutritionGoals(
+            calories = data?.calories,
+            proteins = data?.proteins?.toFloat(),
+            fat      = data?.fat?.toFloat(),
+            carbs    = data?.carbs?.toFloat()
+        )
+    }
+
     private fun showNutrientDetails() {
         val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
         if (!trackerViewModel.canSelectDate(selectedDate)) {
-            showNutrientDetailsSheet(
-                API_DATE_FORMAT.format(selectedDate.time),
-                null
-            )
+            showNutrientDetailsSheet(API_DATE_FORMAT.format(selectedDate.time), null)
             return
         }
-
         val token = sessionManager.fetchAuthToken()
         if (token.isNullOrBlank()) {
             Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
             return
         }
-
         val day = API_DATE_FORMAT.format(selectedDate.time)
-
         lifecycleScope.launch {
             try {
                 sessionManager.refreshUserRole()
                 val response = NetworkClient.userApiService.getUserCaloriesByDay(token, day)
-                if (response.success) {
-                    showNutrientDetailsSheet(day, response.data)
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        response.message ?: "Failed to load nutrients",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+                if (response.success) showNutrientDetailsSheet(day, response.data)
+                else Toast.makeText(requireContext(), response.message ?: "Failed to load nutrients", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Toast.makeText(
-                    requireContext(),
-                    e.message ?: "Failed to load nutrients",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), e.message ?: "Failed to load nutrients", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -597,10 +563,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun openConsumptionHistory() {
         val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
         val day = API_DATE_FORMAT.format(selectedDate.time)
-        findNavController().navigate(
-            R.id.consumptionHistoryFragment,
-            bundleOf("selected_date" to day)
-        )
+        findNavController().navigate(R.id.consumptionHistoryFragment, bundleOf("selected_date" to day))
     }
 
     private fun showNutrientDetailsSheet(day: String, data: UserCaloriesData?) {
@@ -613,8 +576,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 cornerRadii = floatArrayOf(
                     dpToPx(24).toFloat(), dpToPx(24).toFloat(),
                     dpToPx(24).toFloat(), dpToPx(24).toFloat(),
-                    0f, 0f,
-                    0f, 0f
+                    0f, 0f, 0f, 0f
                 )
                 setColor(Color.WHITE)
             }
@@ -626,7 +588,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(Color.parseColor("#1A1C1E"))
         })
-
         content.addView(TextView(requireContext()).apply {
             text = day
             textSize = 14f
@@ -655,9 +616,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         nutrients.forEachIndexed { index, item ->
             content.addView(createNutrientDetailRow(item))
-            if (index != nutrients.lastIndex) {
-                content.addView(createNutrientDivider())
-            }
+            if (index != nutrients.lastIndex) content.addView(createNutrientDivider())
         }
 
         content.addView(TextView(requireContext()).apply {
@@ -672,17 +631,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 cornerRadius = dpToPx(18).toFloat()
                 setColor(Color.parseColor("#111827"))
             }
-            val margin = dpToPx(18)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topMargin = margin
-            }
-            setOnClickListener {
-                dialog.dismiss()
-                openConsumptionHistory()
-            }
+            ).apply { topMargin = dpToPx(18) }
+            setOnClickListener { dialog.dismiss(); openConsumptionHistory() }
         })
 
         dialog.setContentView(content)
@@ -697,15 +650,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             setPadding(0, dpToPx(14), 0, dpToPx(14))
             alpha = if (isLocked) 0.72f else 1.0f
 
-            val labelView = TextView(context).apply {
+            addView(TextView(context).apply {
                 text = item.name
                 textSize = 16f
                 typeface = Typeface.DEFAULT_BOLD
                 setTextColor(Color.parseColor(if (isLocked) "#6B7280" else "#1A1C1E"))
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            }
-
-            val valueView = TextView(context).apply {
+            })
+            addView(TextView(context).apply {
                 text = if (isLocked) "ScanFit Pro" else formatNutrientValue(item)
                 textSize = if (isLocked) 13f else 15f
                 typeface = if (isLocked) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
@@ -718,21 +670,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         setColor(Color.parseColor("#E8F0FF"))
                     }
                 }
-            }
-
-            addView(labelView)
-            addView(valueView)
+            })
         }
     }
 
-    private fun createNutrientDivider(): View {
-        return View(requireContext()).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                dpToPx(1)
-            )
-            setBackgroundColor(Color.parseColor("#EDF2F7"))
-        }
+    private fun createNutrientDivider(): View = View(requireContext()).apply {
+        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1))
+        setBackgroundColor(Color.parseColor("#EDF2F7"))
     }
 
     private fun formatNutrientValue(item: NutrientDetail): String {
@@ -742,9 +686,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun restoreFirstAvailableDay() {
-        trackerViewModel.setFirstAvailableDate(
-            parseApiDate(sessionManager.fetchUserFirstDay())
-        )
+        trackerViewModel.setFirstAvailableDate(parseApiDate(sessionManager.fetchUserFirstDay()))
     }
 
     private fun fetchFirstAvailableDay() {
@@ -778,13 +720,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun Calendar.normalizedCopy(): Calendar {
-        return (clone() as Calendar).apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
+    private fun Calendar.normalizedCopy(): Calendar = (clone() as Calendar).apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
     }
 
     private fun buildNoInformationText(): String {
@@ -792,82 +732,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         return "No information. Tracking starts from ${API_DATE_FORMAT.format(firstDay.time)}"
     }
 
-    private fun showNoInformationMessage() {
+    private fun showNoInformationMessage() =
         Toast.makeText(requireContext(), buildNoInformationText(), Toast.LENGTH_SHORT).show()
-    }
-
-    private fun formatAmount(value: Double): String {
-        return if (value % 1.0 == 0.0) {
-            value.toInt().toString()
-        } else {
-            String.format(Locale.US, "%.2f", value).trimEnd('0').trimEnd('.')
-        }
-    }
-
-    private fun calculateProgress(value: Float, limit: Float): Int {
-        if (limit <= 0f) return 0
-        return ((value / limit) * 100).toInt().coerceIn(0, 100)
-    }
-
-
-
-    private fun renderWaterGlasses(count: Int, goalMl: Int) {
-        binding.waterStack.removeAllViews()
-        val glassHeight = 75
-        val maxGlasses = getWaterGoalGlassCount(goalMl)
-        val safeCount = count.coerceIn(0, maxGlasses)
-        for (i in 0 until maxGlasses) {
-            val imageView = ImageView(requireContext())
-
-            val params = LinearLayout.LayoutParams(0, dpToPx(glassHeight), 1f).apply {
-                setMargins(dpToPx(2), 0, dpToPx(2), 0)
-            }
-
-            imageView.layoutParams = params
-
-            imageView.scaleType = ImageView.ScaleType.FIT_CENTER
-            val canEditWater = isWaterEditable && !isWaterUpdating
-
-            when {
-                i < safeCount -> {
-                    imageView.setImageResource(R.drawable.ic_glass_full)
-                    if (canEditWater) {
-                        imageView.setOnClickListener {
-                            updateWaterForSelectedDate(i)
-                        }
-                    }
-                }
-                i == safeCount -> {
-                    imageView.setImageResource(R.drawable.ic_glass_add)
-                    if (canEditWater) {
-                        imageView.setOnClickListener {
-                            updateWaterForSelectedDate(i + 1)
-                        }
-                    }
-                }
-                else -> {
-                    imageView.setImageResource(R.drawable.ic_glass_empty)
-                    if (canEditWater) {
-                        imageView.setOnClickListener {
-                            updateWaterForSelectedDate(i + 1)
-                        }
-                    }
-                }
-            }
-            binding.waterStack.addView(imageView)
-        }
-    }
-
-    private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
-
-    private fun formatLiters(amountMl: Int): String {
-        return String.format(Locale.US, "%.2f L", amountMl / 1000f)
-    }
-
-    private fun getWaterGoalGlassCount(goalMl: Int): Int {
-        if (goalMl <= 0) return DEFAULT_WATER_GLASSES
-        return ceil(goalMl / WATER_GLASS_ML.toDouble()).toInt().coerceAtLeast(1)
-    }
 
     private fun setupScannerTrigger() { /* Логика вызова сканера */ }
 
@@ -887,37 +753,57 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun showAnalysisResult(result: AnalysisResponse?) {
-
         if (result == null) {
             Toast.makeText(requireContext(), "Analysis failed", Toast.LENGTH_SHORT).show()
             return
         }
-
-        val bundle = Bundle().apply {
-            putSerializable("ai_analysis", result)
-        }
-
         findNavController().navigate(
             R.id.productDetailFragment,
-            bundle
+            Bundle().apply { putSerializable("ai_analysis", result) }
         )
     }
 
     private fun uriToBitmap(uri: Uri): Bitmap {
         val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val source = ImageDecoder.createSource(requireContext().contentResolver, uri)
-            ImageDecoder.decodeBitmap(source) { decoder, _, _ -> decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE }
+            ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            }
         } else {
+            @Suppress("DEPRECATION")
             MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
         }
         val scale = 1024f / Math.max(bitmap.width, bitmap.height)
-        return if (scale < 1) Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt(), (bitmap.height * scale).toInt(), true) else bitmap
+        return if (scale < 1) Bitmap.createScaledBitmap(
+            bitmap,
+            (bitmap.width  * scale).toInt(),
+            (bitmap.height * scale).toInt(),
+            true
+        ) else bitmap
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    // ── Utilities ─────────────────────────────────────────────────────────────
+
+    private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
+
+    private fun formatLiters(amountMl: Int): String =
+        String.format(Locale.US, "%.2f L", amountMl / 1000f)
+
+    private fun getWaterGoalGlassCount(goalMl: Int): Int {
+        if (goalMl <= 0) return DEFAULT_WATER_GLASSES
+        return ceil(goalMl / WATER_GLASS_ML.toDouble()).toInt().coerceAtLeast(1)
     }
+
+    private fun calculateProgress(value: Float, limit: Float): Int {
+        if (limit <= 0f) return 0
+        return ((value / limit) * 100).toInt().coerceIn(0, 100)
+    }
+
+    private fun formatAmount(value: Double): String =
+        if (value % 1.0 == 0.0) value.toInt().toString()
+        else String.format(Locale.US, "%.2f", value).trimEnd('0').trimEnd('.')
+
+    // ── Companion / inner types ───────────────────────────────────────────────
 
     companion object {
         private val API_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
