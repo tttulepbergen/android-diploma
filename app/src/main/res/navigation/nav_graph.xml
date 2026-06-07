@@ -224,6 +224,16 @@
     <fragment
         android:id="@+id/consumptionHistoryFragment"
         android:name="com.example.scanfit.mainNavigation.ConsumptionHistoryFragment"
-        android:label="ConsumptionHistoryFragment" />
+        android:label="ConsumptionHistoryFragment" >
+        <action
+            android:id="@+id/action_consumptionHistoryFragment_to_exportReportFragment"
+            app:destination="@id/exportReportFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/exportReportFragment"
+        android:name="com.example.scanfit.mainNavigation.export.ExportReportFragment"
+        android:label="ExportReportFragment"
+        tools:layout="@layout/fragment_export_report" />
 
 </navigation>

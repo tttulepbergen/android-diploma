@@ -146,6 +146,13 @@ interface UserApiService {
         @Query("to") to: String
     ): ConsumptionHistoryResponse
 
+    @GET("api/v1/users/me/consumption/report/pdf")
+    suspend fun downloadConsumptionReportPdf(
+        @Header("Authorization") token: String,
+        @Query("from") from: String,
+        @Query("to") to: String
+    ): okhttp3.ResponseBody
+
     @PUT("api/v1/user/user-calories/update")
     suspend fun updateUserCalories(
         @Header("Authorization") token: String,

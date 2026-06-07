@@ -36,6 +36,9 @@ class ConsumptionHistoryFragment : Fragment(R.layout.fragment_consumption_histor
         sessionManager = SessionManager(requireContext())
 
         binding.btnBack.setOnClickListener { findNavController().navigateUp() }
+        binding.btnExportReport.setOnClickListener {
+            findNavController().navigate(R.id.action_consumptionHistoryFragment_to_exportReportFragment)
+        }
         loadHistory()
     }
 
