@@ -1,13 +1,24 @@
 package com.example.scanfit.utils
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.scanfit.R
 import com.example.scanfit.databinding.ActivityScanBinding
+import com.example.scanfit.network.NetworkClient
+import com.example.scanfit.network.RegisterDeviceTokenRequest
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ScanActivity : AppCompatActivity() {
 
@@ -43,6 +54,41 @@ class ScanActivity : AppCompatActivity() {
         }
 
         setupSystemBars()
+        requestNotificationPermission()
+    }
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) registerFcmToken()
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED
+            ) {
+                registerFcmToken()
+            } else {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            registerFcmToken()
+        }
+    }
+
+    private fun registerFcmToken() {
+        val authToken = SessionManager(this).fetchAuthToken() ?: return
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { fcmToken ->
+            lifecycleScope.launch(Dispatchers.IO) {
+                runCatching {
+                    NetworkClient.userApiService.registerDeviceToken(
+                        "Bearer $authToken",
+                        RegisterDeviceTokenRequest(token = fcmToken)
+                    )
+                }
+            }
+        }
     }
 
     private fun setupSystemBars() {

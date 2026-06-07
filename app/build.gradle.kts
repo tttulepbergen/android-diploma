@@ -78,6 +78,7 @@ dependencies {
 
     implementation("com.google.mlkit:text-recognition:16.0.0")
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
+    implementation("com.google.firebase:firebase-messaging-ktx:24.1.1")
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
     implementation("androidx.cardview:cardview:1.0.0")
     implementation(libs.mlkit.document.scanner)

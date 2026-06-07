@@ -1,6 +1,7 @@
 package com.example.scanfit.adapters
 
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,6 +65,29 @@ class FoodAdapter(
                 else -> {
                     binding.ivFoodIcon.setImageResource(R.drawable.ic_launcher_foreground)
                 }
+            }
+
+            val badge = binding.tvSourceBadge
+            when (item.source) {
+                "scan" -> {
+                    badge.visibility = View.VISIBLE
+                    badge.text = "AI Scan"
+                    badge.background = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadius = 20f
+                        setColor(Color.parseColor("#7C3AED"))
+                    }
+                }
+                "openfoodfacts" -> {
+                    badge.visibility = View.VISIBLE
+                    badge.text = "OpenFoodFacts"
+                    badge.background = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadius = 20f
+                        setColor(Color.parseColor("#16A34A"))
+                    }
+                }
+                else -> badge.visibility = View.GONE
             }
 
             binding.root.setOnClickListener { onItemClick(item) }

@@ -39,5 +39,7 @@ data class FavoriteProduct(
     val vitaminA: String? = "0 mcg",
     val vitaminB6: String? = "0 mg",
     val vitaminB9: String? = "0 mcg",
-    val vitaminE: String? = "0 mg"
+    val vitaminE: String? = "0 mg",
+    val backendId: Long = 0,
+    val source: String = "openfoodfacts"
 )

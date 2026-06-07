@@ -1,7 +1,12 @@
 package com.example.scanfit.network
 
 import com.example.scanfit.model.BaseResponse
+import com.example.scanfit.model.CreateHistoryRequest
+import com.example.scanfit.model.CreateLikeRequest
 import com.example.scanfit.model.DietTypeListResponse
+import com.example.scanfit.model.HistoryListResponse
+import com.example.scanfit.model.LikeListResponse
+import com.example.scanfit.model.LikeResponse
 import com.example.scanfit.model.DiseaseLevelListResponse
 import com.example.scanfit.model.DiseaseListResponse
 import com.example.scanfit.model.CreateProductScanRequest
@@ -32,6 +37,7 @@ import com.example.scanfit.model.UserWaterResponse
 import com.example.scanfit.model.WeightManagementResponse
 import okhttp3.MultipartBody
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
@@ -251,4 +257,38 @@ interface UserApiService {
         @Header("Authorization") token: String,
         @Body request: UpdateWeightManagementRequest
     ): UpdateDietTypeResponse
+
+    @POST("api/v1/user/device-token/register")
+    suspend fun registerDeviceToken(
+        @Header("Authorization") token: String,
+        @Body request: RegisterDeviceTokenRequest
+    ): BaseResponse
+
+    @POST("api/v1/user/like/create")
+    suspend fun createLike(
+        @Header("Authorization") token: String,
+        @Body request: CreateLikeRequest
+    ): LikeResponse
+
+    @DELETE("api/v1/user/like/delete/{id}")
+    suspend fun deleteLike(
+        @Header("Authorization") token: String,
+        @Path("id") id: Long
+    ): BaseResponse
+
+    @GET("api/v1/user/like/list/user")
+    suspend fun getUserLikes(
+        @Header("Authorization") token: String
+    ): LikeListResponse
+
+    @POST("api/v1/user/history/create")
+    suspend fun createHistory(
+        @Header("Authorization") token: String,
+        @Body request: CreateHistoryRequest
+    ): BaseResponse
+
+    @GET("api/v1/user/history/list/user")
+    suspend fun getUserHistory(
+        @Header("Authorization") token: String
+    ): HistoryListResponse
 }

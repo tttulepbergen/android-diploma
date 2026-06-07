@@ -30,6 +30,8 @@ import com.example.scanfit.data.FoodItem
 import com.example.scanfit.data.RecentProduct
 import com.example.scanfit.databinding.FragmentProductDetailBinding
 import com.example.scanfit.mainNavigation.TrackerViewModel
+import com.example.scanfit.model.CreateHistoryRequest
+import com.example.scanfit.model.CreateLikeRequest
 import com.example.scanfit.model.CreateProductScanRequest
 import com.example.scanfit.model.CreateUserDailyEatRequest
 import com.example.scanfit.model.UpdateUserCaloriesRequest
@@ -92,9 +94,10 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
         if (aiResponse != null) {
             setupAiUI(aiResponse)
+            saveToRecent(aiResponse.toFoodItem(), source = "scan")
         } else if (foodItem != null) {
             setupUI(foodItem)
-            saveToRecent(foodItem)
+            saveToRecent(foodItem, source = "openfoodfacts")
             loadSavedProductScan(foodItem.title)
         }
 
@@ -751,14 +754,26 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.nutrientsContainer.addView(divider)
     }
 
-    private fun saveToRecent(item: FoodItem) {
+    private fun saveToRecent(item: FoodItem, source: String = "openfoodfacts") {
         val recentProduct = item.asRecentProduct()
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 database.productDao().insertRecent(recentProduct)
             } catch (e: Exception) {
-                Log.e("ProductDetail", "Error saving to recent: ${e.message}")
+                Log.e("ProductDetail", "Error saving to recent (Room): ${e.message}")
+            }
+
+            val token = sessionManager.fetchAuthToken() ?: return@launch
+            runCatching {
+                val request = CreateHistoryRequest(
+                    productName = item.title,
+                    productData = gson.toJson(item),
+                    source = source
+                )
+                NetworkClient.userApiService.createHistory(token, request)
+            }.onFailure { e ->
+                Log.e("ProductDetail", "Error saving to backend history: ${e.message}")
             }
         }
     }
@@ -944,6 +959,20 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.btnAnalyzeAi.visibility = if (hasProductDetails) View.VISIBLE else View.GONE
         binding.btnAnalyzeAi.isEnabled = true
         binding.btnAnalyzeAi.text = "Analyze again"
+
+        if (!hasProductDetails) {
+            val aiItem = response.toFoodItem()
+            viewLifecycleOwner.lifecycleScope.launch {
+                val existing = database.productDao().getFavoriteById(aiItem.title)
+                aiItem.isFavorite = existing != null
+                updateFavoriteIcon(aiItem.isFavorite)
+            }
+            binding.ivFavorite.setOnClickListener {
+                aiItem.isFavorite = !aiItem.isFavorite
+                updateFavoriteIcon(aiItem.isFavorite)
+                handleFavoriteAction(aiItem, source = "scan")
+            }
+        }
 
         if (!hasProductDetails) {
             binding.tvProductName.text = response.displayName()
@@ -1504,23 +1533,47 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         val color = if (isFavorite) "#FF4B4B" else "#BDBDBD"
         binding.ivFavorite.setColorFilter(Color.parseColor(color))
     }
-    private fun handleFavoriteAction(item: FoodItem) {
+    private fun handleFavoriteAction(item: FoodItem, source: String = "openfoodfacts") {
         viewLifecycleOwner.lifecycleScope.launch {
-
             if (item.isFavorite) {
-
-                database.productDao().insertFavorite(item.asFavoriteProduct())
+                var backendId = 0L
+                val token = sessionManager.fetchAuthToken()
+                if (!token.isNullOrBlank()) {
+                    runCatching {
+                        val request = CreateLikeRequest(
+                            productName = item.title,
+                            productData = gson.toJson(item),
+                            source = source
+                        )
+                        NetworkClient.userApiService.createLike(token, request)
+                    }.onSuccess { response ->
+                        backendId = response.data?.id ?: 0L
+                    }.onFailure { e ->
+                        Log.e("ProductDetail", "Error saving like to backend: ${e.message}")
+                    }
+                }
+                database.productDao().insertFavorite(item.asFavoriteProduct(backendId))
                 Toast.makeText(requireContext(), "Saved to favourites", Toast.LENGTH_SHORT).show()
-
             } else {
-
+                val token = sessionManager.fetchAuthToken()
+                if (!token.isNullOrBlank()) {
+                    val existing = database.productDao().getFavoriteById(item.title)
+                    val likeId = existing?.backendId ?: 0L
+                    if (likeId > 0) {
+                        runCatching {
+                            NetworkClient.userApiService.deleteLike(token, likeId)
+                        }.onFailure { e ->
+                            Log.e("ProductDetail", "Error deleting like from backend: ${e.message}")
+                        }
+                    }
+                }
                 database.productDao().deleteFavoriteById(item.title)
                 Toast.makeText(requireContext(), "Removed from favourites", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun FoodItem.asFavoriteProduct(): FavoriteProduct {
+    private fun FoodItem.asFavoriteProduct(backendId: Long = 0): FavoriteProduct {
         return FavoriteProduct(
             id = title,
             productName = title,
@@ -1543,7 +1596,9 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             vitaminA = vitaminA,
             vitaminB6 = vitaminB6,
             vitaminB9 = vitaminB9,
-            vitaminE = vitaminE
+            vitaminE = vitaminE,
+            backendId = backendId,
+            source = source
         )
     }
 
@@ -1571,7 +1626,36 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             vitaminA = vitaminA,
             vitaminB6 = vitaminB6,
             vitaminB9 = vitaminB9,
-            vitaminE = vitaminE
+            vitaminE = vitaminE,
+            source = source
+        )
+    }
+
+    private fun AnalysisResponse.toFoodItem(): FoodItem {
+        val m = macros
+        val imageUrl = scanImage?.url ?: scanImageUrl ?: imagePath ?: productPhoto?.imageUrl
+        val score = health_score ?: 0
+        val grade = when {
+            score >= 80 -> "A"
+            score >= 60 -> "B"
+            score >= 40 -> "C"
+            else -> "E"
+        }
+        return FoodItem(
+            title = displayName(),
+            subtitle = product_type?.uppercase(Locale.US) ?: "AI SCAN",
+            imageUrl = imageUrl,
+            calories = "${(m?.calories ?: 0.0).roundToInt()} kcal",
+            grade = grade,
+            proteins = "${m?.proteins ?: 0.0}g",
+            fat = "${(m?.fats ?: m?.fat ?: 0.0)}g",
+            carbs = "${m?.carbs ?: 0.0}g",
+            sugars = "${m?.sugar ?: 0.0}g",
+            fiber = "${m?.fiber ?: 0.0}g",
+            sodium = "${m?.sodium ?: 0.0}mg",
+            cholesterol = "${m?.cholesterol ?: 0.0}mg",
+            ingredients = verdict ?: "",
+            source = "scan"
         )
     }
 

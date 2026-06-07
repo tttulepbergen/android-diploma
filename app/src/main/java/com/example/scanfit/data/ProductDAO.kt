@@ -41,6 +41,9 @@ interface ProductDao {
     @Query("SELECT * FROM recent_products ORDER BY timestamp DESC LIMIT 20")
     fun getAllRecent(): Flow<List<RecentProduct>>
 
+    @Query("SELECT * FROM recent_products ORDER BY timestamp DESC LIMIT 20")
+    suspend fun getAllRecentOnce(): List<RecentProduct>
+
     @Query("DELETE FROM recent_products")
     suspend fun clearRecent()
 }

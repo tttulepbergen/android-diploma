@@ -1,6 +1,6 @@
 package com.example.scanfit.data
 
-fun FoodItem.toFavoriteProduct(): FavoriteProduct {
+fun FoodItem.toFavoriteProduct(backendId: Long = 0): FavoriteProduct {
     return FavoriteProduct(
         id = title,
         productName = title,
@@ -23,7 +23,9 @@ fun FoodItem.toFavoriteProduct(): FavoriteProduct {
         vitaminA = vitaminA,
         vitaminB6 = vitaminB6,
         vitaminB9 = vitaminB9,
-        vitaminE = vitaminE
+        vitaminE = vitaminE,
+        backendId = backendId,
+        source = source
     )
 }
 
@@ -51,7 +53,8 @@ fun FoodItem.toRecentProduct(timestamp: Long = System.currentTimeMillis()): Rece
         vitaminA = vitaminA,
         vitaminB6 = vitaminB6,
         vitaminB9 = vitaminB9,
-        vitaminE = vitaminE
+        vitaminE = vitaminE,
+        source = source
     )
 }
 
@@ -78,7 +81,8 @@ fun FavoriteProduct.toFoodItem(): FoodItem {
         vitaminB6 = vitaminB6,
         vitaminB9 = vitaminB9,
         vitaminE = vitaminE,
-        ingredients = ingredients
+        ingredients = ingredients,
+        source = source
     )
 }
 
@@ -105,6 +109,7 @@ fun RecentProduct.toFoodItem(isFavorite: Boolean): FoodItem {
         vitaminB6 = vitaminB6,
         vitaminB9 = vitaminB9,
         vitaminE = vitaminE,
-        ingredients = ingredients
+        ingredients = ingredients,
+        source = source
     )
 }

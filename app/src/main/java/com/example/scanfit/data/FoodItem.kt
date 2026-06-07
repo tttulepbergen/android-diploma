@@ -58,5 +58,6 @@ data class FoodItem(
     val vitaminB9: String? = "0 mcg",
     val vitaminE: String? = "0 mg",
     @SerializedName("ingredients_text")
-    val ingredients: String?
+    val ingredients: String?,
+    val source: String = "openfoodfacts"
     ) : Serializable

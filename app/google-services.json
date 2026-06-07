@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "212858842594",
-    "project_id": "scanfit-ec1f2",
-    "storage_bucket": "scanfit-ec1f2.firebasestorage.app"
+    "project_number": "335869762967",
+    "project_id": "scanfit-89993",
+    "storage_bucket": "scanfit-89993.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:212858842594:android:25549e8d1f8999acee9dbb",
+        "mobilesdk_app_id": "1:335869762967:android:f9a298a2622ecad83338d2",
         "android_client_info": {
           "package_name": "com.example.scanfit"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDNNG_KhJaC8C8dlc-V7M6Yv6OGI06f15I"
+          "current_key": "AIzaSyCSltIyyRvEUo-ArGlcEEhDNFpigOG-dm8"
         }
       ],
       "services": {
