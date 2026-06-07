@@ -216,6 +216,14 @@ class ScanFragment : Fragment() {
             .setNegativeButton("Analyze compound") { _, _ ->
                 analyzeImageWithAi(file, ScanMode.COMPOUND)
             }
+            .setNeutralButton("Compare") { _, _ ->
+                runCatching {
+                    findNavController().navigate(
+                        R.id.action_nav_scan_to_compareProductsFragment,
+                        androidx.core.os.bundleOf("captured_image_path" to file.absolutePath)
+                    )
+                }
+            }
             .setOnCancelListener {
                 file.delete()
             }

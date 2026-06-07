@@ -64,6 +64,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private var hasProductDetails = false
     private var currentProductScanId: Int? = null
     private var currentAiResponse: AnalysisResponse? = null
+    private var currentFoodItem: FoodItem? = null
     private val isVipUser: Boolean
         get() = sessionManager.isVip()
 
@@ -87,6 +88,8 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             arguments?.getSerializable("foodItem") as? FoodItem
         }
 
+        currentFoodItem = foodItem
+
         if (aiResponse != null) {
             setupAiUI(aiResponse)
         } else if (foodItem != null) {
@@ -98,6 +101,9 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.btnBack.setOnClickListener { findNavController().navigateUp() }
         binding.btnBuyPro.setOnClickListener {
             findNavController().navigate(R.id.action_productDetailFragment_to_proSubscriptionFragment)
+        }
+        binding.btnCompare.setOnClickListener {
+            findNavController().navigate(R.id.action_productDetailFragment_to_compareProductsFragment)
         }
         configureProBanner()
     }

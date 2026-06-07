@@ -54,6 +54,19 @@ interface FoodApiService {
     suspend fun analyzeIngredients(
         @retrofit2.http.Body data: Map<String, @JvmSuppressWildcards Any>
     ): AnalysisResponse
+
+    @POST("compare-products")
+    suspend fun compareProducts(
+        @retrofit2.http.Body data: Map<String, @JvmSuppressWildcards Any>
+    ): CompareProductsResponse
+
+    @Multipart
+    @POST("compare-products-images")
+    suspend fun compareProductsImages(
+        @Part imageA: MultipartBody.Part,
+        @Part imageB: MultipartBody.Part,
+        @Part("user_information") userInformation: RequestBody? = null
+    ): CompareProductsResponse
 }
 
 data class FoodResponse(
@@ -242,6 +255,41 @@ data class AnalysisUserContextUsed(
     val hasUserInformation: Boolean? = null,
     @SerializedName("has_legacy_health_info")
     val hasLegacyHealthInfo: Boolean? = null
+) : java.io.Serializable
+
+data class CompareProductsResponse(
+    val winner: String? = null,
+    @SerializedName("winner_name")
+    val winnerName: String? = null,
+    @SerializedName("name_a")
+    val nameA: String? = null,
+    @SerializedName("name_b")
+    val nameB: String? = null,
+    @SerializedName("health_score_a")
+    val healthScoreA: Int? = null,
+    @SerializedName("health_score_b")
+    val healthScoreB: Int? = null,
+    @SerializedName("verdict_a")
+    val verdictA: String? = null,
+    @SerializedName("verdict_b")
+    val verdictB: String? = null,
+    val recommendation: String? = null,
+    @SerializedName("nutrient_comparison")
+    val nutrientComparison: List<NutrientComparison>? = null,
+    @SerializedName("risks_a")
+    val risksA: List<AnalysisRisk>? = null,
+    @SerializedName("risks_b")
+    val risksB: List<AnalysisRisk>? = null
+) : java.io.Serializable
+
+data class NutrientComparison(
+    val nutrient: String? = null,
+    @SerializedName("value_a")
+    val valueA: String? = null,
+    @SerializedName("value_b")
+    val valueB: String? = null,
+    val better: String? = null,
+    val note: String? = null
 ) : java.io.Serializable
 
 class AnalysisRiskAdapter : JsonDeserializer<AnalysisRisk> {

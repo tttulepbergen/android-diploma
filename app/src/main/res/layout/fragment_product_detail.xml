@@ -569,6 +569,21 @@
             android:textStyle="bold"
             app:cornerRadius="32dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_compare"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="#F3F4F6"
+            android:text="Compare with another product"
+            android:textAllCaps="false"
+            android:textColor="#374151"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="24dp"
+            app:strokeColor="#E5E7EB"
+            app:strokeWidth="1dp" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

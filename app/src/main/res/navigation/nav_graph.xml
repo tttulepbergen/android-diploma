@@ -131,6 +131,9 @@
         <action
             android:id="@+id/action_nav_scan_to_productDetailFragment"
             app:destination="@id/productDetailFragment" />
+        <action
+            android:id="@+id/action_nav_scan_to_compareProductsFragment"
+            app:destination="@id/compareProductsFragment" />
     </fragment>
 
     <fragment
@@ -183,7 +186,16 @@
         <action
             android:id="@+id/action_productDetailFragment_to_proSubscriptionFragment"
             app:destination="@id/proSubscriptionFragment" />
+        <action
+            android:id="@+id/action_productDetailFragment_to_compareProductsFragment"
+            app:destination="@id/compareProductsFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/compareProductsFragment"
+        android:name="com.example.scanfit.mainNavigation.compare.CompareProductsFragment"
+        android:label="CompareProductsFragment"
+        tools:layout="@layout/fragment_compare_products" />
 
     <fragment
         android:id="@+id/proSubscriptionFragment"
