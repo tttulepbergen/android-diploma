@@ -14,10 +14,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.scanfit.R
+import com.example.scanfit.data.AppDatabase
+import com.example.scanfit.data.FoodItem
+import com.example.scanfit.data.toFoodItem
 import com.example.scanfit.databinding.FragmentConsumptionHistoryBinding
 import com.example.scanfit.model.ConsumptionHistoryItem
 import com.example.scanfit.network.NetworkClient
 import com.example.scanfit.utils.SessionManager
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -29,6 +33,7 @@ class ConsumptionHistoryFragment : Fragment(R.layout.fragment_consumption_histor
     private var _binding: FragmentConsumptionHistoryBinding? = null
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
+    private val gson = GsonBuilder().serializeNulls().create()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -40,6 +45,7 @@ class ConsumptionHistoryFragment : Fragment(R.layout.fragment_consumption_histor
             findNavController().navigate(R.id.action_consumptionHistoryFragment_to_exportReportFragment)
         }
         loadHistory()
+        loadProducts()
     }
 
     private fun loadHistory() {
@@ -224,6 +230,118 @@ class ConsumptionHistoryFragment : Fragment(R.layout.fragment_consumption_histor
                         cornerRadius = dpToPx(50).toFloat()
                         setColor(Color.parseColor("#E8F0FF"))
                     }
+                }
+            })
+        }
+    }
+
+    private fun loadProducts() {
+        val token = sessionManager.fetchAuthToken()
+        viewLifecycleOwner.lifecycleScope.launch {
+            val items = resolveProductItems(token)
+            renderProducts(items)
+        }
+    }
+
+    private suspend fun resolveProductItems(token: String?): List<FoodItem> {
+        if (!token.isNullOrBlank()) {
+            runCatching {
+                val response = NetworkClient.userApiService.getUserHistory(token)
+                val parsed = response.data.orEmpty().mapNotNull { historyItem ->
+                    if (historyItem.productData.isBlank()) return@mapNotNull null
+                    runCatching {
+                        val food = gson.fromJson(historyItem.productData, FoodItem::class.java)
+                        food?.copy(source = historyItem.source.ifBlank { food.source })
+                    }.getOrNull()
+                }.distinctBy { it.title }
+                if (parsed.isNotEmpty()) return parsed
+            }
+        }
+        // Fall back to Room DB (same source as Recent screen)
+        val db = AppDatabase.getDatabase(requireContext())
+        val favIds = db.productDao().getAllFavoritesOnce().map { it.id }.toSet()
+        return db.productDao().getAllRecentOnce().map { it.toFoodItem(isFavorite = favIds.contains(it.title)) }
+    }
+
+    private fun renderProducts(items: List<FoodItem>) {
+        binding.productsListContainer.removeAllViews()
+        if (items.isEmpty()) {
+            binding.tvEmptyProducts.visibility = View.VISIBLE
+            return
+        }
+        binding.tvEmptyProducts.visibility = View.GONE
+        items.forEach { foodItem ->
+            binding.productsListContainer.addView(createProductCard(foodItem, foodItem.source))
+        }
+    }
+
+    private fun createProductCard(item: FoodItem, source: String): View {
+        val calories = item.calories?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()?.toInt() ?: 0
+        val proteins = item.proteins?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()?.toInt() ?: 0
+        val fat = item.fat?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()?.toInt() ?: 0
+        val carbs = item.carbs?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()?.toInt() ?: 0
+
+        val sourceColor = if (source == "scan") "#7C3AED" else "#16A34A"
+        val sourceLabel = if (source == "scan") "AI Scan" else "OpenFoodFacts"
+
+        return LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dpToPx(16).toFloat()
+                setColor(Color.WHITE)
+                setStroke(dpToPx(1), Color.parseColor("#E5E7EB"))
+            }
+            setPadding(dpToPx(16), dpToPx(14), dpToPx(16), dpToPx(14))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = dpToPx(8) }
+
+            // Name row + source badge
+            addView(LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+
+                addView(TextView(requireContext()).apply {
+                    text = item.title ?: "Unknown"
+                    setTextColor(Color.parseColor("#111827"))
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                    typeface = Typeface.DEFAULT_BOLD
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                })
+
+                addView(TextView(requireContext()).apply {
+                    text = sourceLabel
+                    setTextColor(Color.WHITE)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+                    typeface = Typeface.DEFAULT_BOLD
+                    setPadding(dpToPx(8), dpToPx(3), dpToPx(8), dpToPx(3))
+                    background = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadius = dpToPx(20).toFloat()
+                        setColor(Color.parseColor(sourceColor))
+                    }
+                })
+            })
+
+            // Metrics row
+            addView(LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setPadding(0, dpToPx(10), 0, 0)
+
+                listOf(
+                    "$calories kcal" to "#F97316",
+                    "${proteins}g prot" to "#2F6BFF",
+                    "${fat}g fat" to "#F59E0B",
+                    "${carbs}g carbs" to "#16A34A"
+                ).forEach { (label, color) ->
+                    addView(TextView(requireContext()).apply {
+                        text = label
+                        setTextColor(Color.parseColor(color))
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                        layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    })
                 }
             })
         }

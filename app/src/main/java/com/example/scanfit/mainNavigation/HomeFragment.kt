@@ -118,6 +118,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         binding.cardCalories.setOnClickListener { showNutrientDetails() }
         binding.btnHistoryHome.setOnClickListener { openConsumptionHistory() }
+        binding.btnAddManual.setOnClickListener {
+            findNavController().navigate(R.id.manualFoodEntryFragment)
+        }
         binding.tvGreeting.setOnClickListener { showDatePicker() }
     }
 
