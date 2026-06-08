@@ -1,9 +1,11 @@
 package com.example.scanfit.mainNavigation.browse.products
 
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -41,6 +43,7 @@ import com.example.scanfit.network.AnalysisDailyImpact
 import com.example.scanfit.network.AnalysisDailyImpactItem
 import com.example.scanfit.network.AnalysisResponse
 import com.example.scanfit.network.AnalysisRisk
+import com.example.scanfit.network.KaspiProductItem
 import com.example.scanfit.network.NetworkClient
 import com.example.scanfit.utils.SessionManager
 import kotlinx.coroutines.launch
@@ -87,6 +90,8 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private var currentProductScanId: Int? = null
     private var currentAiResponse: AnalysisResponse? = null
     private var currentFoodItem: FoodItem? = null
+    private var kaspiSectionView: LinearLayout? = null
+    private var kaspiContentView: LinearLayout? = null
     private val isVipUser: Boolean
         get() = sessionManager.isVip()
 
@@ -758,6 +763,13 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.tvAiVerdictDescription.text = response.verdict ?: "No description"
         renderAiSections(response)
 
+        val kaspiQuery = response.alternatives.orEmpty()
+            .mapNotNull { it.name?.trim() }.filter { it.isNotBlank() }.take(5)
+            .joinToString(",")
+        if (kaspiQuery.isNotBlank()) {
+            loadKaspiProducts(kaspiQuery)
+        }
+
         if (!hasProductDetails) response.macros?.let { m ->
             val cal  = m.calories ?: 0.0
             val prot = m.proteins ?: 0.0
@@ -799,6 +811,8 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
 
     // ─── AI sections rendering ────────────────────────────────────────────────
     private fun renderAiSections(response: AnalysisResponse) {
+        kaspiSectionView = null
+        kaspiContentView = null
         binding.aiSectionsContainer.removeAllViews()
 
         val risks            = response.risks.orEmpty()
@@ -879,13 +893,16 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
                 alternatives.take(4).forEach { alt ->
                     addAiTextRow(
                         title = alt.name?.takeIf { it.isNotBlank() } ?: "Alternative",
-                        body  = buildString {
-                            append(alt.reason ?: "This option may be a better fit for your profile.")
-                            alt.kaspiLink?.takeIf { it.isNotBlank() }?.let { append("\n$it") }
-                        }
+                        body  = alt.reason ?: "This option may be a better fit for your profile."
                     )
                 }
             }
+        }
+
+        val kaspiAlternativeNames = response.alternatives.orEmpty()
+            .mapNotNull { it.name?.trim() }.filter { it.isNotBlank() }.take(5)
+        if (kaspiAlternativeNames.isNotEmpty()) {
+            kaspiContentView = buildKaspiLoadingSection()
         }
 
         if (dailyImpactItems.isNotEmpty()) {
@@ -1079,6 +1096,154 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1))
             setBackgroundColor(Color.parseColor("#E5E7EB"))
         })
+    }
+
+    // ─── Kaspi products ───────────────────────────────────────────────────────
+    private fun buildKaspiLoadingSection(): LinearLayout {
+        val ctx = requireContext()
+        val contentLayout = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
+        contentLayout.addView(TextView(ctx).apply {
+            text = "Searching Kaspi.kz…"
+            setTextColor(Color.parseColor(COLOR_TEXT_SECONDARY))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setPadding(0, dpToPx(8), 0, dpToPx(8))
+        })
+        val section = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dpToPx(14), dpToPx(12), dpToPx(14), dpToPx(12))
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dpToPx(RADIUS_CARD).toFloat()
+                setColor(Color.parseColor("#FFF8E7"))
+                setStroke(dpToPx(1), Color.parseColor("#E5E7EB"))
+            }
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 0, 0, dpToPx(10)) }
+        }
+        section.addView(TextView(ctx).apply {
+            text = "Available on Kaspi"
+            setTextColor(Color.parseColor(COLOR_TEXT_PRIMARY))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            typeface = Typeface.DEFAULT_BOLD
+        })
+        section.addView(TextView(ctx).apply {
+            text = "Tap a product to open in Kaspi"
+            setTextColor(Color.parseColor(COLOR_TEXT_SECONDARY))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setPadding(0, dpToPx(2), 0, dpToPx(8))
+        })
+        section.addView(contentLayout)
+        kaspiSectionView = section
+        binding.aiSectionsContainer.addView(section)
+        binding.aiSectionsContainer.visibility = View.VISIBLE
+        return contentLayout
+    }
+
+    private fun loadKaspiProducts(query: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val token = sessionManager.fetchAuthToken() ?: return@launch
+                val result = NetworkClient.userApiService.searchKaspiProducts(token, query)
+                val products = result.products.orEmpty()
+                val content = kaspiContentView ?: return@launch
+                content.removeAllViews()
+                if (products.isNotEmpty()) {
+                    products.take(20).forEach { product -> content.addKaspiProductCard(product) }
+                } else {
+                    kaspiSectionView?.visibility = View.GONE
+                }
+            } catch (e: Exception) {
+                Log.w("KASPI", "Kaspi search failed for '$query': ${e.message}")
+                kaspiSectionView?.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun showKaspiSection(products: List<KaspiProductItem>) {
+        addAiSection("Available on Kaspi", "Tap a product to open in Kaspi", "#FFF8E7") {
+            products.take(20).forEach { product ->
+                addKaspiProductCard(product)
+            }
+        }
+    }
+
+    private fun LinearLayout.addKaspiProductCard(product: KaspiProductItem) {
+        val productUrl = product.kaspiUrl ?: return
+
+        val card = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(10), 0, dpToPx(10))
+            isClickable = true
+            isFocusable = true
+            setOnClickListener {
+                runCatching {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(productUrl)))
+                }
+            }
+        }
+
+        val imageView = ImageView(requireContext()).apply {
+            val size = dpToPx(72)
+            layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                marginEnd = dpToPx(12)
+            }
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dpToPx(8).toFloat()
+                setColor(Color.parseColor("#F5F5F5"))
+            }
+            clipToOutline = true
+            load(product.previewImage) {
+                crossfade(true)
+                placeholder(R.drawable.ic_launcher_foreground)
+                error(R.drawable.ic_launcher_foreground)
+            }
+        }
+        card.addView(imageView)
+
+        val textCol = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        textCol.addView(TextView(requireContext()).apply {
+            text = product.title ?: "Product"
+            setTextColor(Color.parseColor(COLOR_TEXT_PRIMARY))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            typeface = Typeface.DEFAULT_BOLD
+            maxLines = 2
+            ellipsize = TextUtils.TruncateAt.END
+        })
+        textCol.addView(TextView(requireContext()).apply {
+            text = buildString {
+                product.priceFormatted?.let { append(it) }
+                product.rating?.let {
+                    if (isNotEmpty()) append("  ")
+                    append("⭐ $it")
+                    product.reviewsQuantity?.let { qty -> append(" ($qty)") }
+                }
+                product.discount?.takeIf { it > 0 }?.let {
+                    if (isNotEmpty()) append("  ")
+                    append("-$it%")
+                }
+            }
+            setTextColor(Color.parseColor("#4B5563"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setPadding(0, dpToPx(3), 0, 0)
+        })
+        textCol.addView(TextView(requireContext()).apply {
+            text = "Открыть в Kaspi →"
+            setTextColor(Color.parseColor(COLOR_BLUE_ACCENT))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(0, dpToPx(4), 0, 0)
+        })
+        card.addView(textCol)
+        addView(card)
+        addAiDivider()
     }
 
     // ─── Daily impact ─────────────────────────────────────────────────────────

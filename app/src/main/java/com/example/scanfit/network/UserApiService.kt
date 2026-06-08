@@ -291,4 +291,10 @@ interface UserApiService {
     suspend fun getUserHistory(
         @Header("Authorization") token: String
     ): HistoryListResponse
+
+    @GET("api/v1/product/kaspi/search")
+    suspend fun searchKaspiProducts(
+        @Header("Authorization") token: String,
+        @Query("q") query: String
+    ): KaspiSearchResponse
 }

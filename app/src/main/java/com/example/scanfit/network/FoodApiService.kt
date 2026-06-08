@@ -67,10 +67,15 @@ interface FoodApiService {
         @Part imageB: MultipartBody.Part,
         @Part("user_information") userInformation: RequestBody? = null
     ): CompareProductsResponse
+
 }
 
 data class FoodResponse(
     val products: List<Product>
+)
+
+data class KaspiSearchResponse(
+    val products: List<KaspiProductItem>? = emptyList()
 )
 
 data class AnalysisResponse(
@@ -105,7 +110,31 @@ data class AnalysisResponse(
     @SerializedName("daily_impact")
     val dailyImpact: AnalysisDailyImpact? = null,
     @SerializedName("user_context_used")
-    val userContextUsed: AnalysisUserContextUsed? = null
+    val userContextUsed: AnalysisUserContextUsed? = null,
+    @SerializedName("kaspi_products")
+    val kaspiProducts: List<KaspiProductItem>? = emptyList()
+) : java.io.Serializable
+
+data class KaspiProductItem(
+    val id: String? = null,
+    val title: String? = null,
+    val brand: String? = null,
+    @SerializedName("shop_link")
+    val shopLink: String? = null,
+    @SerializedName("kaspi_url")
+    val kaspiUrl: String? = null,
+    @SerializedName("price_formatted")
+    val priceFormatted: String? = null,
+    @SerializedName("unit_sale_price")
+    val unitSalePrice: Double? = null,
+    @SerializedName("preview_image")
+    val previewImage: String? = null,
+    val rating: Double? = null,
+    @SerializedName("reviews_quantity")
+    val reviewsQuantity: Int? = null,
+    val discount: Int? = null,
+    @SerializedName("delivery_duration")
+    val deliveryDuration: String? = null
 ) : java.io.Serializable
 
 data class AnalysisEstimatedServing(
