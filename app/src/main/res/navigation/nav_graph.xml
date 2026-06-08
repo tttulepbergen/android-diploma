@@ -5,6 +5,7 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment3">
 
+
     <fragment
         android:id="@+id/signUpFragment"
         android:name="com.example.scanfit.mainNavigation.user.authorization.SignUpFragment"
@@ -58,9 +59,12 @@
         <action
             android:id="@+id/action_loginFragment3_to_profileFragment2"
             app:destination="@id/profileFragment2" />
+
         <action
             android:id="@+id/action_loginFragment3_to_nav_scan"
-            app:destination="@id/nav_scan" />
+            app:destination="@id/nav_home"
+            app:popUpTo="@id/loginFragment3"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -76,9 +80,16 @@
         android:id="@+id/dietSelectionFragment"
         android:name="com.example.scanfit.mainNavigation.user.profile.DietSelectionFragment"
         android:label="DietSelectionFragment" >
+        <!--
+            ИЗМЕНЕНИЕ: после выбора диеты открываем nav_home (Tracker).
+            Было: homeFragment → теперь: nav_home.
+            popUpTo убирает весь стек онбординга чтобы кнопка "назад" не вернула на логин.
+        -->
         <action
             android:id="@+id/action_dietSelectionFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
+            app:destination="@id/nav_home"
+            app:popUpTo="@id/loginFragment3"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -87,9 +98,13 @@
         android:label="UserProfileFragment" >
         <action
             android:id="@+id/action_userProfileFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
+            app:destination="@id/nav_home" />
     </fragment>
 
+    <!--
+        homeFragment оставляем для обратной совместимости,
+        но основной "home" теперь nav_home (привязан к bottom nav).
+    -->
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.scanfit.mainNavigation.HomeFragment"
@@ -109,21 +124,43 @@
         <action
             android:id="@+id/action_homeFragment_to_manualFoodEntryFragment"
             app:destination="@id/manualFoodEntryFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_proSubscriptionFragment"
+            app:destination="@id/proSubscriptionFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_productDetailFragment"
+            app:destination="@id/productDetailFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/manualFoodEntryFragment"
-        android:name="com.example.scanfit.mainNavigation.ManualFoodEntryFragment"
-        android:label="ManualFoodEntryFragment"
-        tools:layout="@layout/fragment_manual_food_entry" />
-
+    <!--
+        nav_home — это ГЛАВНЫЙ Tracker фрагмент привязанный к bottom nav.
+        Все action-ы из homeFragment дублируем сюда.
+    -->
     <fragment
         android:id="@+id/nav_home"
         android:name="com.example.scanfit.mainNavigation.HomeFragment"
         android:label="Tracker" >
         <action
-            android:id="@+id/action_homeFragment_to_userProfileFragment"
+            android:id="@+id/action_nav_home_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_categoriesFragment"
+            app:destination="@id/categoriesFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_scan"
+            app:destination="@id/nav_scan" />
+        <action
+            android:id="@+id/action_nav_home_to_consumptionHistoryFragment"
+            app:destination="@id/consumptionHistoryFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_manualFoodEntryFragment"
+            app:destination="@id/manualFoodEntryFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_proSubscriptionFragment"
+            app:destination="@id/proSubscriptionFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_productDetailFragment"
+            app:destination="@id/productDetailFragment" />
     </fragment>
 
     <fragment
@@ -244,5 +281,11 @@
         android:name="com.example.scanfit.mainNavigation.export.ExportReportFragment"
         android:label="ExportReportFragment"
         tools:layout="@layout/fragment_export_report" />
+
+    <fragment
+        android:id="@+id/manualFoodEntryFragment"
+        android:name="com.example.scanfit.mainNavigation.ManualFoodEntryFragment"
+        android:label="ManualFoodEntryFragment"
+        tools:layout="@layout/fragment_manual_food_entry" />
 
 </navigation>

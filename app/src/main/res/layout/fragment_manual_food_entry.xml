@@ -31,6 +31,7 @@
                     android:layout_height="40dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:padding="8dp"
+                    android:rotation="180"
                     android:src="@drawable/ic_chevron_left"
                     app:tint="#1A1C1E" />
 
@@ -81,8 +82,8 @@
                     android:layout_marginTop="10dp"
                     android:text="Choose Photo"
                     android:textAllCaps="false"
-                    android:textColor="#2F6BFF"
-                    app:strokeColor="#2F6BFF"
+                    android:textColor="#5CA2F8"
+                    app:strokeColor="#5CA2F8"
                     app:cornerRadius="20dp" />
             </LinearLayout>
 
@@ -489,7 +490,7 @@
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:backgroundTint="#2F6BFF"
+        app:backgroundTint="#5CA2F8"
         app:cornerRadius="16dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

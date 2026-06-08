@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import com.example.scanfit.R
 import com.example.scanfit.databinding.FragmentHomeBinding
@@ -65,6 +66,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private var isWaterUpdating = false
     private var registrationFirstDay: Calendar? = null
 
+    // ── CalendarAdapter ───────────────────────────────────────────────────────
+    private lateinit var calendarAdapter: CalendarAdapter
+
     private val scannerOptions = GmsDocumentScannerOptions.Builder()
         .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
         .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
@@ -88,11 +92,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
         sessionManager = SessionManager(requireContext())
+
+        setupCalendarRecyclerView()
+
         restoreFirstAvailableDay()
         fetchUserAccountHeader()
         fetchFirstAvailableDay()
 
         setupTrackerObserver()
+
+        // Явно загружаем данные при первом открытии
+        val initialDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
+        updateCalendarUI(initialDate)
+        updateWaterEditState(initialDate)
+        fetchCaloriesForDate(initialDate)
+        fetchWaterForDate(initialDate)
 
         trackerViewModel.selectedDate.observe(viewLifecycleOwner) { date ->
             updateCalendarUI(date)
@@ -108,20 +122,24 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         binding.cvProfileIcon.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_userProfileFragment)
+            tryNavigate(R.id.action_homeFragment_to_userProfileFragment, R.id.action_nav_home_to_userProfileFragment)
         }
         binding.btnGetProHome.setOnClickListener {
-            findNavController().navigate(R.id.proSubscriptionFragment)
+            tryNavigate(R.id.action_homeFragment_to_proSubscriptionFragment, R.id.action_nav_home_to_proSubscriptionFragment)
         }
         configureProHomeBanner()
         setupScannerTrigger()
 
         binding.cardCalories.setOnClickListener { showNutrientDetails() }
         binding.btnHistoryHome.setOnClickListener { openConsumptionHistory() }
+
+        // Кнопка "+ Add" — ручной ввод еды
         binding.btnAddManual.setOnClickListener {
-            findNavController().navigate(R.id.manualFoodEntryFragment)
+            tryNavigate(R.id.action_homeFragment_to_manualFoodEntryFragment, R.id.action_nav_home_to_manualFoodEntryFragment)
         }
-        binding.tvGreeting.setOnClickListener { showDatePicker() }
+
+        // Календарь открывается при клике на дни недели, а не на "Hi, User"
+        // tvGreeting больше не имеет слушателя
     }
 
     override fun onResume() {
@@ -133,6 +151,93 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onDestroyView()
         _binding = null
     }
+
+    // Вспомогательная функция для навигации с fallback
+    private fun tryNavigate(primaryActionId: Int, fallbackActionId: Int) {
+        try {
+            findNavController().navigate(primaryActionId)
+        } catch (e: Exception) {
+            try {
+                findNavController().navigate(fallbackActionId)
+            } catch (e2: Exception) {
+                Log.e("HomeFragment", "Navigation failed for both actions", e2)
+                Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun tryNavigateWithBundle(primaryActionId: Int, fallbackActionId: Int, bundle: Bundle) {
+        try {
+            findNavController().navigate(primaryActionId, bundle)
+        } catch (e: Exception) {
+            try {
+                findNavController().navigate(fallbackActionId, bundle)
+            } catch (e2: Exception) {
+                Log.e("HomeFragment", "Navigation failed for both actions", e2)
+                Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // ── Calendar RecyclerView setup ───────────────────────────────────────────
+
+    private fun setupCalendarRecyclerView() {
+        calendarAdapter = CalendarAdapter(
+            onDayClick = { selectedCalendar ->
+                if (trackerViewModel.canSelectDate(selectedCalendar)) {
+                    trackerViewModel.setSelectedDate(selectedCalendar)
+                } else {
+                    showNoInformationMessage()
+                }
+            }
+        )
+
+        binding.rvCalendar.apply {
+            layoutManager = LinearLayoutManager(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
+            adapter = calendarAdapter
+            // Отключаем overscroll-glow эффект
+            overScrollMode = View.OVER_SCROLL_NEVER
+        }
+    }
+
+    private fun updateCalendarUI(selectedCalendar: Calendar) {
+        // Строим список дней недели (пн–вс), начиная с понедельника текущей недели
+        val weekStart = selectedCalendar.clone() as Calendar
+        weekStart.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+
+        val days = mutableListOf<CalendarDayItem>()
+        val sdfDay = SimpleDateFormat("EEE", Locale.getDefault())
+        val sdfNum = SimpleDateFormat("dd", Locale.getDefault())
+
+        for (i in 0 until 7) {
+            val dayCalendar = weekStart.clone() as Calendar
+            days.add(
+                CalendarDayItem(
+                    calendar = dayCalendar,
+                    dayName = sdfDay.format(dayCalendar.time),
+                    dayNumber = sdfNum.format(dayCalendar.time),
+                    isSelected = isSameDay(dayCalendar, selectedCalendar),
+                    isEnabled = trackerViewModel.canSelectDate(dayCalendar)
+                )
+            )
+            weekStart.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        calendarAdapter.submitList(days)
+
+        // Скроллим к выбранному дню
+        val selectedIndex = days.indexOfFirst { it.isSelected }
+        if (selectedIndex >= 0) {
+            binding.rvCalendar.scrollToPosition(selectedIndex)
+        }
+    }
+
+    // ── Rest of the original code (unchanged) ────────────────────────────────
+
     private fun configureProHomeBanner() {
         val isBasicUser = sessionManager.fetchUserRole() == "basic"
         binding.cardProHome.isVisible = isBasicUser
@@ -201,87 +306,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         datePicker.show()
     }
 
-    private fun updateCalendarUI(selectedCalendar: Calendar) {
-        binding.layoutCalendar.removeAllViews()
-        val calendar = selectedCalendar.clone() as Calendar
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
-
-        val sdfDay = SimpleDateFormat("EEE", Locale.getDefault())
-        val sdfNum = SimpleDateFormat("dd", Locale.getDefault())
-
-        for (i in 0 until 7) {
-            val dateForView = calendar.clone() as Calendar
-            val isSelected = isSameDay(dateForView, selectedCalendar)
-            val isEnabled = trackerViewModel.canSelectDate(dateForView)
-
-            val dayView = createDayView(
-                dayName = sdfDay.format(dateForView.time),
-                dayNum = sdfNum.format(dateForView.time),
-                isSelected = isSelected,
-                isEnabled = isEnabled
-            )
-            dayView.setOnClickListener {
-                if (trackerViewModel.canSelectDate(dateForView)) trackerViewModel.setSelectedDate(dateForView)
-                else showNoInformationMessage()
-            }
-            binding.layoutCalendar.addView(dayView)
-            calendar.add(Calendar.DAY_OF_YEAR, 1)
-        }
-    }
-
-    private fun createDayView(
-        dayName: String,
-        dayNum: String,
-        isSelected: Boolean,
-        isEnabled: Boolean
-    ): View {
-        val layout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(0, dpToPx(65), 1f).apply {
-                setMargins(dpToPx(2), 0, dpToPx(2), 0)
-            }
-            alpha = if (isEnabled) 1f else 0.35f
-            isClickable = isEnabled
-            isFocusable = isEnabled
-            if (isSelected && isEnabled) {
-                setBackgroundResource(R.drawable.bg_selected_day)
-                elevation = dpToPx(2).toFloat()
-            }
-        }
-
-        val tvName = TextView(requireContext()).apply {
-            text = dayName
-            textSize = 12f
-            gravity  = Gravity.CENTER
-            setTextColor(when {
-                !isEnabled -> Color.parseColor("#BDBDBD")
-                isSelected -> android.graphics.Color.BLACK
-                else       -> android.graphics.Color.GRAY
-            })
-        }
-
-        val tvNum = TextView(requireContext()).apply {
-            text = dayNum
-            textSize = 14f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            gravity = Gravity.CENTER
-            setTextColor(when {
-                !isEnabled -> Color.parseColor("#BDBDBD")
-                isSelected -> android.graphics.Color.BLACK
-                else -> android.graphics.Color.GRAY
-            })
-        }
-
-        layout.addView(tvName)
-        layout.addView(tvNum)
-        return layout
-    }
-
     private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean =
-        cal1.get(Calendar.YEAR)        == cal2.get(Calendar.YEAR) &&
+        cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
-
 
     private fun setupTrackerObserver() {
         trackerViewModel.totalCalories.observe(viewLifecycleOwner) { total ->
@@ -344,25 +371,23 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    // ── Water: edit-state ─────────────────────────────────────────────────────
-
     private fun updateWaterEditState(selectedDate: Calendar) {
         val isBeforeRegistration = !trackerViewModel.canSelectDate(selectedDate)
         isWaterEditable = !isBeforeRegistration && isSameDay(selectedDate, Calendar.getInstance())
         updateWaterInteractivity()
         binding.tvWaterHint.text = when {
             isBeforeRegistration -> buildNoInformationText()
-            !isWaterEditable     -> "Past days are read-only. Water can only be changed for today"
-            isWaterUpdating      -> "Saving water..."
-            else                 -> "Tap an empty cup to add water, or a filled cup to remove it"
+            !isWaterEditable -> "Past days are read-only. Water can only be changed for today"
+            isWaterUpdating -> "Saving water..."
+            else -> "Tap an empty cup to add water, or a filled cup to remove it"
         }
     }
 
     private fun updateWaterInteractivity() {
         binding.waterStack.alpha = when {
             !isWaterEditable -> 0.6f
-            isWaterUpdating  -> 0.45f
-            else             -> 1f
+            isWaterUpdating -> 0.45f
+            else -> 1f
         }
         binding.waterStack.isEnabled = isWaterEditable && !isWaterUpdating
     }
@@ -373,7 +398,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             return
         }
         val token = sessionManager.fetchAuthToken() ?: return
-        val day   = API_DATE_FORMAT.format(selectedDate.time)
+        val day = API_DATE_FORMAT.format(selectedDate.time)
 
         lifecycleScope.launch {
             try {
@@ -464,7 +489,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.waterStack.removeAllViews()
 
         val maxGlasses = getWaterGoalGlassCount(goalMl)
-        val safeCount  = count.coerceIn(0, maxGlasses)
+        val safeCount = count.coerceIn(0, maxGlasses)
 
         for (i in 0 until maxGlasses) {
             val imageView = ImageView(requireContext()).apply {
@@ -497,13 +522,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             binding.waterStack.addView(imageView)
         }
     }
+
     private fun fetchCaloriesForDate(selectedDate: Calendar) {
         if (!trackerViewModel.canSelectDate(selectedDate)) {
             applyCaloriesData(null)
             return
         }
         val token = sessionManager.fetchAuthToken() ?: return
-        val day   = API_DATE_FORMAT.format(selectedDate.time)
+        val day = API_DATE_FORMAT.format(selectedDate.time)
 
         lifecycleScope.launch {
             try {
@@ -527,8 +553,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         trackerViewModel.setNutritionTotals(
             calories = data?.daily?.calories ?: 0,
             proteins = (data?.daily?.proteins ?: 0).toFloat(),
-            fat      = (data?.daily?.fat      ?: 0).toFloat(),
-            carbs    = (data?.daily?.carbs    ?: 0).toFloat()
+            fat = (data?.daily?.fat ?: 0).toFloat(),
+            carbs = (data?.daily?.carbs ?: 0).toFloat()
         )
     }
 
@@ -536,8 +562,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         trackerViewModel.setNutritionGoals(
             calories = data?.calories,
             proteins = data?.proteins?.toFloat(),
-            fat      = data?.fat?.toFloat(),
-            carbs    = data?.carbs?.toFloat()
+            fat = data?.fat?.toFloat(),
+            carbs = data?.carbs?.toFloat()
         )
     }
 
@@ -568,7 +594,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun openConsumptionHistory() {
         val selectedDate = trackerViewModel.selectedDate.value ?: Calendar.getInstance()
         val day = API_DATE_FORMAT.format(selectedDate.time)
-        findNavController().navigate(R.id.consumptionHistoryFragment, bundleOf("selected_date" to day))
+        tryNavigateWithBundle(
+            R.id.action_homeFragment_to_consumptionHistoryFragment,
+            R.id.action_nav_home_to_consumptionHistoryFragment,
+            bundleOf("selected_date" to day)
+        )
     }
 
     private fun showNutrientDetailsSheet(day: String, data: UserCaloriesData?) {
@@ -762,9 +792,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             Toast.makeText(requireContext(), "Analysis failed", Toast.LENGTH_SHORT).show()
             return
         }
-        findNavController().navigate(
-            R.id.productDetailFragment,
-            Bundle().apply { putSerializable("ai_analysis", result) }
+        val bundle = Bundle().apply { putSerializable("ai_analysis", result) }
+        tryNavigateWithBundle(
+            R.id.action_homeFragment_to_productDetailFragment,
+            R.id.action_nav_home_to_productDetailFragment,
+            bundle
         )
     }
 
@@ -781,13 +813,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val scale = 1024f / Math.max(bitmap.width, bitmap.height)
         return if (scale < 1) Bitmap.createScaledBitmap(
             bitmap,
-            (bitmap.width  * scale).toInt(),
+            (bitmap.width * scale).toInt(),
             (bitmap.height * scale).toInt(),
             true
         ) else bitmap
     }
-
-    // ── Utilities ─────────────────────────────────────────────────────────────
 
     private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
 
@@ -807,8 +837,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun formatAmount(value: Double): String =
         if (value % 1.0 == 0.0) value.toInt().toString()
         else String.format(Locale.US, "%.2f", value).trimEnd('0').trimEnd('.')
-
-    // ── Companion / inner types ───────────────────────────────────────────────
 
     companion object {
         private val API_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)

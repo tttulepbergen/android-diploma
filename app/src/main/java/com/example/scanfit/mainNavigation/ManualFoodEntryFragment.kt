@@ -30,7 +30,7 @@ class ManualFoodEntryFragment : Fragment(R.layout.fragment_manual_food_entry) {
     private val trackerViewModel: TrackerViewModel by activityViewModels()
     private lateinit var sessionManager: SessionManager
     private var selectedImageUri: Uri? = null
-    private val isPro get() = sessionManager.isVip()
+    private val isPro get() = if (::sessionManager.isInitialized) sessionManager.isVip() else false
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
@@ -41,20 +41,31 @@ class ManualFoodEntryFragment : Fragment(R.layout.fragment_manual_food_entry) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentManualFoodEntryBinding.bind(view)
-        sessionManager = SessionManager(requireContext())
+        try {
+            _binding = FragmentManualFoodEntryBinding.bind(view)
+            sessionManager = SessionManager(requireContext())
 
-        if (isPro) {
-            binding.layoutProFields.visibility = View.VISIBLE
-            binding.layoutProLocked.visibility = View.GONE
-        } else {
-            binding.layoutProFields.visibility = View.GONE
-            binding.layoutProLocked.visibility = View.VISIBLE
+            if (isPro) {
+                binding.layoutProFields.visibility = View.VISIBLE
+                binding.layoutProLocked.visibility = View.GONE
+            } else {
+                binding.layoutProFields.visibility = View.GONE
+                binding.layoutProLocked.visibility = View.VISIBLE
+            }
+
+            binding.btnBack.setOnClickListener {
+                try {
+                    findNavController().navigateUp()
+                } catch (e: Exception) {
+                    Log.e("ManualFoodEntry", "Back navigation failed", e)
+                }
+            }
+            binding.btnPickPhoto.setOnClickListener { pickImage.launch("image/*") }
+            binding.btnSave.setOnClickListener { submit() }
+        } catch (e: Exception) {
+            Log.e("ManualFoodEntry", "Error in onViewCreated", e)
+            Toast.makeText(requireContext(), "Error loading screen: ${e.message}", Toast.LENGTH_LONG).show()
         }
-
-        binding.btnBack.setOnClickListener { findNavController().navigateUp() }
-        binding.btnPickPhoto.setOnClickListener { pickImage.launch("image/*") }
-        binding.btnSave.setOnClickListener { submit() }
     }
 
     private fun submit() {

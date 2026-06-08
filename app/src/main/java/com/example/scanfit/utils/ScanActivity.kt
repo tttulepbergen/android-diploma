@@ -2,7 +2,6 @@ package com.example.scanfit.utils
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,6 +24,47 @@ class ScanActivity : AppCompatActivity() {
     private lateinit var binding: ActivityScanBinding
     private lateinit var navController: NavController
 
+    // Фрагменты, которые являются «дочерними» для каждой вкладки bottom nav.
+    // Когда мы находимся на дочернем фрагменте, подсвечиваем его родительскую вкладку.
+    private val scanChildren = setOf(
+        R.id.nav_scan,
+        R.id.categoriesFragment,
+        R.id.subCategoriesFragment,
+        R.id.productListFragment,
+        R.id.productDetailFragment,
+        R.id.searchFragment,
+        R.id.compareProductsFragment
+    )
+
+    private val trackerChildren = setOf(
+        R.id.nav_home,
+        R.id.homeFragment,
+        R.id.consumptionHistoryFragment,
+        R.id.exportReportFragment,
+        R.id.userProfileFragment,
+        R.id.manualFoodEntryFragment,
+        R.id.proSubscriptionFragment
+    )
+
+    private val favoritesChildren = setOf(
+        R.id.favoritesFragment
+    )
+
+    private val recentChildren = setOf(
+        R.id.nav_recent
+    )
+
+    // Фрагменты без bottom nav (онбординг / авторизация)
+    private val hiddenBottomNav = setOf(
+        R.id.loginFragment3,
+        R.id.forgotPasswordFragment,
+        R.id.resetPasswordFragment,
+        R.id.signUpFragment,
+        R.id.verifyPinFragment,
+        R.id.profileFragment2,
+        R.id.dietSelectionFragment
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -35,21 +75,34 @@ class ScanActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment_scan) as NavHostFragment
         navController = navHostFragment.navController
 
+        // setupWithNavController обеспечивает базовую навигацию по клику на иконку.
+        // Но для подсветки иконки при "дочерних" фрагментах мы управляем вручную ниже.
         binding.bottomNavigation.setupWithNavController(navController)
+
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.loginFragment3,
-                R.id.forgotPasswordFragment,
-                R.id.resetPasswordFragment,
-                R.id.signUpFragment,
-                R.id.verifyPinFragment,
-                R.id.profileFragment2,
-                R.id.dietSelectionFragment -> {
-                    binding.bottomNavigation.visibility = android.view.View.GONE
-                }
-                else -> {
-                    binding.bottomNavigation.visibility = android.view.View.VISIBLE
-                }
+            val destId = destination.id
+
+            if (destId in hiddenBottomNav) {
+                binding.bottomNavigation.visibility = android.view.View.GONE
+                return@addOnDestinationChangedListener
+            }
+
+            binding.bottomNavigation.visibility = android.view.View.VISIBLE
+
+            // Вручную выставляем выбранный item в bottom nav
+            // чтобы иконка правильно подсвечивалась на дочерних экранах.
+            // setOnItemSelectedListener НЕ переопределяем — это сломает навигацию.
+            val targetItemId = when (destId) {
+                in trackerChildren  -> R.id.nav_home
+                in scanChildren     -> R.id.nav_scan
+                in favoritesChildren -> R.id.favoritesFragment
+                in recentChildren   -> R.id.nav_recent
+                else                -> return@addOnDestinationChangedListener
+            }
+
+            // Меняем выделенный item без повторного запуска навигации
+            if (binding.bottomNavigation.selectedItemId != targetItemId) {
+                binding.bottomNavigation.menu.findItem(targetItemId)?.isChecked = true
             }
         }
 
