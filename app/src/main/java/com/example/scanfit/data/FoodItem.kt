@@ -3,7 +3,7 @@ package com.example.scanfit.data
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
-// Основной объект, соответствующий корню JSON
+// Основной объект, соответствующий корню JSON выв
 data class HealthData(
     val categories: List<HealthCategory>
 ) : Serializable
