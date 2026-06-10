@@ -43,7 +43,6 @@ import com.example.scanfit.network.AnalysisDailyImpact
 import com.example.scanfit.network.AnalysisDailyImpactItem
 import com.example.scanfit.network.AnalysisResponse
 import com.example.scanfit.network.AnalysisRisk
-import com.example.scanfit.network.KaspiProductItem
 import com.example.scanfit.network.NetworkClient
 import com.example.scanfit.utils.SessionManager
 import kotlinx.coroutines.launch
@@ -763,13 +762,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         binding.tvAiVerdictDescription.text = response.verdict ?: "No description"
         renderAiSections(response)
 
-        val kaspiQuery = response.alternatives.orEmpty()
-            .mapNotNull { it.name?.trim() }.filter { it.isNotBlank() }.take(5)
-            .joinToString(",")
-        if (kaspiQuery.isNotBlank()) {
-            loadKaspiProducts(kaspiQuery)
-        }
-
         if (!hasProductDetails) response.macros?.let { m ->
             val cal  = m.calories ?: 0.0
             val prot = m.proteins ?: 0.0
@@ -903,6 +895,7 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             .mapNotNull { it.name?.trim() }.filter { it.isNotBlank() }.take(5)
         if (kaspiAlternativeNames.isNotEmpty()) {
             kaspiContentView = buildKaspiLoadingSection()
+            showKaspiLinks(kaspiAlternativeNames)
         }
 
         if (dailyImpactItems.isNotEmpty()) {
@@ -917,23 +910,17 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             }
         }
 
-        if (sources.isNotEmpty()) {
-            addAiSection("Sources", "Evidence used by AI", "#F5F5F5") {
-                sources.take(4).forEachIndexed { index, source ->
+        addAiSection("Sources", "Evidence used by AI", "#F5F5F5") {
+            if (sources.isEmpty()) {
+                addAiSourceRow(title = "AI Generated", url = null, isAiGenerated = true)
+            } else {
+                sources.take(6).forEachIndexed { index, source ->
                     val title = source.title?.takeIf { it.isNotBlank() } ?: "Source ${index + 1}"
-                    addAiTextRow(
+                    val isAiEstimate = source.source_type?.equals("ai_estimate", ignoreCase = true) == true
+                    addAiSourceRow(
                         title = title,
-                        body  = buildString {
-                            source.source_type?.takeIf { it.isNotBlank() }?.let {
-                                append(it.replace('_', ' ').replaceFirstChar { ch ->
-                                    if (ch.isLowerCase()) ch.titlecase(Locale.US) else ch.toString()
-                                })
-                            }
-                            source.url?.takeIf { it.isNotBlank() }?.let {
-                                if (isNotEmpty()) append("\n"); append(it)
-                            }
-                            if (isEmpty()) append("No link provided")
-                        }
+                        url = source.url?.takeIf { it.isNotBlank() },
+                        isAiGenerated = isAiEstimate
                     )
                 }
             }
@@ -1091,6 +1078,65 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         addAiDivider()
     }
 
+    private fun LinearLayout.addAiSourceRow(title: String, url: String?, isAiGenerated: Boolean) {
+        val row = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dpToPx(10), 0, dpToPx(10))
+            if (url != null) {
+                isClickable = true
+                isFocusable = true
+                setOnClickListener {
+                    runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                }
+            }
+        }
+
+        val textCol = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        textCol.addView(TextView(requireContext()).apply {
+            text = title
+            setTextColor(Color.parseColor(if (url != null) COLOR_BLUE_ACCENT else COLOR_TEXT_PRIMARY))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            typeface = Typeface.DEFAULT_BOLD
+        })
+        if (url != null) {
+            textCol.addView(TextView(requireContext()).apply {
+                text = url
+                setTextColor(Color.parseColor("#4B5563"))
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                setPadding(0, dpToPx(2), 0, 0)
+            })
+        }
+        row.addView(textCol)
+
+        val badgeText = if (isAiGenerated) "AI Generated" else if (url != null) "Open →" else "No link"
+        val badgeColor = if (isAiGenerated) "#F59E0B" else if (url != null) "#2563EB" else "#9CA3AF"
+        row.addView(TextView(requireContext()).apply {
+            text = badgeText
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(dpToPx(8), dpToPx(4), dpToPx(8), dpToPx(4))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { marginStart = dpToPx(8) }
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dpToPx(6).toFloat()
+                setColor(Color.parseColor(badgeColor))
+            }
+        })
+
+        addView(row)
+        addAiDivider()
+    }
+
     private fun LinearLayout.addAiDivider() {
         addView(View(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1))
@@ -1102,12 +1148,6 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
     private fun buildKaspiLoadingSection(): LinearLayout {
         val ctx = requireContext()
         val contentLayout = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
-        contentLayout.addView(TextView(ctx).apply {
-            text = "Searching Kaspi.kz…"
-            setTextColor(Color.parseColor(COLOR_TEXT_SECONDARY))
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-            setPadding(0, dpToPx(8), 0, dpToPx(8))
-        })
         val section = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dpToPx(14), dpToPx(12), dpToPx(14), dpToPx(12))
@@ -1123,13 +1163,13 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
             ).apply { setMargins(0, 0, 0, dpToPx(10)) }
         }
         section.addView(TextView(ctx).apply {
-            text = "Available on Kaspi"
+            text = "Buy on Kaspi (Magnum)"
             setTextColor(Color.parseColor(COLOR_TEXT_PRIMARY))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
             typeface = Typeface.DEFAULT_BOLD
         })
         section.addView(TextView(ctx).apply {
-            text = "Tap a product to open in Kaspi"
+            text = "Tap to search in Magnum store on Kaspi"
             setTextColor(Color.parseColor(COLOR_TEXT_SECONDARY))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding(0, dpToPx(2), 0, dpToPx(8))
@@ -1141,108 +1181,41 @@ class ProductDetailFragment : Fragment(R.layout.fragment_product_detail) {
         return contentLayout
     }
 
-    private fun loadKaspiProducts(query: String) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                val token = sessionManager.fetchAuthToken() ?: return@launch
-                val result = NetworkClient.userApiService.searchKaspiProducts(token, query)
-                val products = result.products.orEmpty()
-                val content = kaspiContentView ?: return@launch
-                content.removeAllViews()
-                if (products.isNotEmpty()) {
-                    products.take(20).forEach { product -> content.addKaspiProductCard(product) }
-                } else {
-                    kaspiSectionView?.visibility = View.GONE
-                }
-            } catch (e: Exception) {
-                Log.w("KASPI", "Kaspi search failed for '$query': ${e.message}")
-                kaspiSectionView?.visibility = View.GONE
-            }
+    private fun showKaspiLinks(names: List<String>) {
+        val content = kaspiContentView ?: return
+        content.removeAllViews()
+        names.forEach { name ->
+            val encoded = URLEncoder.encode(name, "UTF-8")
+            val url = "https://kaspi.kz/shop/c/food/?q=$encoded%3AavailableInZones%3AMagnum_ZONE1%3Acategory%3AFood&sort=relevance&sc="
+            content.addKaspiLinkRow(name, url)
         }
     }
 
-    private fun showKaspiSection(products: List<KaspiProductItem>) {
-        addAiSection("Available on Kaspi", "Tap a product to open in Kaspi", "#FFF8E7") {
-            products.take(20).forEach { product ->
-                addKaspiProductCard(product)
-            }
-        }
-    }
-
-    private fun LinearLayout.addKaspiProductCard(product: KaspiProductItem) {
-        val productUrl = product.kaspiUrl ?: return
-
-        val card = LinearLayout(requireContext()).apply {
+    private fun LinearLayout.addKaspiLinkRow(name: String, url: String) {
+        val row = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(0, dpToPx(10), 0, dpToPx(10))
             isClickable = true
             isFocusable = true
             setOnClickListener {
-                runCatching {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(productUrl)))
-                }
+                runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
             }
         }
-
-        val imageView = ImageView(requireContext()).apply {
-            val size = dpToPx(72)
-            layoutParams = LinearLayout.LayoutParams(size, size).apply {
-                marginEnd = dpToPx(12)
-            }
-            scaleType = ImageView.ScaleType.CENTER_CROP
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadius = dpToPx(8).toFloat()
-                setColor(Color.parseColor("#F5F5F5"))
-            }
-            clipToOutline = true
-            load(product.previewImage) {
-                crossfade(true)
-                placeholder(R.drawable.ic_launcher_foreground)
-                error(R.drawable.ic_launcher_foreground)
-            }
-        }
-        card.addView(imageView)
-
-        val textCol = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-        textCol.addView(TextView(requireContext()).apply {
-            text = product.title ?: "Product"
+        row.addView(TextView(requireContext()).apply {
+            text = name
             setTextColor(Color.parseColor(COLOR_TEXT_PRIMARY))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             typeface = Typeface.DEFAULT_BOLD
-            maxLines = 2
-            ellipsize = TextUtils.TruncateAt.END
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         })
-        textCol.addView(TextView(requireContext()).apply {
-            text = buildString {
-                product.priceFormatted?.let { append(it) }
-                product.rating?.let {
-                    if (isNotEmpty()) append("  ")
-                    append("⭐ $it")
-                    product.reviewsQuantity?.let { qty -> append(" ($qty)") }
-                }
-                product.discount?.takeIf { it > 0 }?.let {
-                    if (isNotEmpty()) append("  ")
-                    append("-$it%")
-                }
-            }
-            setTextColor(Color.parseColor("#4B5563"))
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
-            setPadding(0, dpToPx(3), 0, 0)
-        })
-        textCol.addView(TextView(requireContext()).apply {
-            text = "Открыть в Kaspi →"
+        row.addView(TextView(requireContext()).apply {
+            text = "Magnum на Kaspi →"
             setTextColor(Color.parseColor(COLOR_BLUE_ACCENT))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
             typeface = Typeface.DEFAULT_BOLD
-            setPadding(0, dpToPx(4), 0, 0)
         })
-        card.addView(textCol)
-        addView(card)
+        addView(row)
         addAiDivider()
     }
 
