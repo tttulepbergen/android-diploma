@@ -17,6 +17,8 @@ import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -110,7 +112,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
 
         setupMeasurementClickListeners()
-        
+
         if (binding.toggleGroup.checkedButtonId == R.id.btn_my_account) {
             showAccountInfo()
         } else if (binding.toggleGroup.checkedButtonId == R.id.btn_measurements) {
@@ -129,6 +131,8 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         binding.layoutDiseases.visibility = View.GONE
         binding.btnLogout.visibility = View.VISIBLE
         binding.btnDeleteAccount.visibility = View.VISIBLE
+        binding.tvLanguageValue.text = currentLanguageName()
+        binding.rowLanguage.setOnClickListener { showLanguagePicker() }
         fetchUserAccount()
     }
 
@@ -162,10 +166,62 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         fetchDiseases()
     }
 
+    private fun currentLanguageName(): String {
+        val lang = AppCompatDelegate.getApplicationLocales()[0]?.language ?: "en"
+        return when (lang) {
+            "ru" -> getString(R.string.language_russian)
+            "kk" -> getString(R.string.language_kazakh)
+            else -> getString(R.string.language_english)
+        }
+    }
+
+    private fun showLanguagePicker() {
+        val names = arrayOf(
+            getString(R.string.language_english),
+            getString(R.string.language_russian),
+            getString(R.string.language_kazakh)
+        )
+        val codes = arrayOf("en", "ru", "kk")
+
+        val dialog = BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.layout_picker_bottom_sheet, null)
+        val picker = view.findViewById<NumberPicker>(R.id.number_picker)
+        val btnDone = view.findViewById<TextView>(R.id.tv_done)
+        val btnCancel = view.findViewById<TextView>(R.id.tv_cancel)
+
+        val currentLang = AppCompatDelegate.getApplicationLocales()[0]?.language ?: "en"
+        picker.minValue = 0
+        picker.maxValue = names.size - 1
+        picker.displayedValues = names
+        picker.wrapSelectorWheel = false
+        picker.value = codes.indexOf(currentLang).takeIf { it >= 0 } ?: 0
+
+        btnCancel.text = getString(R.string.profile_cancel)
+        btnDone.text = getString(R.string.profile_done)
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+        btnDone.setOnClickListener {
+            val selected = codes[picker.value]
+            dialog.dismiss()
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(selected))
+        }
+
+        dialog.setContentView(view)
+        dialog.show()
+    }
+
     private fun setupMeasurementClickListeners() {
         binding.rowGender.setOnClickListener {
-            showPickerSheet("I am a", arrayOf("Guy", "Gal", "Prefer not to say")) { selected ->
-                updateSingleField { it.copy(gender = selected) }
+            val displayOptions = arrayOf(
+                getString(R.string.profile_gender_guy),
+                getString(R.string.profile_gender_gal),
+                getString(R.string.profile_gender_prefer_not)
+            )
+            val apiValues = arrayOf("Guy", "Gal", "Prefer not to say")
+            showPickerSheet(getString(R.string.profile_i_am_a), displayOptions) { selected ->
+                val idx = displayOptions.indexOf(selected)
+                val apiValue = if (idx >= 0) apiValues[idx] else selected
+                updateSingleField { it.copy(gender = apiValue) }
             }
         }
 
@@ -176,21 +232,21 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
 
         binding.rowHeight.setOnClickListener {
-            showEditInputSheet("My height is", "cm") { value ->
+            showEditInputSheet(getString(R.string.profile_height), getString(R.string.profile_unit_cm)) { value ->
                 val h = value.toIntOrNull() ?: 0
-                updateSingleField { 
+                updateSingleField {
                     val newBmi = calculateBmi(h, it.weight ?: 0)
-                    it.copy(height = h, bmi = newBmi) 
+                    it.copy(height = h, bmi = newBmi)
                 }
             }
         }
 
         binding.rowWeight.setOnClickListener {
-            showEditInputSheet("My current weight is", "kg") { value ->
+            showEditInputSheet(getString(R.string.profile_weight), getString(R.string.profile_unit_kg)) { value ->
                 val w = value.toIntOrNull() ?: 0
-                updateSingleField { 
+                updateSingleField {
                     val newBmi = calculateBmi(it.height ?: 0, w)
-                    it.copy(weight = w, bmi = newBmi) 
+                    it.copy(weight = w, bmi = newBmi)
                 }
             }
         }
@@ -259,18 +315,18 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
                 if (response.success) {
                     fetchUserAccount()
-                    Toast.makeText(requireContext(), "Profile picture updated", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.toast_photo_updated), Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(
                         requireContext(),
-                        response.message ?: "Failed to update profile picture",
+                        response.message ?: getString(R.string.toast_update_failed),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(
                     requireContext(),
-                    e.message ?: "Failed to update profile picture",
+                    e.message ?: getString(R.string.toast_update_failed),
                     Toast.LENGTH_SHORT
                 ).show()
             } finally {
@@ -307,12 +363,12 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     private fun displayMeasureData(data: UserMeasureData) {
         isUpdatingUI = true
-        binding.tvGenderValue.text = data.gender ?: "please select"
-        binding.tvBirthValue.text = data.birthDate ?: "not set"
-        binding.tvHeightValue.text = "${data.height ?: 0} cm"
-        binding.tvWeightValue.text = "${data.weight ?: 0} kg"
+        binding.tvGenderValue.text = translateGender(data.gender)
+        binding.tvBirthValue.text = data.birthDate ?: getString(R.string.profile_not_set)
+        binding.tvHeightValue.text = "${data.height ?: 0} ${getString(R.string.profile_unit_cm)}"
+        binding.tvWeightValue.text = "${data.weight ?: 0} ${getString(R.string.profile_unit_kg)}"
         binding.tvBmiValue.text = String.format("%.1f", data.bmi?.toDouble() ?: 0.0)
-        
+
         val isVip = sessionManager.isVip()
         binding.switchBloodPressure.isChecked = (data.bloodPressure ?: 0) == 1
         binding.switchBloodPressure.isEnabled = isVip
@@ -321,14 +377,24 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         binding.switchCholesterol.isChecked = (data.cholesterol ?: 0) == 1
         binding.switchCholesterol.isEnabled = isVip
         binding.switchCholesterol.alpha = if (isVip) 1.0f else 0.5f
-        
+
         isUpdatingUI = false
+    }
+
+    private fun translateGender(gender: String?): String {
+        return when (gender?.lowercase(Locale.getDefault())) {
+            "guy" -> getString(R.string.profile_gender_guy)
+            "gal" -> getString(R.string.profile_gender_gal)
+            "prefer not to say" -> getString(R.string.profile_gender_prefer_not)
+            null, "" -> getString(R.string.profile_please_select)
+            else -> gender
+        }
     }
 
     private fun refreshTodayCalories() {
         val token = sessionManager.fetchAuthToken()
         if (token.isNullOrBlank()) {
-            Toast.makeText(requireContext(), "User token not found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.toast_token_not_found), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -337,11 +403,11 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             try {
                 val response = NetworkClient.userApiService.refreshTodayUserCalories(token)
                 if (response.success) {
-                    Toast.makeText(requireContext(), "Calories refreshed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.toast_calories_refreshed), Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(
                         requireContext(),
-                        response.message ?: "Failed to refresh calories",
+                        response.message ?: getString(R.string.toast_update_failed),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -349,7 +415,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 Log.e("REFRESH_CALORIES", "Refresh calories failed", e)
                 Toast.makeText(
                     requireContext(),
-                    e.message ?: "Failed to refresh calories",
+                    e.message ?: getString(R.string.toast_update_failed),
                     Toast.LENGTH_SHORT
                 ).show()
             } finally {
@@ -386,7 +452,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 sessionManager.refreshUserRole()
                 val dietTypesResponse = NetworkClient.userApiService.getDietTypes(token)
                 if (dietTypesResponse.success && !dietTypesResponse.data.isNullOrEmpty()) {
-                    val groupedDietTypes = dietTypesResponse.data.groupBy { it.category ?: "My Diet" }
+                    val groupedDietTypes = dietTypesResponse.data.groupBy { it.category ?: getString(R.string.profile_weight_management) }
                     groupedDietTypes.forEach { (category, items) ->
                         sections.add(
                             DietarySection(
@@ -406,7 +472,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 if (dietaryPreferencesResponse.success && !dietaryPreferencesResponse.data.isNullOrEmpty()) {
                     sections.add(
                         DietarySection(
-                            title = "Dietary Preferences",
+                            title = getString(R.string.profile_dietary_preferences),
                             items = dietaryPreferencesResponse.data,
                             sectionType = DietarySectionType.DIETARY_PREFERENCE
                         )
@@ -421,7 +487,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 if (healthConditionsResponse.success && !healthConditionsResponse.data.isNullOrEmpty()) {
                     sections.add(
                         DietarySection(
-                            title = "Health Condition",
+                            title = getString(R.string.profile_health_condition),
                             items = healthConditionsResponse.data,
                             sectionType = DietarySectionType.HEALTH_CONDITION
                         )
@@ -433,7 +499,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             if (sections.isNotEmpty() || currentWeightManagement != null) {
                 populateDietaryUI(sections)
             } else {
-                Toast.makeText(context, "Error fetching dietary data", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.toast_error_dietary), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -465,7 +531,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             if (diseases.isNotEmpty()) {
                 populateDiseasesUI(diseases)
             } else {
-                Toast.makeText(context, "Error fetching diseases", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.toast_error_diseases), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -473,15 +539,17 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun populateDietaryUI(sections: List<DietarySection>) {
         binding.dietaryItemsContainer.removeAllViews()
 
-        addSectionHeader(binding.dietaryItemsContainer, "Weight Management", "Goal, target date, target weight")
+        addSectionHeader(
+            binding.dietaryItemsContainer,
+            getString(R.string.profile_weight_management),
+            getString(R.string.profile_weight_management_desc)
+        )
         binding.dietaryItemsContainer.addView(createWeightManagementCard())
 
         for (section in sections) {
-            addSectionHeader(binding.dietaryItemsContainer, section.title, "Personalized picks")
-
+            addSectionHeader(binding.dietaryItemsContainer, section.title, getString(R.string.profile_personalized_picks))
             for (item in section.items) {
-                val row = createDietRow(item, section.sectionType)
-                binding.dietaryItemsContainer.addView(row)
+                binding.dietaryItemsContainer.addView(createDietRow(item, section.sectionType))
             }
         }
     }
@@ -489,11 +557,11 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun populateDiseasesUI(items: List<Disease>) {
         binding.diseaseItemsContainer.removeAllViews()
         val description = if (sessionManager.isVip()) {
-            "Tap a card to set level"
+            getString(R.string.profile_tap_to_set_level)
         } else {
-            "Selected ${items.count { it.isActive }} of $BASIC_ACTIVE_DISEASE_LIMIT"
+            getString(R.string.profile_selected_count, items.count { it.isActive }, BASIC_ACTIVE_DISEASE_LIMIT)
         }
-        addSectionHeader(binding.diseaseItemsContainer, "Diseases", description)
+        addSectionHeader(binding.diseaseItemsContainer, getString(R.string.profile_diseases), description)
 
         items.forEach { disease ->
             binding.diseaseItemsContainer.addView(createDiseaseRow(disease))
@@ -541,7 +609,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val data = currentWeightManagement
         card.addView(
             createWeightRow(
-                label = "Goal",
+                label = getString(R.string.profile_goal),
                 value = formatGoal(data?.goal),
                 onClick = { showGoalPicker() }
             )
@@ -549,7 +617,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         card.addView(createDivider())
         card.addView(
             createWeightRow(
-                label = "Target date",
+                label = getString(R.string.profile_target_date),
                 value = formatWeightTargetDate(data?.targetDate),
                 onClick = { showWeightTargetDatePicker() }
             )
@@ -557,7 +625,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         card.addView(createDivider())
         card.addView(
             createWeightRow(
-                label = "Target weight",
+                label = getString(R.string.profile_target_weight),
                 value = formatTargetWeight(data?.targetWeight),
                 onClick = { showWeightTargetInput() }
             )
@@ -607,16 +675,16 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     private fun formatGoal(goal: String?): String {
         return when (goal?.lowercase(Locale.getDefault())) {
-            "lose", "lose weight" -> "Lose"
-            "gain", "gain weight" -> "Gain"
-            "maintain", "maintain weight" -> "Maintain"
-            null -> "Not set"
+            "lose", "lose weight" -> getString(R.string.profile_goal_lose)
+            "gain", "gain weight" -> getString(R.string.profile_goal_gain)
+            "maintain", "maintain weight" -> getString(R.string.profile_goal_maintain)
+            null -> getString(R.string.profile_not_set)
             else -> goal.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }
     }
 
     private fun formatWeightTargetDate(rawDate: String?): String {
-        val normalizedDate = normalizeWeightManagementDate(rawDate) ?: return "Not set"
+        val normalizedDate = normalizeWeightManagementDate(rawDate) ?: return getString(R.string.profile_not_set)
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
@@ -628,12 +696,15 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     }
 
     private fun formatTargetWeight(targetWeight: Int?): String {
-        return if (targetWeight == null || targetWeight <= 0) "Not set" else "$targetWeight kg"
+        return if (targetWeight == null || targetWeight <= 0) {
+            getString(R.string.profile_not_set)
+        } else {
+            "$targetWeight ${getString(R.string.profile_unit_kg)}"
+        }
     }
 
     private fun normalizeWeightManagementDate(rawDate: String?): String? {
         if (rawDate.isNullOrBlank()) return null
-
         return when {
             rawDate.length >= 10 && rawDate[4] == '-' && rawDate[7] == '-' -> rawDate.substring(0, 10)
             else -> null
@@ -673,9 +744,9 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         val subtitleView = TextView(context).apply {
             text = item.description?.takeIf { it.isNotBlank() } ?: when (sectionType) {
-                DietarySectionType.DIET_TYPE -> "Diet"
-                DietarySectionType.DIETARY_PREFERENCE -> "Preference"
-                DietarySectionType.HEALTH_CONDITION -> "Condition"
+                DietarySectionType.DIET_TYPE -> getString(R.string.profile_diet_type_diet)
+                DietarySectionType.DIETARY_PREFERENCE -> getString(R.string.profile_diet_type_preference)
+                DietarySectionType.HEALTH_CONDITION -> getString(R.string.profile_diet_type_condition)
             }
             textSize = 12f
             setPadding(0, dp(4), 0, 0)
@@ -685,12 +756,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val switch = SwitchMaterial(requireContext()).apply {
             isChecked = item.isActive
             val isVip = sessionManager.isVip()
-            // Restriction for Basic users: cannot change Preference or Condition
             if (sectionType == DietarySectionType.DIETARY_PREFERENCE || sectionType == DietarySectionType.HEALTH_CONDITION) {
                 isEnabled = isVip
                 alpha = if (isVip) 1.0f else 0.5f
             }
-            
             setOnCheckedChangeListener { _, isChecked ->
                 updateDietary(item.id, isChecked, sectionType)
             }
@@ -726,13 +795,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 setColor(android.graphics.Color.parseColor(backgroundColor))
                 setStroke(dp(if (isSelected) 2 else 1), android.graphics.Color.parseColor(strokeColor))
             }
-            
             isClickable = true
             isFocusable = true
             foreground = requireContext().getDrawable(android.R.drawable.list_selector_background)
-            setOnClickListener {
-                showDiseaseLevelSheet(disease)
-            }
+            setOnClickListener { showDiseaseLevelSheet(disease) }
         }
 
         val titleRow = LinearLayout(requireContext()).apply {
@@ -750,9 +816,9 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         val levelBadge = TextView(context).apply {
             text = if (isSelected) {
-                disease.diseaseLevel?.name ?: "Selected"
+                disease.diseaseLevel?.name ?: getString(R.string.profile_selected)
             } else {
-                "Not selected"
+                getString(R.string.profile_not_selected)
             }
             textSize = 12f
             setTextColor(android.graphics.Color.parseColor(if (isSelected) "#FFFFFF" else "#2F6BFF"))
@@ -765,7 +831,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
 
         val descriptionView = TextView(context).apply {
-            text = disease.description ?: "Set activity and level"
+            text = disease.description ?: getString(R.string.profile_set_activity_level)
             textSize = 13f
             maxLines = 2
             setPadding(0, dp(10), 0, 0)
@@ -786,7 +852,13 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
 
         val actionView = TextView(context).apply {
-            text = if (isSelected) "Selected" else if (sessionManager.isVip()) "Manage" else "Choose"
+            text = if (isSelected) {
+                getString(R.string.profile_selected)
+            } else if (sessionManager.isVip()) {
+                getString(R.string.profile_manage)
+            } else {
+                getString(R.string.profile_choose)
+            }
             textSize = 13f
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(resources.getColor(R.color.blue, null))
@@ -805,8 +877,10 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     }
 
     private fun buildDiseaseStatusText(disease: Disease): String {
-        val codeText = disease.code?.takeIf { it.isNotBlank() }?.let { "Code $it" } ?: "Condition"
-        val state = if (disease.isActive) "Active" else "Inactive"
+        val codeText = disease.code?.takeIf { it.isNotBlank() }
+            ?.let { "${getString(R.string.profile_code)} $it" }
+            ?: getString(R.string.profile_condition)
+        val state = if (disease.isActive) getString(R.string.profile_active) else getString(R.string.profile_inactive)
         return "$codeText • $state"
     }
 
@@ -821,20 +895,27 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                     DietarySectionType.HEALTH_CONDITION -> NetworkClient.userApiService.updateHealthCondition(token, id, UpdateDietTypeRequest(isActive))
                 }
                 if (response.success) {
-                    Toast.makeText(context, "Updated successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.toast_updated_ok), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, response.message ?: getString(R.string.toast_update_failed), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "${getString(R.string.toast_update_failed)}: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun showGoalPicker() {
-        val options = arrayOf("Lose", "Maintain", "Gain")
-        showPickerSheet("Goal", options) { selected ->
-            updateWeightManagement(goal = selected)
+        val displayOptions = arrayOf(
+            getString(R.string.profile_goal_lose),
+            getString(R.string.profile_goal_maintain),
+            getString(R.string.profile_goal_gain)
+        )
+        val apiValues = arrayOf("Lose", "Maintain", "Gain")
+        showPickerSheet(getString(R.string.profile_goal), displayOptions) { selected ->
+            val idx = displayOptions.indexOf(selected)
+            val apiValue = if (idx >= 0) apiValues[idx] else selected
+            updateWeightManagement(goal = apiValue)
         }
     }
 
@@ -845,7 +926,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     }
 
     private fun showWeightTargetInput() {
-        showEditInputSheet("Target weight", "kg") { value ->
+        showEditInputSheet(getString(R.string.profile_target_weight), getString(R.string.profile_unit_kg)) { value ->
             val targetWeight = value.toIntOrNull() ?: return@showEditInputSheet
             updateWeightManagement(targetWeight = targetWeight)
         }
@@ -888,19 +969,19 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                         weeklyWeightChange = request.weeklyWeightChange
                     )
                     fetchDietTypes()
-                    Toast.makeText(context, "Weight management updated", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.toast_weight_management_updated), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, response.message ?: getString(R.string.toast_update_failed), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "${getString(R.string.toast_update_failed)}: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun showDiseaseLevelSheet(disease: Disease) {
         if (diseaseLevels.isEmpty()) {
-            Toast.makeText(context, "Disease levels are not available", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, getString(R.string.toast_disease_levels_unavailable), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -910,6 +991,9 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val numberPicker = view.findViewById<NumberPicker>(R.id.number_picker)
         val btnDone = view.findViewById<TextView>(R.id.tv_done)
         val btnCancel = view.findViewById<TextView>(R.id.tv_cancel)
+
+        btnCancel.text = getString(R.string.profile_cancel)
+        btnDone.text = getString(R.string.profile_save)
 
         val contentContainer = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
@@ -924,21 +1008,23 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
 
         val descriptionView = TextView(context).apply {
-            text = disease.code?.takeIf { it.isNotBlank() }?.let { "Code $it" } ?: "Set activity and level"
+            text = disease.code?.takeIf { it.isNotBlank() }
+                ?.let { "${getString(R.string.profile_code)} $it" }
+                ?: getString(R.string.profile_set_activity_level)
             textSize = 13f
             setTextColor(android.graphics.Color.parseColor("#6B7280"))
             setPadding(0, dp(8), 0, dp(16))
         }
 
         val activeSwitch = SwitchMaterial(requireContext()).apply {
-            text = "This condition is active"
+            text = getString(R.string.profile_condition_is_active)
             isChecked = disease.isActive
             textSize = 14f
             setTextColor(resources.getColor(R.color.black, null))
         }
 
         val helperView = TextView(context).apply {
-            text = "Severity level"
+            text = getString(R.string.profile_severity_level)
             textSize = 13f
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(android.graphics.Color.parseColor("#6B7280"))
@@ -959,7 +1045,6 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         root.addView(contentContainer, 2)
 
         btnCancel.setOnClickListener { dialog.dismiss() }
-        btnDone.text = "Save"
         btnDone.setOnClickListener {
             val selectedLevel = diseaseLevels[numberPicker.value]
             updateDisease(disease.id, activeSwitch.isChecked, selectedLevel.id, dialog)
@@ -977,7 +1062,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 if (exceedsBasicDiseaseLimit(diseaseId, isActive)) {
                     Toast.makeText(
                         context,
-                        "Basic users can activate up to $BASIC_ACTIVE_DISEASE_LIMIT diseases",
+                        getString(R.string.profile_basic_disease_limit, BASIC_ACTIVE_DISEASE_LIMIT),
                         Toast.LENGTH_SHORT
                     ).show()
                     return@launch
@@ -991,22 +1076,20 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 if (response.success) {
                     dialog.dismiss()
                     fetchDiseases()
-                    Toast.makeText(context, "Disease updated", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.toast_disease_updated), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, response.message ?: getString(R.string.toast_update_failed), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "${getString(R.string.toast_update_failed)}: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun exceedsBasicDiseaseLimit(diseaseId: Int, isActive: Boolean): Boolean {
         if (sessionManager.isVip() || !isActive) return false
-
         val alreadyActive = diseases.any { it.id == diseaseId && it.isActive }
         if (alreadyActive) return false
-
         val activeCount = diseases.count { it.isActive }
         return activeCount >= BASIC_ACTIVE_DISEASE_LIMIT
     }
@@ -1037,12 +1120,12 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 if (response.success && response.data != null) {
                     currentMeasureData = response.data
                     displayMeasureData(response.data)
-                    Toast.makeText(context, "Updated successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.toast_updated_ok), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, response.message ?: "Update failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, response.message ?: getString(R.string.toast_update_failed), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "${getString(R.string.toast_update_failed)}: ${e.message}", Toast.LENGTH_SHORT).show()
                 currentMeasureData?.let { displayMeasureData(it) }
             }
         }
@@ -1074,12 +1157,12 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun setupButtons() {
         binding.btnLogout.setOnClickListener {
             sessionManager.clearData()
-            Toast.makeText(requireContext(), "Logged out", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.toast_logged_out), Toast.LENGTH_SHORT).show()
             requireActivity().finish()
         }
 
         binding.btnDeleteAccount.setOnClickListener {
-            Toast.makeText(requireContext(), "Delete feature coming soon", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.toast_delete_soon), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -1095,6 +1178,9 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         picker.maxValue = options.size - 1
         picker.displayedValues = options
         picker.wrapSelectorWheel = false
+
+        btnCancel.text = getString(R.string.profile_cancel)
+        btnDone.text = getString(R.string.profile_done)
 
         btnCancel.setOnClickListener { dialog.dismiss() }
         btnDone.setOnClickListener {
@@ -1118,6 +1204,9 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         numberPicker.visibility = View.GONE
         datePicker.visibility = View.VISIBLE
 
+        btnCancel.text = getString(R.string.profile_cancel)
+        btnDone.text = getString(R.string.profile_done)
+
         btnCancel.setOnClickListener { dialog.dismiss() }
         btnDone.setOnClickListener {
             val dateString = String.format("%04d-%02d-%02d", datePicker.year, datePicker.month + 1, datePicker.dayOfMonth)
@@ -1138,7 +1227,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
         val input = EditText(requireContext()).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
-            hint = "Enter value"
+            hint = getString(R.string.profile_enter_value)
             textSize = 24f
             gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(
@@ -1148,7 +1237,13 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
         container.addView(input)
 
-        view.findViewById<TextView>(R.id.tv_done).setOnClickListener {
+        val btnDone = view.findViewById<TextView>(R.id.tv_done)
+        val btnCancel = view.findViewById<TextView>(R.id.tv_cancel)
+
+        btnCancel.text = getString(R.string.profile_cancel)
+        btnDone.text = getString(R.string.profile_done)
+
+        btnDone.setOnClickListener {
             val value = input.text.toString()
             if (value.isNotEmpty()) {
                 onValueEntered(value)
@@ -1156,7 +1251,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             dialog.dismiss()
         }
 
-        view.findViewById<TextView>(R.id.tv_cancel).setOnClickListener { dialog.dismiss() }
+        btnCancel.setOnClickListener { dialog.dismiss() }
 
         dialog.setContentView(view)
         dialog.show()
@@ -1175,4 +1270,3 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         _binding = null
     }
 }
-

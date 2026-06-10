@@ -9,4 +9,105 @@
     <string name="no_favourite_products">No Favourite Products</string>
     <string name="no_favourites_description">Products you favorite will appear here for quick access.</string>
     <string name="favourite_icon_description">Favourite icon</string>
+
+    <!-- Profile screen -->
+    <string name="profile_title">My Profile</string>
+    <string name="profile_tab_account">ACCOUNT</string>
+    <string name="profile_tab_body">BODY</string>
+    <string name="profile_tab_diet">DIET</string>
+    <string name="profile_tab_disease">DISEASE</string>
+    <string name="profile_change_photo">Change profile picture</string>
+    <string name="profile_label_username">USERNAME</string>
+    <string name="profile_label_email">EMAIL</string>
+    <string name="profile_label_language">LANGUAGE</string>
+    <string name="profile_logout">Log out</string>
+    <string name="profile_delete_account">Delete account</string>
+
+    <!-- Body tab -->
+    <string name="profile_i_am_a">I am a</string>
+    <string name="profile_date_of_birth">My date of birth is</string>
+    <string name="profile_activity_level">My daily activity level is</string>
+    <string name="profile_height">My height is</string>
+    <string name="profile_weight">My current weight is</string>
+    <string name="profile_bmi">My BMI is</string>
+    <string name="profile_additional_measurements">Additional measurements</string>
+    <string name="profile_premium_feature">(Premium feature - Scan&amp;Fit Pro)</string>
+    <string name="profile_blood_pressure">Blood pressure</string>
+    <string name="profile_cholesterol">Cholesterol</string>
+    <string name="profile_refresh_calories">Refresh calories</string>
+    <string name="profile_please_select">please select</string>
+    <string name="profile_refreshing_calories">Refreshing your calories…</string>
+    <string name="profile_refreshing_calories_desc">Please wait a moment while we sync today\'s data.</string>
+
+    <!-- Diet tab -->
+    <string name="profile_weight_management">Weight Management</string>
+    <string name="profile_weight_management_desc">Goal, target date, target weight</string>
+    <string name="profile_goal">Goal</string>
+    <string name="profile_target_date">Target date</string>
+    <string name="profile_target_weight">Target weight</string>
+    <string name="profile_personalized_picks">Personalized picks</string>
+    <string name="profile_not_set">Not set</string>
+    <string name="profile_goal_lose">Lose</string>
+    <string name="profile_goal_maintain">Maintain</string>
+    <string name="profile_goal_gain">Gain</string>
+    <string name="profile_dietary_preferences">Dietary Preferences</string>
+    <string name="profile_health_condition">Health Condition</string>
+    <string name="profile_diet_type_diet">Diet</string>
+    <string name="profile_diet_type_preference">Preference</string>
+    <string name="profile_diet_type_condition">Condition</string>
+
+    <!-- Disease tab -->
+    <string name="profile_diseases">Diseases</string>
+    <string name="profile_tap_to_set_level">Tap a card to set level</string>
+    <string name="profile_selected_count">Selected %d of %d</string>
+    <string name="profile_not_selected">Not selected</string>
+    <string name="profile_selected">Selected</string>
+    <string name="profile_manage">Manage</string>
+    <string name="profile_choose">Choose</string>
+    <string name="profile_active">Active</string>
+    <string name="profile_inactive">Inactive</string>
+    <string name="profile_severity_level">Severity level</string>
+    <string name="profile_condition_is_active">This condition is active</string>
+    <string name="profile_set_activity_level">Set activity and level</string>
+    <string name="profile_save">Save</string>
+    <string name="profile_done">Done</string>
+    <string name="profile_cancel">Cancel</string>
+    <string name="profile_code">Code</string>
+    <string name="profile_condition">Condition</string>
+    <string name="profile_basic_disease_limit">Basic users can activate up to %d diseases</string>
+
+    <!-- Gender options -->
+    <string name="profile_gender_guy">Guy</string>
+    <string name="profile_gender_gal">Gal</string>
+    <string name="profile_gender_prefer_not">Prefer not to say</string>
+
+    <!-- Input -->
+    <string name="profile_enter_value">Enter value</string>
+    <string name="profile_unit_cm">cm</string>
+    <string name="profile_unit_kg">kg</string>
+
+    <!-- Language names -->
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_kazakh">Қазақша</string>
+
+    <!-- Toasts -->
+    <string name="toast_logged_out">Logged out</string>
+    <string name="toast_photo_updated">Profile picture updated</string>
+    <string name="toast_delete_soon">Delete feature coming soon</string>
+    <string name="toast_updated_ok">Updated successfully</string>
+    <string name="toast_calories_refreshed">Calories refreshed</string>
+    <string name="toast_token_not_found">User token not found</string>
+    <string name="toast_disease_updated">Disease updated</string>
+    <string name="toast_weight_management_updated">Weight management updated</string>
+    <string name="toast_error_dietary">Error fetching dietary data</string>
+    <string name="toast_error_diseases">Error fetching diseases</string>
+    <string name="toast_disease_levels_unavailable">Disease levels are not available</string>
+    <string name="toast_update_failed">Update failed</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_tracker">Tracker</string>
+    <string name="nav_scan">Scan</string>
+    <string name="nav_favourites">Favourites</string>
+    <string name="nav_recent">Recent</string>
 </resources>

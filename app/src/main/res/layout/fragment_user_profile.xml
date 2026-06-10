@@ -19,7 +19,7 @@
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="My Profile"
+        android:text="@string/profile_title"
         android:textColor="#1A1C1E"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -45,7 +45,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:minWidth="0dp"
-            android:text="ACCOUNT"
+            android:text="@string/profile_tab_account"
             android:textSize="11sp" />
 
         <com.google.android.material.button.MaterialButton
@@ -55,7 +55,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:minWidth="0dp"
-            android:text="BODY"
+            android:text="@string/profile_tab_body"
             android:textSize="11sp" />
 
         <com.google.android.material.button.MaterialButton
@@ -65,7 +65,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:minWidth="0dp"
-            android:text="DIET"
+            android:text="@string/profile_tab_diet"
             android:textSize="11sp" />
 
         <com.google.android.material.button.MaterialButton
@@ -75,7 +75,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:minWidth="0dp"
-            android:text="DISEASE"
+            android:text="@string/profile_tab_disease"
             android:textSize="11sp" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -118,7 +118,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Change profile picture"
+                android:text="@string/profile_change_photo"
                 android:textColor="#42A5F5"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -129,7 +129,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="USERNAME"
+                android:text="@string/profile_label_username"
                 android:textColor="#808080"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -152,7 +152,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="EMAIL"
+                android:text="@string/profile_label_email"
                 android:textColor="#808080"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -170,6 +170,58 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/label_email" />
 
+            <View
+                android:id="@+id/divider_language"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:background="#F1F1F1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_profile_email" />
+
+            <TextView
+                android:id="@+id/label_language"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/profile_label_language"
+                android:textColor="#808080"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider_language" />
+
+            <RelativeLayout
+                android:id="@+id/row_language"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/label_language">
+
+                <TextView
+                    android:id="@+id/tv_language_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="@string/language_english"
+                    android:textColor="#1A1C1E"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:drawableEnd="@drawable/ic_chevron_left"
+                    android:drawablePadding="8dp"
+                    android:textColor="#808080"
+                    android:textSize="16sp" />
+
+            </RelativeLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ScrollView
@@ -177,7 +229,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="visible">
-            
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -195,7 +247,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="I am a"
+                        android:text="@string/profile_i_am_a"
                         android:textColor="#1A1C1E"
                         android:textSize="16sp" />
 
@@ -207,7 +259,7 @@
                         android:layout_centerVertical="true"
                         android:drawableEnd="@drawable/ic_chevron_left"
                         android:drawablePadding="8dp"
-                        android:text="please select"
+                        android:text="@string/profile_please_select"
                         android:textColor="#808080"
                         android:textSize="16sp" />
                 </RelativeLayout>
@@ -229,7 +281,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="My date of birth is"
+                        android:text="@string/profile_date_of_birth"
                         android:textColor="@color/black"
                         android:textSize="16sp" />
 
@@ -263,7 +315,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="My daily activity level is"
+                        android:text="@string/profile_activity_level"
                         android:textColor="@color/black"
                         android:textSize="16sp" />
 
@@ -275,7 +327,7 @@
                         android:layout_centerVertical="true"
                         android:drawableEnd="@drawable/ic_chevron_left"
                         android:drawablePadding="8dp"
-                        android:text="please select"
+                        android:text="@string/profile_please_select"
                         android:textColor="#808080"
                         android:textSize="16sp" />
                 </RelativeLayout>
@@ -297,7 +349,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="My height is"
+                        android:text="@string/profile_height"
                         android:textColor="#1A1C1E"
                         android:textSize="16sp" />
 
@@ -331,7 +383,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="My current weight is"
+                        android:text="@string/profile_weight"
                         android:textColor="#1A1C1E"
                         android:textSize="16sp" />
 
@@ -352,7 +404,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="#F1F1F1" />
-                
+
                 <RelativeLayout
                     android:id="@+id/row_bmi"
                     android:layout_width="match_parent"
@@ -362,7 +414,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="My BMI is"
+                        android:text="@string/profile_bmi"
                         android:textColor="#808080"
                         android:textSize="16sp" />
 
@@ -381,7 +433,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="Additional measurements"
+                    android:text="@string/profile_additional_measurements"
                     android:textColor="#1A1C1E"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -389,7 +441,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="(Premium feature - Scan&amp;Fit Pro)"
+                    android:text="@string/profile_premium_feature"
                     android:textColor="#808080"
                     android:textSize="12sp" />
 
@@ -403,7 +455,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="Blood pressure"
+                        android:text="@string/profile_blood_pressure"
                         android:textColor="#1A1C1E"
                         android:textSize="16sp" />
 
@@ -424,7 +476,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="Cholesterol"
+                        android:text="@string/profile_cholesterol"
                         android:textColor="#1A1C1E"
                         android:textSize="16sp" />
 
@@ -442,7 +494,7 @@
                     android:layout_height="56dp"
                     android:layout_marginTop="24dp"
                     android:backgroundTint="#17A34A"
-                    android:text="Refresh calories"
+                    android:text="@string/profile_refresh_calories"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textSize="16sp"
@@ -483,7 +535,7 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_marginBottom="12dp"
-        android:text="Log out"
+        android:text="@string/profile_logout"
         android:textAllCaps="false"
         android:textColor="@color/black"
         app:backgroundTint="#F8F9FB"
@@ -495,7 +547,7 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_marginBottom="16dp"
-        android:text="Delete account"
+        android:text="@string/profile_delete_account"
         android:textAllCaps="false"
         android:textColor="#EF5350"
         app:backgroundTint="#F8F9FB"
@@ -533,7 +585,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Refreshing your calories..."
+                android:text="@string/profile_refreshing_calories"
                 android:textColor="#111827"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -543,7 +595,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:gravity="center"
-                android:text="Please wait a moment while we sync today&apos;s data."
+                android:text="@string/profile_refreshing_calories_desc"
                 android:textColor="#6B7280"
                 android:textSize="13sp" />
         </LinearLayout>

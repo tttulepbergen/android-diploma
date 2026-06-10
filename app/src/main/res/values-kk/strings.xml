@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Profile screen -->
+    <string name="profile_title">Менің профилім</string>
+    <string name="profile_tab_account">АККАУНТ</string>
+    <string name="profile_tab_body">ДЕНЕ</string>
+    <string name="profile_tab_diet">ДИЕТА</string>
+    <string name="profile_tab_disease">АУРУЛАР</string>
+    <string name="profile_change_photo">Профиль суретін өзгерту</string>
+    <string name="profile_label_username">ПАЙДАЛАНУШЫ АТЫ</string>
+    <string name="profile_label_email">ЭЛЕКТРОНДЫҚ ПОШТА</string>
+    <string name="profile_label_language">ТІЛ</string>
+    <string name="profile_logout">Шығу</string>
+    <string name="profile_delete_account">Аккаунтты жою</string>
+
+    <!-- Body tab -->
+    <string name="profile_i_am_a">Мен</string>
+    <string name="profile_date_of_birth">Туған күнім</string>
+    <string name="profile_activity_level">Күнделікті белсенділік деңгейім</string>
+    <string name="profile_height">Бойым</string>
+    <string name="profile_weight">Салмағым</string>
+    <string name="profile_bmi">БДИ</string>
+    <string name="profile_additional_measurements">Қосымша өлшемдер</string>
+    <string name="profile_premium_feature">(Премиум мүмкіндік - Scan&amp;Fit Pro)</string>
+    <string name="profile_blood_pressure">Қан қысымы</string>
+    <string name="profile_cholesterol">Холестерол</string>
+    <string name="profile_refresh_calories">Калорияны жаңарту</string>
+    <string name="profile_please_select">таңдаңыз</string>
+    <string name="profile_refreshing_calories">Калориялар жаңартылуда…</string>
+    <string name="profile_refreshing_calories_desc">Деректерді синхрондауды күтіңіз.</string>
+
+    <!-- Diet tab -->
+    <string name="profile_weight_management">Салмақты басқару</string>
+    <string name="profile_weight_management_desc">Мақсат, мерзім, мақсатты салмақ</string>
+    <string name="profile_goal">Мақсат</string>
+    <string name="profile_target_date">Мақсатты күн</string>
+    <string name="profile_target_weight">Мақсатты салмақ</string>
+    <string name="profile_personalized_picks">Жеке таңдаулар</string>
+    <string name="profile_not_set">Орнатылмаған</string>
+    <string name="profile_goal_lose">Арықтау</string>
+    <string name="profile_goal_maintain">Сақтау</string>
+    <string name="profile_goal_gain">Жинау</string>
+    <string name="profile_dietary_preferences">Тамақтану қалауы</string>
+    <string name="profile_health_condition">Денсаулық жағдайы</string>
+    <string name="profile_diet_type_diet">Диета</string>
+    <string name="profile_diet_type_preference">Қалау</string>
+    <string name="profile_diet_type_condition">Жағдай</string>
+
+    <!-- Disease tab -->
+    <string name="profile_diseases">Аурулар</string>
+    <string name="profile_tap_to_set_level">Деңгейді орнату үшін картаны басыңыз</string>
+    <string name="profile_selected_count">Таңдалған %d / %d</string>
+    <string name="profile_not_selected">Таңдалмаған</string>
+    <string name="profile_selected">Таңдалған</string>
+    <string name="profile_manage">Басқару</string>
+    <string name="profile_choose">Таңдау</string>
+    <string name="profile_active">Белсенді</string>
+    <string name="profile_inactive">Белсенді емес</string>
+    <string name="profile_severity_level">Ауырлық деңгейі</string>
+    <string name="profile_condition_is_active">Бұл жағдай белсенді</string>
+    <string name="profile_set_activity_level">Белсенділік пен деңгейді орнатыңыз</string>
+    <string name="profile_save">Сақтау</string>
+    <string name="profile_done">Дайын</string>
+    <string name="profile_cancel">Болдырмау</string>
+    <string name="profile_code">Код</string>
+    <string name="profile_condition">Жағдай</string>
+    <string name="profile_basic_disease_limit">Базалық пайдаланушылар %d ауруды белсендіре алады</string>
+
+    <!-- Gender options -->
+    <string name="profile_gender_guy">Еркек</string>
+    <string name="profile_gender_gal">Әйел</string>
+    <string name="profile_gender_prefer_not">Айтқым келмейді</string>
+
+    <!-- Input -->
+    <string name="profile_enter_value">Мән енгізіңіз</string>
+    <string name="profile_unit_cm">см</string>
+    <string name="profile_unit_kg">кг</string>
+
+    <!-- Language names -->
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_kazakh">Қазақша</string>
+
+    <!-- Toasts -->
+    <string name="toast_logged_out">Жүйеден шықтыңыз</string>
+    <string name="toast_photo_updated">Профиль суреті жаңартылды</string>
+    <string name="toast_delete_soon">Жою мүмкіндігі жақын арада қосылады</string>
+    <string name="toast_updated_ok">Сәтті жаңартылды</string>
+    <string name="toast_calories_refreshed">Калориялар жаңартылды</string>
+    <string name="toast_token_not_found">Пайдаланушы токені табылмады</string>
+    <string name="toast_disease_updated">Ауру жаңартылды</string>
+    <string name="toast_weight_management_updated">Салмақ басқару жаңартылды</string>
+    <string name="toast_error_dietary">Диета деректерін жүктеу қатесі</string>
+    <string name="toast_error_diseases">Аурулар деректерін жүктеу қатесі</string>
+    <string name="toast_disease_levels_unavailable">Ауру деңгейлері қол жетімді емес</string>
+    <string name="toast_update_failed">Жаңарту қатесі</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_tracker">Трекер</string>
+    <string name="nav_scan">Сканер</string>
+    <string name="nav_favourites">Таңдаулылар</string>
+    <string name="nav_recent">Соңғылар</string>
+</resources>

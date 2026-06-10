@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Profile screen -->
+    <string name="profile_title">Мой профиль</string>
+    <string name="profile_tab_account">АККАУНТ</string>
+    <string name="profile_tab_body">ТЕЛО</string>
+    <string name="profile_tab_diet">ДИЕТА</string>
+    <string name="profile_tab_disease">БОЛЕЗНИ</string>
+    <string name="profile_change_photo">Изменить фото профиля</string>
+    <string name="profile_label_username">ИМЯ ПОЛЬЗОВАТЕЛЯ</string>
+    <string name="profile_label_email">ЭПОЧТА</string>
+    <string name="profile_label_language">ЯЗЫК</string>
+    <string name="profile_logout">Выйти</string>
+    <string name="profile_delete_account">Удалить аккаунт</string>
+
+    <!-- Body tab -->
+    <string name="profile_i_am_a">Я</string>
+    <string name="profile_date_of_birth">Дата рождения</string>
+    <string name="profile_activity_level">Уровень активности</string>
+    <string name="profile_height">Мой рост</string>
+    <string name="profile_weight">Мой вес</string>
+    <string name="profile_bmi">Мой ИМТ</string>
+    <string name="profile_additional_measurements">Дополнительные измерения</string>
+    <string name="profile_premium_feature">(Премиум функция - Scan&amp;Fit Pro)</string>
+    <string name="profile_blood_pressure">Кровяное давление</string>
+    <string name="profile_cholesterol">Холестерол</string>
+    <string name="profile_refresh_calories">Обновить калории</string>
+    <string name="profile_please_select">выберите</string>
+    <string name="profile_refreshing_calories">Обновление калорий…</string>
+    <string name="profile_refreshing_calories_desc">Подождите, пока мы синхронизируем данные.</string>
+
+    <!-- Diet tab -->
+    <string name="profile_weight_management">Управление весом</string>
+    <string name="profile_weight_management_desc">Цель, дата, целевой вес</string>
+    <string name="profile_goal">Цель</string>
+    <string name="profile_target_date">Целевая дата</string>
+    <string name="profile_target_weight">Целевой вес</string>
+    <string name="profile_personalized_picks">Персональные предпочтения</string>
+    <string name="profile_not_set">Не задано</string>
+    <string name="profile_goal_lose">Похудеть</string>
+    <string name="profile_goal_maintain">Поддерживать</string>
+    <string name="profile_goal_gain">Набрать вес</string>
+    <string name="profile_dietary_preferences">Диетические предпочтения</string>
+    <string name="profile_health_condition">Состояние здоровья</string>
+    <string name="profile_diet_type_diet">Диета</string>
+    <string name="profile_diet_type_preference">Предпочтение</string>
+    <string name="profile_diet_type_condition">Состояние</string>
+
+    <!-- Disease tab -->
+    <string name="profile_diseases">Болезни</string>
+    <string name="profile_tap_to_set_level">Нажмите на карточку для установки уровня</string>
+    <string name="profile_selected_count">Выбрано %d из %d</string>
+    <string name="profile_not_selected">Не выбрано</string>
+    <string name="profile_selected">Выбрано</string>
+    <string name="profile_manage">Управлять</string>
+    <string name="profile_choose">Выбрать</string>
+    <string name="profile_active">Активно</string>
+    <string name="profile_inactive">Неактивно</string>
+    <string name="profile_severity_level">Уровень тяжести</string>
+    <string name="profile_condition_is_active">Это состояние активно</string>
+    <string name="profile_set_activity_level">Установить активность и уровень</string>
+    <string name="profile_save">Сохранить</string>
+    <string name="profile_done">Готово</string>
+    <string name="profile_cancel">Отмена</string>
+    <string name="profile_code">Код</string>
+    <string name="profile_condition">Состояние</string>
+    <string name="profile_basic_disease_limit">Базовые пользователи могут активировать до %d болезней</string>
+
+    <!-- Gender options -->
+    <string name="profile_gender_guy">Мужчина</string>
+    <string name="profile_gender_gal">Женщина</string>
+    <string name="profile_gender_prefer_not">Не указывать</string>
+
+    <!-- Input -->
+    <string name="profile_enter_value">Введите значение</string>
+    <string name="profile_unit_cm">см</string>
+    <string name="profile_unit_kg">кг</string>
+
+    <!-- Language names -->
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_kazakh">Қазақша</string>
+
+    <!-- Toasts -->
+    <string name="toast_logged_out">Выход выполнен</string>
+    <string name="toast_photo_updated">Фото профиля обновлено</string>
+    <string name="toast_delete_soon">Функция удаления скоро появится</string>
+    <string name="toast_updated_ok">Успешно обновлено</string>
+    <string name="toast_calories_refreshed">Калории обновлены</string>
+    <string name="toast_token_not_found">Токен пользователя не найден</string>
+    <string name="toast_disease_updated">Болезнь обновлена</string>
+    <string name="toast_weight_management_updated">Управление весом обновлено</string>
+    <string name="toast_error_dietary">Ошибка загрузки данных диеты</string>
+    <string name="toast_error_diseases">Ошибка загрузки болезней</string>
+    <string name="toast_disease_levels_unavailable">Уровни болезней недоступны</string>
+    <string name="toast_update_failed">Ошибка обновления</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_tracker">Трекер</string>
+    <string name="nav_scan">Сканер</string>
+    <string name="nav_favourites">Избранное</string>
+    <string name="nav_recent">Недавние</string>
+</resources>
